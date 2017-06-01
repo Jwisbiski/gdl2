@@ -7,7 +7,10 @@ import org.hamcrest.Matchers;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -52,7 +55,7 @@ public class PredicateTest extends TestCommon {
                 .addValue(("/data[at0001]/items[at0004]"), DvDateTime.valueOf("2013-01-01T00:00:00"))
                 .build();
         List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances),
-                predicate, null, null);
+                predicate, null);
         assertThat(result.size(), is(1));
         assertThat(result.get(0).getDvCount("gt0011").getMagnitude(), is(8));
     }
@@ -80,7 +83,7 @@ public class PredicateTest extends TestCommon {
                 .addValue(path, DvDateTime.valueOf("2015-10-01T00:00:00"))
                 .build();
         List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances),
-                predicate, null, null);
+                predicate, null);
         assertThat(result.size(), is(1));
         assertThat(result.get(0).getDvCount("gt0011").getMagnitude(), is(1));
     }
@@ -118,7 +121,7 @@ public class PredicateTest extends TestCommon {
                 .addValue(path, new DvCodedText("Hypertension", "ICD10", "I11"))
                 .build();
         List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances),
-                predicate, guideline.getOntology(), null);
+                predicate, guideline);
         assertThat(result.size(), is(3));
         assertThat(result.get(0).getDvCount("gt0011").getMagnitude(), is(1));
         assertThat(result.get(1).getDvCount("gt0011").getMagnitude(), is(5));
@@ -168,8 +171,8 @@ public class PredicateTest extends TestCommon {
                 .addValue(codePath, new DvCodedText("myocardial infarction", "ICD10", "I21"))    // right code
                 .addValue(timestampPath, DvDateTime.valueOf("2013-01-01T00:00:00"))
                 .build();
-        List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances),
-                predicates, guideline.getOntology());
+        List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicates(Arrays.asList(dataInstances),
+                predicates, guideline);
         assertThat(result.size(), is(1));
         assertThat(result.get(0).getDvCount(countCode).getMagnitude(), is(9));
         assertThat(result.get(0).getDvCodedText(codePath).getDefiningCode().getCode(), is("I21"));
@@ -185,8 +188,7 @@ public class PredicateTest extends TestCommon {
         String path = "/data[at0001]/items[at0004]";
         ExpressionItem predicate = new UnaryExpression(
                 new Variable(null, "name", path, null), OperatorKind.MAX);
-        List<DataInstance> result = interpreter
-                .evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances), predicate, null, null);
+        List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances), predicate, null);
         assertThat(result.size(), Matchers.is(0));
     }
 
@@ -200,8 +202,7 @@ public class PredicateTest extends TestCommon {
         String path = "/data[at0001]/items[at0004]";
         ExpressionItem predicate = new UnaryExpression(
                 new Variable(null, "name", path, null), OperatorKind.MIN);
-        List<DataInstance> result = interpreter
-                .evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances), predicate, null, null);
+        List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances), predicate, null);
         assertThat(result.size(), Matchers.is(0));
     }
 
@@ -221,8 +222,7 @@ public class PredicateTest extends TestCommon {
                 new QuantityConstant(new DvQuantity("mo", 12.0, 0)), OperatorKind.SUBTRACTION);
         BinaryExpression predicate = new BinaryExpression(Variable.createByPath("/data/events/time/value/value"),
                 binaryExpression, OperatorKind.GREATER_THAN_OR_EQUAL);
-        List<DataInstance> result = interpreter
-                .evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances), predicate, null, null);
+        List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances), predicate, null);
         assertThat(result.size(), Matchers.is(1));
         assertThat(result.get(0).modelId(), is("weight"));
     }
@@ -243,8 +243,7 @@ public class PredicateTest extends TestCommon {
                 new QuantityConstant(new DvQuantity("mo", 12.0, 0)), OperatorKind.SUBTRACTION);
         BinaryExpression predicate = new BinaryExpression(Variable.createByPath("/data[at0001]/items[at0003]/value/value"),
                 binaryExpression, OperatorKind.GREATER_THAN_OR_EQUAL);
-        List<DataInstance> result = interpreter
-                .evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances), predicate, null, null);
+        List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances), predicate, null);
         assertThat(result.size(), Matchers.is(1));
         assertThat(result.get(0).modelId(), is("weight"));
     }

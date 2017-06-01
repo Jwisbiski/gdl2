@@ -44,7 +44,7 @@ public class AssignmentStatementTest extends TestCommon {
         inputMap.put("gt0006", asList(new DvQuantity("cm", 180, 1)));
         Map<String, Class> typeMap = new HashMap<>();
         typeMap.put("gt0013", DvQuantity.class);
-        interpreter.performAssignmentStatements(assignmentExpression, inputMap, typeMap, resultMap);
+        interpreter.performAssignmentStatements(assignmentExpression, inputMap, typeMap, resultMap, null);
         assertThat(resultMap.size(), is(1));
         Object dataValue = resultMap.get("gt0013");
         assertThat(dataValue, Matchers.instanceOf(DvQuantity.class));

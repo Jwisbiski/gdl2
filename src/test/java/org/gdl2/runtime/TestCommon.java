@@ -11,6 +11,7 @@ import org.gdl2.model.Guideline;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class TestCommon {
@@ -42,6 +43,10 @@ public class TestCommon {
 
     public Guideline loadGuideline(String name) throws Exception {
         return Gdl2.fromGdl2(loadJson(name));
+    }
+
+    public List<Guideline> loadSingleGuideline(String name) throws Exception {
+        return Collections.singletonList(loadGuideline(name));
     }
 
     ExpressionItem parseExpression(String expression) {

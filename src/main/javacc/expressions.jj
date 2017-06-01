@@ -122,6 +122,7 @@ TOKEN : /* SYMBOLS - common */
 | < SYM_E : "e" >
 | < SYM_FIRED : "fired" >
 | < SYM_CURRENT_DATETIME : "currentDateTime" >
+| < SYM_REF : "ref" >
 | < SYM_ASSIGNMENT : "=" >
 | < SYM_MODULO : "\\" >
 | < SYM_DIV : "//" >
@@ -349,7 +350,7 @@ TOKEN : /* LOCAL TOKENS */
     < LET_DIG_DUDS >
   | "("
   | ")" >
-| < V_LOCAL_TERM_CODE_REF : "[" < LET_DIG > (< LET_DIG_DD >)* "]" >
+| < #V_LOCAL_TERM_CODE_REF : "[" < LET_DIG > (< LET_DIG_DD >)* "]" >
 | < #PATH_SEGMENT : < V_ATTRIBUTE_IDENTIFIER > (< V_LOCAL_TERM_CODE_REF >)? >
 | < V_ABSOLUTE_PATH : < SYM_SLASH > < PATH_SEGMENT > (< SYM_SLASH > < PATH_SEGMENT >)* >
 }
@@ -594,7 +595,10 @@ ExpressionItem expression_leaf() :
     )
     < SYM_R_PARENTHESIS >
   | item = constant_expression()
-  | item = variable()
+  | LOOKAHEAD(2)
+    item = variable()
+  | LOOKAHEAD(2)
+    item = reference_variable()
   )
   {
     return item;
@@ -757,6 +761,21 @@ Variable variable() :
   ]
   {
     return new Variable(definingCode, label, path, attribute);
+  }
+}
+
+ReferenceVariable reference_variable() :
+{
+  Token t;
+  String attribute = null;
+  int index = 0;
+}
+{
+  < SYM_DOLLAR > < SYM_REF > < SYM_L_BRACKET > index = integer() < SYM_R_BRACKET >
+  < SYM_DOT > t = < V_ATTRIBUTE_IDENTIFIER >
+  {
+    attribute = t.image;
+    return new ReferenceVariable(index, attribute);
   }
 }
 

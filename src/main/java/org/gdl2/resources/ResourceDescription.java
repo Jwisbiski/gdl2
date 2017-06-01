@@ -13,4 +13,5 @@ public final class ResourceDescription {
     private String resourcePackageUri;
     private Map<String, ResourceDescriptionItem> details;
     private Map<String, String> otherDetails;
+    private List<Reference> references;
 }

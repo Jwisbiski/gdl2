@@ -27,13 +27,12 @@ public class UseTemplateExpressionTest extends TestCommon {
     @BeforeMethod
     public void setUp() throws Exception {
         input = new ArrayList<>();
+        interpreter = new Interpreter();
     }
 
     @Test
     public void can_use_template_create_ordinal() throws Exception {
-        interpreter = new Interpreter();
-        guideline = loadGuideline("use_template_with_ordinal_test.v0.1.gdl2");
-        List<Guideline> guidelines = Collections.singletonList(guideline);
+        List<Guideline> guidelines = loadSingleGuideline("use_template_with_ordinal_test.v0.1.gdl2");
         output = interpreter.executeGuidelines(guidelines, input);
         assertThat(output.get(0).getRoot(), instanceOf(DvOrdinal.class));
         DvOrdinal dvOrdinal = (DvOrdinal) output.get(0).get("/");
@@ -42,7 +41,6 @@ public class UseTemplateExpressionTest extends TestCommon {
 
     @Test
     public void can_use_template_create_quantity() throws Exception {
-        interpreter = new Interpreter();
         guideline = loadGuideline("use_template_with_quantity_test.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
         output = interpreter.executeGuidelines(guidelines, input);
@@ -53,7 +51,6 @@ public class UseTemplateExpressionTest extends TestCommon {
 
     @Test
     public void can_use_template_create_quantity_with_double_variable() throws Exception {
-        interpreter = new Interpreter();
         guideline = loadGuideline("use_template_with_quantity_set_value_test.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
         output = interpreter.executeGuidelines(guidelines, input);
@@ -64,7 +61,6 @@ public class UseTemplateExpressionTest extends TestCommon {
 
     @Test
     public void can_use_template_create_quantity_with_twice_each_with_different_double_variable() throws Exception {
-        interpreter = new Interpreter();
         guideline = loadGuideline("use_template_with_quantity_twice_set_value_test.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
         output = interpreter.executeGuidelines(guidelines, input);
@@ -75,7 +71,6 @@ public class UseTemplateExpressionTest extends TestCommon {
 
     @Test
     public void can_use_template_create_quantity_with_calculated_double_variable() throws Exception {
-        interpreter = new Interpreter();
         guideline = loadGuideline("use_template_with_quantity_set_calculated_value_test.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
         input.add(new DataInstance.Builder()

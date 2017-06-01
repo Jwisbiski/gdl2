@@ -31,14 +31,14 @@ public class TerminologyBindingTest extends TestCommon {
     @Test
     public void can_check_isa_relationship_using_local_term_bindings_expected_true() throws Exception {
         inputMap.put("gt0040", asList(new DvCodedText("Diabetes Type-1", "ICD10", "E10")));
-        value = interpreter.evaluateExpressionItem(expression, inputMap, guide.getOntology(), null);
+        value = interpreter.evaluateExpressionItem(expression, inputMap, guide, null);
         assertThat(value, is(true));
     }
 
     @Test
     public void can_check_isa_relationship_using_local_term_bindings_expected_false() throws Exception {
         inputMap.put("gt0040", asList(new DvCodedText("Heart failure", "ICD10", "I50")));
-        value = interpreter.evaluateExpressionItem(expression, inputMap, guide.getOntology(), null);
+        value = interpreter.evaluateExpressionItem(expression, inputMap, guide, null);
         assertThat(value, is(false));
     }
 }

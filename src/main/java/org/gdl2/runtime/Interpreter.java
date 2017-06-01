@@ -4,6 +4,8 @@ import lombok.NonNull;
 import org.gdl2.datatypes.*;
 import org.gdl2.expression.*;
 import org.gdl2.model.*;
+import org.gdl2.resources.Reference;
+import org.gdl2.resources.ResourceDescription;
 import org.gdl2.terminology.Binding;
 import org.gdl2.terminology.TermBinding;
 
@@ -26,6 +28,7 @@ public class Interpreter {
     public static final String OBJECT_CREATOR = "objectCreator";
     private static final String COUNT = "count";
     private static final String SUM = "sum";
+    private static final String REFERENCE_NOT_FOUND = "Reference not found";
 
     private static final long HOUR_IN_MILLISECONDS = 3600 * 1000L;
     private Map<String, Object> systemParameters;
@@ -115,14 +118,15 @@ public class Interpreter {
         boolean allPreconditionsAreTrue = true;
         if (guide.getDefinition().getPreConditions() != null) {
             allPreconditionsAreTrue = guide.getDefinition().getPreConditions().stream()
-                    .allMatch(expressionItem -> evaluateBooleanExpression(expressionItem, inputValues, guide.getOntology(), null));
+                    .allMatch(expressionItem -> evaluateBooleanExpression(expressionItem, inputValues, guide, null));
         }
         if (!allPreconditionsAreTrue) {
             return collectValueListMap(inputValues);
         }
         if (guide.getDefinition().getDefaultActions() != null) {
             for (ExpressionItem assignmentExpression : guide.getDefinition().getDefaultActions()) {
-                performAssignmentStatements((AssignmentExpression) assignmentExpression, inputValues, typeMap, resultDefaultRuleExecution);
+                performAssignmentStatements((AssignmentExpression) assignmentExpression, inputValues, typeMap,
+                        resultDefaultRuleExecution, guide);
                 mergeValueMapIntoListValueMap(resultDefaultRuleExecution, inputValues);
             }
         }
@@ -135,7 +139,7 @@ public class Interpreter {
                     inputValues,
                     inputAndResult,
                     guide.getDefinition().getTemplates(),
-                    guide.getOntology(),
+                    guide,
                     firedRules);
             mergeValueMapIntoListValueMap(resultPerRuleExecution, inputAndResult);
         }
@@ -147,7 +151,7 @@ public class Interpreter {
                 .collect(Collectors.toMap(Map.Entry::getKey, s -> s.getValue().get(s.getValue().size() - 1)));
     }
 
-    void mergeValueMapIntoListValueMap(Map<String, Object> valueMap, Map<String, List<Object>> valueListMap) {
+    private void mergeValueMapIntoListValueMap(Map<String, Object> valueMap, Map<String, List<Object>> valueListMap) {
         for (Map.Entry<String, Object> entry : valueMap.entrySet()) {
             valueListMap.computeIfAbsent(entry.getKey(), s -> new ArrayList<>()).add(entry.getValue());
         }
@@ -190,15 +194,15 @@ public class Interpreter {
     }
 
     private Map<String, List<Object>> selectDataInstancesUsingPredicatesAndSortWithElementBindingCode(
-            List<DataInstance> dataInstances, Guideline guide) {
+            List<DataInstance> dataInstances, Guideline guideline) {
         Map<String, List<Object>> valueListMap = new HashMap<>();
-        for (Map.Entry<String, DataBinding> entry : guide.getDefinition().getDataBindings().entrySet()) {
+        for (Map.Entry<String, DataBinding> entry : guideline.getDefinition().getDataBindings().entrySet()) {
             DataBinding dataBinding = entry.getValue();
             List<DataInstance> selectedDataInstances =
-                    evaluateDataInstancesWithPredicate(
+                    evaluateDataInstancesWithPredicates(
                             filterDataInstancesWithModelId(dataInstances, dataBinding.getModelId()),
                             dataBinding.getPredicates(),
-                            guide.getOntology());
+                            guideline);
             convertDataInstancesToCodeBasedValueMap(dataBinding, selectedDataInstances, valueListMap);
         }
         return valueListMap;
@@ -229,7 +233,7 @@ public class Interpreter {
     private Map<String, Object> evaluateRuleWithPossibleMultipleValues(Rule rule, Map<String, List<Object>> originalInput,
                                                                        Map<String, List<Object>> inputAndResult,
                                                                        Map<String, Template> templateMap,
-                                                                       GuideOntology guideOntology, Set<String> firedRules) {
+                                                                       Guideline guideline, Set<String> firedRules) {
         for (Map.Entry<String, List<Object>> entry : originalInput.entrySet()) {
             List<Object> list = entry.getValue();
             List<Object> listForLoop = new ArrayList<>(list);
@@ -239,28 +243,28 @@ public class Interpreter {
             for (Object dataValue : listForLoop) {
                 entry.setValue(Collections.singletonList(dataValue));
                 Map<String, Object> result = evaluateRuleWithPossibleMultipleValues(rule, originalInput, inputAndResult,
-                        templateMap, guideOntology, firedRules);
+                        templateMap, guideline, firedRules);
                 mergeValueMapIntoListValueMap(result, inputAndResult);
             }
         }
-        return evaluateRuleWithSingleValueForEachInputVariable(rule, inputAndResult, templateMap, guideOntology, firedRules);
+        return evaluateRuleWithSingleValueForEachInputVariable(rule, inputAndResult, templateMap, guideline, firedRules);
     }
 
     private Map<String, Object> evaluateRuleWithSingleValueForEachInputVariable(Rule rule, Map<String, List<Object>> input,
                                                                                 Map<String, Template> templateMap,
-                                                                                GuideOntology guideOntology, Set<String> firedRules) {
+                                                                                Guideline guideline, Set<String> firedRules) {
         Map<String, Object> result = new HashMap<>();
         boolean allWhenStatementsAreTrue = rule.getWhen() == null || rule.getWhen().stream()
-                .allMatch(whenStatement -> evaluateBooleanExpression(whenStatement, input, guideOntology, firedRules));
+                .allMatch(whenStatement -> evaluateBooleanExpression(whenStatement, input, guideline, firedRules));
         if (!allWhenStatementsAreTrue) {
             return result;
         }
         Map<String, Class> typeMap = typeBindingThroughAssignmentStatements(rule.getThen());
         for (ExpressionItem thenStatement : rule.getThen()) {
             if (thenStatement instanceof AssignmentExpression) {
-                performAssignmentStatements((AssignmentExpression) thenStatement, input, typeMap, result);
+                performAssignmentStatements((AssignmentExpression) thenStatement, input, typeMap, result, guideline);
             } else if (thenStatement instanceof UseTemplateExpression) {
-                performUseTemplateStatement((UseTemplateExpression) thenStatement, templateMap, input, result);
+                performUseTemplateStatement((UseTemplateExpression) thenStatement, templateMap, input, result, guideline);
             }
             mergeValueMapIntoListValueMap(result, input);
         }
@@ -287,17 +291,22 @@ public class Interpreter {
 
     void performAssignmentStatements(AssignmentExpression assignmentExpression, Map<String, List<Object>> input,
                                      Map<String, Class> typeMap, Map<String, Object> result) {
+        performAssignmentStatements(assignmentExpression, input, typeMap, result, null);
+    }
+
+    void performAssignmentStatements(AssignmentExpression assignmentExpression, Map<String, List<Object>> input,
+                                     Map<String, Class> typeMap, Map<String, Object> result, Guideline guideline) {
         Variable variable = assignmentExpression.getVariable();
         String attribute = variable.getAttribute();
         if (assignmentExpression instanceof CreateInstanceExpression) {
-            evaluateCreateInstanceExpression(assignmentExpression, input, typeMap, result);
+            evaluateCreateInstanceExpression(assignmentExpression, input, typeMap, result, guideline);
             return;
         }
         Object value;
         if (assignmentExpression.getAssignment() instanceof QuantityConstant) {
             value = ((QuantityConstant) assignmentExpression.getAssignment()).getQuantity();
         } else {
-            value = evaluateExpressionItem(assignmentExpression.getAssignment(), input);
+            value = evaluateExpressionItem(assignmentExpression.getAssignment(), input, guideline, null);
         }
         if (TypeBinding.PRECISION.equals(attribute)) {
             DvQuantity dvQuantity = retrieveDvQuantityFromResultMapOrCreateNew(variable.getCode(), result);
@@ -326,7 +335,7 @@ public class Interpreter {
             performAssignMagnitudeAttribute(value, variable, assignmentExpression, input, typeMap, result);
         } else if (TypeBinding.NULL_FLAVOR.equals(attribute)) {
             if (value instanceof DvCodedText) {
-                result.put(variable.getCode() + "." + TypeBinding.NULL_FLAVOR, (DvCodedText) value);
+                result.put(variable.getCode() + "." + TypeBinding.NULL_FLAVOR, value);
             } else {
                 throw new IllegalArgumentException("Unexpected value: " + value + ", in null_flavor assignmentExpression: " + assignmentExpression);
             }
@@ -339,8 +348,8 @@ public class Interpreter {
         }
     }
 
-    void performUseTemplateStatement(UseTemplateExpression useTemplateExpression, Map<String, Template> templateMap,
-                                     Map<String, List<Object>> input, Map<String, Object> result) {
+    private void performUseTemplateStatement(UseTemplateExpression useTemplateExpression, Map<String, Template> templateMap,
+                                             Map<String, List<Object>> input, Map<String, Object> result, Guideline guideline) {
         Variable variable = useTemplateExpression.getVariable();
         String attribute = variable.getCode();
         Template template = templateMap.get(attribute);
@@ -349,7 +358,7 @@ public class Interpreter {
         }
         Map<String, Object> useTemplateLocalResult = new HashMap<>();
         for (AssignmentExpression assignmentExpression : useTemplateExpression.getAssignmentExpressions()) {
-            Object value = evaluateExpressionItem(assignmentExpression.getAssignment(), input);
+            Object value = evaluateExpressionItem(assignmentExpression.getAssignment(), input, guideline, null);
             useTemplateLocalResult.put(assignmentExpression.getVariable().getCode(), value);
         }
         Map<String, Object> localMapCopy = new HashMap<>(template.getObject());
@@ -412,11 +421,11 @@ public class Interpreter {
     }
 
     private void evaluateCreateInstanceExpression(AssignmentExpression assignmentExpression, Map<String, List<Object>> input,
-                                                  Map<String, Class> typeMap, Map<String, Object> result) {
+                                                  Map<String, Class> typeMap, Map<String, Object> result, Guideline guideline) {
         CreateInstanceExpression createInstanceExpression = (CreateInstanceExpression) assignmentExpression;
         List<AssignmentExpression> assignmentExpressions = createInstanceExpression.getAssignmentExpressions();
         for (AssignmentExpression expression : assignmentExpressions) {
-            performAssignmentStatements(expression, input, typeMap, result);
+            performAssignmentStatements(expression, input, typeMap, result, guideline);
             mergeValueMapIntoListValueMap(result, input);
         }
         result.putAll(result);
@@ -435,21 +444,43 @@ public class Interpreter {
     }
 
     Object evaluateExpressionItem(ExpressionItem expressionItem, Map<String, List<Object>> input,
-                                  GuideOntology guideOntology, Set<String> firedRules) {
+                                  Guideline guideline, Set<String> firedRules) {
         if (expressionItem instanceof ConstantExpression) {
             return evaluateConstantExpression(expressionItem);
+        } else if (expressionItem instanceof ReferenceVariable) {
+            ReferenceVariable referenceVariable = (ReferenceVariable) expressionItem;
+            return retrieveReferenceVariableValueFromValueMap(referenceVariable, guideline.getDescription());
         } else if (expressionItem instanceof Variable) {
             Variable variable = (Variable) expressionItem;
             return retrieveValueFromValueMap(variable, input);
         } else if (expressionItem instanceof BinaryExpression) {
-            return processBinaryExpression(expressionItem, input, guideOntology, firedRules);
+            return processBinaryExpression(expressionItem, input, guideline, firedRules);
         } else if (expressionItem instanceof UnaryExpression) {
             return processUnaryExpression((UnaryExpression) expressionItem, firedRules);
         } else if (expressionItem instanceof FunctionalExpression) {
-            return processFunctionalExpression((FunctionalExpression) expressionItem, input, guideOntology, firedRules);
+            return processFunctionalExpression((FunctionalExpression) expressionItem, input, guideline, firedRules);
         } else {
             throw new IllegalArgumentException("Unsupported expressionItem: " + expressionItem);
         }
+    }
+
+    private String retrieveReferenceVariableValueFromValueMap(ReferenceVariable referenceVariable, ResourceDescription resourceDescription) {
+        if (resourceDescription == null) {
+            return REFERENCE_NOT_FOUND;
+        }
+        List<Reference> references = resourceDescription.getReferences();
+        if (references == null || references.isEmpty()
+                || references.size() < referenceVariable.getIndex()
+                || referenceVariable.getIndex() <= 0) {
+            return REFERENCE_NOT_FOUND;
+        }
+        Reference reference = references.get(referenceVariable.getIndex() - 1);
+        if ("label".equalsIgnoreCase(referenceVariable.getAttribute())) {
+            return reference.getLabel();
+        } else if ("url".equalsIgnoreCase(referenceVariable.getAttribute())) {
+            return reference.getUrl();
+        }
+        return REFERENCE_NOT_FOUND;
     }
 
     private Object evaluateConstantExpression(ExpressionItem expressionItem) {
@@ -504,15 +535,15 @@ public class Interpreter {
     }
 
     private boolean evaluateBooleanExpression(ExpressionItem whenStatement, Map<String, List<Object>> input,
-                                              GuideOntology guideOntology, Set<String> firedRules) {
-        Object value = evaluateExpressionItem(whenStatement, input, guideOntology, firedRules);
+                                              Guideline guideline, Set<String> firedRules) {
+        Object value = evaluateExpressionItem(whenStatement, input, guideline, firedRules);
         return value instanceof Boolean && ((Boolean) value);
     }
 
     private Object processFunctionalExpression(FunctionalExpression functionalExpression, Map<String,
-            List<Object>> input, GuideOntology ontology, Set<String> firedRules) {
+            List<Object>> input, Guideline guideline, Set<String> firedRules) {
         String function = functionalExpression.getFunction().toString();
-        Double value = Double.valueOf(evaluateExpressionItem(functionalExpression.getItems().get(0), input, ontology, firedRules).toString());
+        Double value = Double.valueOf(evaluateExpressionItem(functionalExpression.getItems().get(0), input, guideline, firedRules).toString());
         if ("abs".equalsIgnoreCase(function)) {
             return Math.abs(value);
         } else if ("ceil".equalsIgnoreCase(function)) {
@@ -547,7 +578,7 @@ public class Interpreter {
     }
 
     private Object processBinaryExpression(ExpressionItem expressionItem, Map<String, List<Object>> input,
-                                           GuideOntology ontology, Set<String> firedRules) {
+                                           Guideline guideline, Set<String> firedRules) {
         BinaryExpression binaryExpression = (BinaryExpression) expressionItem;
         OperatorKind operator = binaryExpression.getOperator();
         ExpressionItem leftExpression = binaryExpression.getLeft();
@@ -556,11 +587,11 @@ public class Interpreter {
             if (leftExpression == null) {
                 throw new IllegalArgumentException("Null value in left expression item with OR operator: " + expressionItem);
             }
-            return evaluateBooleanExpression(leftExpression, input, ontology, firedRules)
-                    || evaluateBooleanExpression(rightExpression, input, ontology, firedRules);
+            return evaluateBooleanExpression(leftExpression, input, guideline, firedRules)
+                    || evaluateBooleanExpression(rightExpression, input, guideline, firedRules);
         }
-        Object leftValue = leftExpression == null ? null : evaluateExpressionItem(leftExpression, input, ontology, firedRules);
-        Object rightValue = rightExpression == null ? null : evaluateExpressionItem(rightExpression, input, ontology, firedRules);
+        Object leftValue = leftExpression == null ? null : evaluateExpressionItem(leftExpression, input, guideline, firedRules);
+        Object rightValue = rightExpression == null ? null : evaluateExpressionItem(rightExpression, input, guideline, firedRules);
         if (leftValue instanceof Period || rightValue instanceof Period) {
             return evaluateDateTimeExpression(operator, leftValue, rightValue);
         } else if (isArithmeticOperator(operator)) {
@@ -570,7 +601,7 @@ public class Interpreter {
         } else if (operator == INEQUAL) {
             return !(leftValue == null && rightValue == null) && (leftValue == null || !leftValue.equals(rightValue));
         } else if (operator == IS_A) {     // todo IS_A_NOT
-            return evaluateIsARelationship(leftValue, rightValue, ontology);
+            return evaluateIsARelationship(leftValue, rightValue, guideline.getOntology());
         } else if (operator == AND && leftValue != null && rightValue != null) {
             return (Boolean) leftValue && (Boolean) rightValue;
         } else {
@@ -602,7 +633,8 @@ public class Interpreter {
             } else {
                 throw new UnsupportedOperationException("Unsupported combination of operator for two periods: " + operator);
             }
-        } else if (operator == ADDITION || operator == SUBTRACTION) {
+        } else if ((operator == ADDITION || operator == SUBTRACTION)
+                && (rightValue instanceof Period || leftValue instanceof Period)) {
             Period period;
             Long longValue;
             if (rightValue instanceof Period) {
@@ -844,23 +876,22 @@ public class Interpreter {
         return found == null ? Collections.emptyList() : Collections.singletonList(found);
     }
 
-    List<DataInstance> evaluateDataInstancesWithPredicate(List<DataInstance> dataInstances, List<ExpressionItem> predicateStatements,
-                                                          GuideOntology guideOntology) {
+    List<DataInstance> evaluateDataInstancesWithPredicates(List<DataInstance> dataInstances,
+                                                           List<ExpressionItem> predicateStatements,
+                                                           Guideline guideline) {
         if (predicateStatements == null) {
             return dataInstances;
         }
         List<DataInstance> dataInstanceList = dataInstances;
         for (ExpressionItem expressionItem : predicateStatements) {
-            dataInstanceList = evaluateDataInstancesWithPredicate(dataInstanceList, expressionItem, guideOntology, null);
+            dataInstanceList = evaluateDataInstancesWithPredicate(dataInstanceList, expressionItem, guideline);
         }
         return dataInstanceList;
     }
 
-    List<DataInstance> evaluateDataInstancesWithPredicate(
-            List<DataInstance> dataInstances,
-            ExpressionItem predicateStatement,
-            GuideOntology guideOntology,
-            Set<String> firedRules) {
+    List<DataInstance> evaluateDataInstancesWithPredicate(List<DataInstance> dataInstances,
+                                                          ExpressionItem predicateStatement,
+                                                          Guideline guideline) {
         if (predicateStatement instanceof UnaryExpression) {
             UnaryExpression unaryExpression = (UnaryExpression) predicateStatement;
             if (OperatorKind.MAX == unaryExpression.getOperator()) {
@@ -875,11 +906,11 @@ public class Interpreter {
                 return dataInstances.stream()
                         .filter(dataInstance -> evaluateIsARelationship(
                                 dataInstance.get(path),
-                                evaluateExpressionItem(binaryExpression.getRight(), dataInstance.valueListMap(), guideOntology, firedRules), guideOntology))
+                                evaluateExpressionItem(binaryExpression.getRight(), dataInstance.valueListMap(), guideline, null), guideline.getOntology()))
                         .collect(Collectors.toList());
             } else {
                 return dataInstances.stream()
-                        .filter(s -> evaluateBooleanExpression(binaryExpression, s.valueListMap(), guideOntology, firedRules))
+                        .filter(s -> evaluateBooleanExpression(binaryExpression, s.valueListMap(), guideline, null))
                         .collect(Collectors.toList());
             }
         }
