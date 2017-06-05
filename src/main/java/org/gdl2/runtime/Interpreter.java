@@ -358,6 +358,7 @@ public class Interpreter {
                 try {
                     url = new URL(description.getReferences().get(index).getUrl());
                 } catch (MalformedURLException murle) {
+                    // ignore
                 }
             }
         }
