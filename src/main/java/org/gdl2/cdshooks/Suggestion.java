@@ -14,4 +14,6 @@ public class Suggestion {
     private String label;
     private List<Object> create;
     private List<Object> delete;
+    private List<UseTemplate> createTemplates;
+    private List<UseTemplate> deleteTemplates;
 }

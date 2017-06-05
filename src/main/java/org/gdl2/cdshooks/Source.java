@@ -10,4 +10,6 @@ import java.net.URL;
 public class Source {
     private String label;
     private URL url;
+    private String labelReference;
+    private String urlReference;
 }

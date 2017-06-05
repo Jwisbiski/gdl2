@@ -1,6 +1,10 @@
 package org.gdl2.runtime;
 
 import lombok.NonNull;
+import org.gdl2.cdshooks.Card;
+import org.gdl2.cdshooks.Source;
+import org.gdl2.cdshooks.Suggestion;
+import org.gdl2.cdshooks.UseTemplate;
 import org.gdl2.datatypes.*;
 import org.gdl2.expression.*;
 import org.gdl2.model.*;
@@ -10,6 +14,8 @@ import org.gdl2.terminology.Binding;
 import org.gdl2.terminology.TermBinding;
 
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.Period;
@@ -29,6 +35,7 @@ public class Interpreter {
     private static final String COUNT = "count";
     private static final String SUM = "sum";
     private static final String REFERENCE_NOT_FOUND = "Reference not found";
+    private static final String CARDS = "cards";
 
     private static final long HOUR_IN_MILLISECONDS = 3600 * 1000L;
     private Map<String, Object> systemParameters;
@@ -84,6 +91,32 @@ public class Interpreter {
         return totalResult;
     }
 
+    public List<Card> executeCdsHooksGuidelines(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
+        assertNotNull(guidelines, "List<Guideline> cannot be null.");
+        assertNotNull(inputDataInstances, "List<DataInstance> cannot be null.");
+        Map<String, DataInstance> allResults = new HashMap<>();
+        List<DataInstance> input = new ArrayList<>(inputDataInstances);
+        List<Card> cardList = new ArrayList<>();
+        for (Guideline guide : guidelines) {
+            Map<String, Object> resultMap = execute(guide, input);
+            if (resultMap.containsKey(CARDS)) {
+                cardList.addAll((List<Card>) resultMap.get(CARDS));
+            }
+            List<DataInstance> resultPerExecution = collectDataInstancesFromValueMap(resultMap, guide.getDefinition());
+            for (DataInstance dataInstance : resultPerExecution) {
+                DataInstance existing = allResults.get(dataInstance.modelId());
+                if (existing == null) {
+                    allResults.put(dataInstance.modelId(), dataInstance);
+                } else {
+                    existing.merge(dataInstance);
+                }
+            }
+            input = new ArrayList<>(inputDataInstances);
+            input.addAll(allResults.values());
+        }
+        return cardList;
+    }
+
     public List<DataInstance> executeSingleGuideline(Guideline guide, List<DataInstance> dataInstances) {
         Map<String, Object> resultMap = execute(guide, dataInstances);
         return collectDataInstancesFromValueMap(resultMap, guide.getDefinition());
@@ -91,12 +124,14 @@ public class Interpreter {
 
     private Set<String> getCodesForAssignableVariables(GuideDefinition guideDefinition) {
         Set<String> codesFromAssignments = guideDefinition.getRules().entrySet().stream()
+                .filter(s -> (s.getValue().getThen() != null))
                 .flatMap(entry -> entry.getValue().getThen().stream())
                 .filter(s -> !(s instanceof CreateInstanceExpression))
                 .filter(s -> !(s instanceof UseTemplateExpression))
                 .map(assignmentExpression -> ((AssignmentExpression) assignmentExpression).getVariable().getCode())
                 .collect(Collectors.toSet());
         Set<String> codesFromCreateStatements = guideDefinition.getRules().entrySet().stream()
+                .filter(s -> (s.getValue().getThen() != null))
                 .flatMap(entry -> entry.getValue().getThen().stream())
                 .filter(s -> s instanceof CreateInstanceExpression)
                 .flatMap(createInstanceExpression -> ((CreateInstanceExpression) createInstanceExpression).getAssignmentExpressions().stream())
@@ -259,17 +294,114 @@ public class Interpreter {
         if (!allWhenStatementsAreTrue) {
             return result;
         }
-        Map<String, Class> typeMap = typeBindingThroughAssignmentStatements(rule.getThen());
-        for (ExpressionItem thenStatement : rule.getThen()) {
-            if (thenStatement instanceof AssignmentExpression) {
-                performAssignmentStatements((AssignmentExpression) thenStatement, input, typeMap, result, guideline);
-            } else if (thenStatement instanceof UseTemplateExpression) {
-                performUseTemplateStatement((UseTemplateExpression) thenStatement, templateMap, input, result, guideline);
+        if (rule.getThen() != null) {
+            Map<String, Class> typeMap = typeBindingThroughAssignmentStatements(rule.getThen());
+            for (ExpressionItem thenStatement : rule.getThen()) {
+                if (thenStatement instanceof AssignmentExpression) {
+                    performAssignmentStatements((AssignmentExpression) thenStatement, input, typeMap, result, guideline);
+                } else if (thenStatement instanceof UseTemplateExpression) {
+                    performUseTemplateStatement((UseTemplateExpression) thenStatement, templateMap, input, result, guideline);
+                }
+                mergeValueMapIntoListValueMap(result, input);
             }
-            mergeValueMapIntoListValueMap(result, input);
+        }
+        if (rule.getCards() != null) {
+            for (Card card : rule.getCards()) {
+                List<Card> cardList;
+                if (result.containsKey(CARDS)) {
+                    cardList = (List<Card>) result.get(CARDS);
+                } else {
+                    cardList = new ArrayList<>();
+                    result.put(CARDS, cardList);
+                }
+                cardList.add(processCard(card, input, guideline));
+            }
         }
         firedRules.add(rule.getId());
         return result;
+    }
+
+    private Card processCard(Card card, Map<String, List<Object>> input, Guideline guideline) {
+        if (card.getSuggestions() != null) {
+            for (int i = 0, j = card.getSuggestions().size(); i < j; i++) {
+                Suggestion suggestion = processSuggestion(card.getSuggestions().get(i), input, guideline);
+                card.getSuggestions().set(i, suggestion);
+            }
+        }
+        Source source = card.getSource();
+        if (source != null) {
+            source = processReferencedSource(source, guideline.getDescription());
+        }
+        return Card.builder().detail(card.getDetail())
+                .source(source)
+                .summary(card.getSummary())
+                .suggestions(card.getSuggestions()).build();
+    }
+
+    private Source processReferencedSource(Source source, ResourceDescription description) {
+        if (description == null) {
+            return source;
+        }
+        String labelRef = source.getLabelReference();
+        String label = source.getLabel();
+        if (labelRef != null && labelRef.startsWith("$ref[") && labelRef.endsWith("].label")) {
+            int index = Integer.parseInt(labelRef.substring(5, labelRef.indexOf("]"))) - 1;
+            if (index < description.getReferences().size()) {
+                label = description.getReferences().get(index).getLabel();
+            }
+        }
+        String urlReference = source.getUrlReference();
+        URL url = source.getUrl();
+        if (urlReference != null && urlReference.startsWith("$ref[") && urlReference.endsWith("].url")) {
+            int index = Integer.parseInt(urlReference.substring(5, urlReference.indexOf("]"))) - 1;
+            if (index < description.getReferences().size()) {
+                try {
+                    url = new URL(description.getReferences().get(index).getUrl());
+                } catch (MalformedURLException murle) {
+                }
+            }
+        }
+        return Source.builder().label(label).url(url).build();
+    }
+
+    private Suggestion processSuggestion(Suggestion suggestion, Map<String, List<Object>> input, Guideline guideline) {
+        List<Object> objects = new ArrayList<>();
+        if (suggestion.getCreateTemplates() != null) {
+            for (UseTemplate useTemplate : suggestion.getCreateTemplates()) {
+                Object created = processUseTemplate(useTemplate, input, guideline);
+                if (created != null) {
+                    objects.add(created);
+                }
+            }
+        }
+        return Suggestion.builder().create(objects)
+                .label(suggestion.getLabel())
+                .build();
+    }
+
+    private Object processUseTemplate(UseTemplate useTemplate, Map<String, List<Object>> input, Guideline guideline) {
+        Template template = null;
+        if (guideline.getDefinition().getTemplates() != null) {
+            template = guideline.getDefinition().getTemplates().get(useTemplate.getTemplateId());
+        }
+        if (template == null) {
+            return null;
+        }
+        Map<String, Object> useTemplateLocalResult = new HashMap<>();
+        for (ExpressionItem expressionItem : useTemplate.getAssignments()) {
+            AssignmentExpression assignmentExpression = (AssignmentExpression) expressionItem;
+            Object value = evaluateExpressionItem(assignmentExpression.getAssignment(), input, guideline, null);
+            useTemplateLocalResult.put(assignmentExpression.getVariable().getCode(), value);
+        }
+        Map<String, Object> localMapCopy = new HashMap<>(template.getObject());
+        this.templateFiller.traverseMapAndReplaceAllVariablesWithValues(localMapCopy, useTemplateLocalResult);
+        try {
+            return this.objectCreatorPlugin.create(template.getModelId(), localMapCopy);
+        } catch (ClassNotFoundException cnf) {
+            System.out.println("failed to create object using template(" + template.getModelId() + "), class not found..");
+            cnf.printStackTrace();
+            return null;
+        }
     }
 
     // mainly to resolve ambiguity between DvCount and DvQuantity
