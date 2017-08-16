@@ -1015,11 +1015,29 @@ public class Interpreter {
         if (predicateStatements == null) {
             return dataInstances;
         }
-        List<DataInstance> dataInstanceList = dataInstances;
+        List<ExpressionItem> reorderedPredicates = new ArrayList<>();
+        List<ExpressionItem> predicatesMaxOrMin = new ArrayList<>();
         for (ExpressionItem expressionItem : predicateStatements) {
+            if (isMaxOrMin(expressionItem)) {
+                predicatesMaxOrMin.add(expressionItem);
+            } else {
+                reorderedPredicates.add(expressionItem);
+            }
+        }
+        reorderedPredicates.addAll(predicatesMaxOrMin);
+        List<DataInstance> dataInstanceList = dataInstances;
+        for (ExpressionItem expressionItem : reorderedPredicates) {
             dataInstanceList = evaluateDataInstancesWithPredicate(dataInstanceList, expressionItem, guideline);
         }
         return dataInstanceList;
+    }
+
+    private boolean isMaxOrMin(ExpressionItem expressionItem) {
+        if (!(expressionItem instanceof UnaryExpression)) {
+            return false;
+        }
+        UnaryExpression unaryExpression = (UnaryExpression) expressionItem;
+        return MAX.equals(unaryExpression.getOperator()) || MIN.equals(unaryExpression.getOperator());
     }
 
     List<DataInstance> evaluateDataInstancesWithPredicate(List<DataInstance> dataInstances,

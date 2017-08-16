@@ -179,6 +179,35 @@ public class PredicateTest extends TestCommon {
     }
 
     @Test
+    public void can_evaluate_predicate_with_is_a_local_term_bindings_and_max_timestamp_expect_one() throws Exception {
+        // "/data[at0001]/items[at0002.1] is_a local::gt0043|Vascular disease diagnosis code|", "max(/data[at0001]/items[at0003])"
+        String countCode = "gt0011";
+        String codePath = "/data[at0001]/items[at0002.1]";
+        String timestampPath = "/data[at0001]/items[at0003]";
+        guideline = loadGuideline("Stroke_prevention_dashboard_case_2.v1.gdl2");
+        List<ExpressionItem> predicates = guideline.getDefinition().getDataBindings().get("gt0059").getPredicates();
+
+        DataInstance[] dataInstances = new DataInstance[2];
+        dataInstances[0] = new DataInstance.Builder() // wrong code but later date
+                .modelId(archetypeId)
+                .addValue(countCode, new DvCount(1))
+                .addValue(codePath, new DvCodedText("Hypertension", "ICD10", "I10"))
+                .addValue(timestampPath, DvDateTime.valueOf("2013-01-01T00:00:00"))
+                .build();
+        dataInstances[1] = new DataInstance.Builder()
+                .modelId(archetypeId)
+                .addValue(countCode, new DvCount(9))
+                .addValue(codePath, new DvCodedText("myocardial infarction", "ICD10", "I21"))    // right code
+                .addValue(timestampPath, DvDateTime.valueOf("2012-01-01T00:00:00"))
+                .build();
+        List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicates(Arrays.asList(dataInstances),
+                predicates, guideline);
+        assertThat(result.size(), is(1));
+        assertThat(result.get(0).getDvCount(countCode).getMagnitude(), is(9));
+        assertThat(result.get(0).getDvCodedText(codePath).getDefiningCode().getCode(), is("I21"));
+    }
+
+    @Test
     public void can_run_empty_list_without_right_input_on_max_predicate() throws Exception {
         DataInstance[] dataInstances = new DataInstance[1];
         dataInstances[0] = new DataInstance.Builder()
@@ -247,4 +276,6 @@ public class PredicateTest extends TestCommon {
         assertThat(result.size(), Matchers.is(1));
         assertThat(result.get(0).modelId(), is("weight"));
     }
+
+
 }
