@@ -61,6 +61,24 @@ public class ExpressionEvaluationTest extends TestCommon {
     }
 
     @Test
+    public void can_evaluate_quantity_with_estimated_glomerular_filtration_rate_unit_as_is() {
+        String unit = "ml/min/1.73m2";
+        expressionItem = parseExpression("$gt0025>30," + unit);
+        inputMap.put("gt0025", asList(new DvQuantity(unit, 32, 0)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
+    }
+
+    @Test
+    public void can_evaluate_quantity_with_estimated_glomerular_filtration_rate_unit_as_ucum() {
+        String unit = "mL/min/173.100/m2";
+        expressionItem = parseExpression("$gt0025>30," + unit);
+        inputMap.put("gt0025", asList(new DvQuantity(unit, 32, 0)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
+    }
+
+    @Test
     public void can_evaluate_equality_of_dv_count_with_addition() {
         expressionItem = parseExpression("$gt0015.magnitude==(7-$gt0016.magnitude)");
         inputMap.put("gt0015", asList(new DvCount(4)));
