@@ -17,16 +17,13 @@ public class Card {
     private List<Link> links;
 
     public enum IndicatorEnum {
-        @SerializedName("success")
-        SUCCESS,
-
         @SerializedName("info")
         INFO,
 
         @SerializedName("warning")
         WARNING,
 
-        @SerializedName("hard_stop")
+        @SerializedName("hard-stop")
         HARD_STOP;
     }
 }

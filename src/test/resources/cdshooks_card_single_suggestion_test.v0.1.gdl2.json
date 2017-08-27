@@ -48,7 +48,7 @@
         }
       }
     }
- },
+  },
   "definition": {
     "data_bindings": {
       "gt0010": {
@@ -134,13 +134,17 @@
             "suggestions": [
               {
                 "label": "suggestion label",
-                "create_templates": [
+                "actions": [
                   {
-                    "template_id": "gt1002",
-                    "assignments": [
-                      "$gt2000=(2013-04-20)",
-                      "$gt2001=(2013-04-25)"
-                    ]
+                    "type": "create",
+                    "description": "create resource test",
+                    "resource_template": {
+                      "template_id": "gt1002",
+                      "assignments": [
+                        "$gt2000=(2013-04-20)",
+                        "$gt2001=(2013-04-25)"
+                      ]
+                    }
                   }
                 ]
               }

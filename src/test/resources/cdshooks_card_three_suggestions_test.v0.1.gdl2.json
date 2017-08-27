@@ -48,7 +48,7 @@
         }
       }
     }
- },
+  },
   "definition": {
     "data_bindings": {
       "gt0010": {
@@ -218,36 +218,48 @@
             "suggestions": [
               {
                 "label": "suggestion label",
-                "create_templates": [
+                "actions": [
                   {
-                    "template_id": "gt1000",
-                    "assignments": [
-                      "$gt2000=80"
-                    ]
+                    "type": "create",
+                    "description": "create resource test",
+                    "resource_template": {
+                      "template_id": "gt1000",
+                      "assignments": [
+                        "$gt2000=80"
+                      ]
+                    }
                   }
                 ]
               },
               {
                 "label": "suggestion label",
-                "create_templates": [
+                "actions": [
                   {
-                    "template_id": "gt1002",
-                    "assignments": [
-                      "$gt2001=($gt0016.magnitude*0.6)"
-                    ]
+                    "type": "create",
+                    "description": "create resource test",
+                    "resource_template": {
+                      "template_id": "gt1002",
+                      "assignments": [
+                        "$gt2001=($gt0016.magnitude*0.6)"
+                      ]
+                    }
                   }
                 ]
               },
               {
                 "label": "suggestion label",
-                "create_templates": [
+                "actions": [
                   {
-                    "template_id": "gt1003",
-                    "assignments": [
-                      "$gt2002='Follow up to check the results of Statin Treatment'",
-                      "$gt2003=($currentDateTime.value+3,mo)",
-                      "$gt2004=($currentDateTime.value+3,mo)"
-                    ]
+                    "type": "create",
+                    "description": "create resource test",
+                    "resource_template": {
+                      "template_id": "gt1003",
+                      "assignments": [
+                        "$gt2002='Follow up to check the results of Statin Treatment'",
+                        "$gt2003=($currentDateTime.value+3,mo)",
+                        "$gt2004=($currentDateTime.value+3,mo)"
+                      ]
+                    }
                   }
                 ]
               }

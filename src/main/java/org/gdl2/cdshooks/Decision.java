@@ -8,6 +8,6 @@ import java.util.List;
 @Value
 @Builder
 public class Decision {
-    private List create;
-    private List delete;
+    private List<String> create;
+    private List<String> delete;
 }

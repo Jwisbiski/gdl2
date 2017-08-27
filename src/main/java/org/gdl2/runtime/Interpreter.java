@@ -1,10 +1,7 @@
 package org.gdl2.runtime;
 
 import lombok.NonNull;
-import org.gdl2.cdshooks.Card;
-import org.gdl2.cdshooks.Source;
-import org.gdl2.cdshooks.Suggestion;
-import org.gdl2.cdshooks.UseTemplate;
+import org.gdl2.cdshooks.*;
 import org.gdl2.datatypes.*;
 import org.gdl2.expression.*;
 import org.gdl2.model.*;
@@ -366,18 +363,25 @@ public class Interpreter {
     }
 
     private Suggestion processSuggestion(Suggestion suggestion, Map<String, List<Object>> input, Guideline guideline) {
-        List<Object> objects = new ArrayList<>();
-        if (suggestion.getCreateTemplates() != null) {
-            for (UseTemplate useTemplate : suggestion.getCreateTemplates()) {
-                Object created = processUseTemplate(useTemplate, input, guideline);
-                if (created != null) {
-                    objects.add(created);
-                }
+        List<Action> actions = new ArrayList<>();
+        if (suggestion.getActions() != null) {
+            for (Action action : suggestion.getActions()) {
+                actions.add(processAction(action, input, guideline));
             }
         }
-        return Suggestion.builder().create(objects)
+        return Suggestion.builder().actions(actions)
                 .label(suggestion.getLabel())
                 .build();
+    }
+
+    private Action processAction(Action action, Map<String, List<Object>> input, Guideline guideline) {
+        Action.ActionBuilder actionBuilder = Action.builder()
+                .description(action.getDescription())
+                .type(action.getType());
+        if (action.getResourceTemplate() != null) {
+            actionBuilder.resource(processUseTemplate(action.getResourceTemplate(), input, guideline));
+        }
+        return actionBuilder.build();
     }
 
     private Object processUseTemplate(UseTemplate useTemplate, Map<String, List<Object>> input, Guideline guideline) {

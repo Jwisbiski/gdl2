@@ -1,5 +1,6 @@
 package org.gdl2.runtime;
 
+import org.gdl2.cdshooks.Action;
 import org.gdl2.cdshooks.Card;
 import org.gdl2.datatypes.DvDateTime;
 import org.gdl2.model.Guideline;
@@ -40,8 +41,9 @@ public class CreateCdsHooksCardsTest extends TestCommon {
         assertThat(card.getSource().getLabel(), is("NICE guideline"));
         assertThat(card.getSource().getUrl().toString(), is("https://www.nice.org.uk/guidance/CG181"));
         assertThat(card.getSuggestions().size(), is(1));
-        assertThat(card.getSuggestions().get(0).getCreate().size(), is(1));
-        Object object = card.getSuggestions().get(0).getCreate().get(0);
+
+        assertThat(card.getSuggestions().get(0).getActions().get(0).getType(), is(Action.ActionType.CREATE));
+        Object object = card.getSuggestions().get(0).getActions().get(0).getResource();
         assertThat("Appointment expected", object instanceof Appointment);
         Appointment appointment = (Appointment) object;
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -58,17 +60,17 @@ public class CreateCdsHooksCardsTest extends TestCommon {
         assertThat(card.getSource().getLabel(), is("NICE guideline"));
         assertThat(card.getSource().getUrl().toString(), is("https://www.nice.org.uk/guidance/CG181"));
         assertThat(card.getSuggestions().size(), is(3));
-        assertThat(card.getSuggestions().get(0).getCreate().size(), is(1));
-        assertThat("MedicationRequest expected", card.getSuggestions().get(0).getCreate().get(0) instanceof MedicationRequest);
-        assertThat(card.getSuggestions().get(1).getCreate().size(), is(1));
-        assertThat("Goal expected", card.getSuggestions().get(1).getCreate().get(0) instanceof Goal);
-        assertThat(card.getSuggestions().get(2).getCreate().size(), is(1));
-        assertThat("Appointment expected", card.getSuggestions().get(2).getCreate().get(0) instanceof Appointment);
+        assertThat(card.getSuggestions().get(0).getActions().size(), is(1));
+        assertThat("MedicationRequest expected", card.getSuggestions().get(0).getActions().get(0).getResource() instanceof MedicationRequest);
+        assertThat(card.getSuggestions().get(1).getActions().size(), is(1));
+        assertThat("Goal expected", card.getSuggestions().get(1).getActions().get(0).getResource() instanceof Goal);
+        assertThat(card.getSuggestions().get(2).getActions().size(), is(1));
+        assertThat("Appointment expected", card.getSuggestions().get(2).getActions().get(0).getResource() instanceof Appointment);
     }
 
     private Interpreter buildInterpreterWithFhirPluginAndCurrentDateTime(String datetime) {
         Map<String, Object> params = new HashMap<>();
-        if(datetime != null) {
+        if (datetime != null) {
             params.put(Interpreter.CURRENT_DATETIME, DvDateTime.valueOf(datetime));
         }
         params.put(Interpreter.OBJECT_CREATOR, new FhirDstu3ResourceCreator());
