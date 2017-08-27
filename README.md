@@ -4,8 +4,9 @@ This is dev project of gdl2 in order to explore new features and ideas on the la
 
 # Major changes/features
 1. Data binding agnostic to EHR data models (e.g. openEHR / EN13606 / FHIR )
-1. Template definition, and use_template statement with template-level variables
+1. Template definition for output objects with new use_template statement with template-level variables
 1. Individual references and way to reference to specific reference in the rules
+1. CDS-Hooks Cards & Suggestions as result of rules executions
 
 # Other minor changes
 1. JSON based GDL model serialization and deserialization
