@@ -9,8 +9,7 @@ import java.util.UUID;
 @Value
 @Builder
 public class Suggestion {
-    @Builder.Default
-    private UUID uuid = UUID.randomUUID();
+    private UUID uuid;
     private String label;
     private List<Action> actions;
 }
