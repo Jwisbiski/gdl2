@@ -329,10 +329,14 @@ public class Interpreter {
         if (source != null) {
             source = processReferencedSource(source, guideline.getDescription());
         }
-        return Card.builder().detail(card.getDetail())
-                .source(source)
+        return Card.builder()
                 .summary(card.getSummary())
-                .suggestions(card.getSuggestions()).build();
+                .detail(card.getDetail())
+                .indicator(card.getIndicator())
+                .source(source)
+                .suggestions(card.getSuggestions())
+                .links(card.getLinks())
+                .build();
     }
 
     private Source processReferencedSource(Source source, ResourceDescription description) {
