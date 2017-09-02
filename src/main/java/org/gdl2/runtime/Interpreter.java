@@ -19,6 +19,8 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.gdl2.expression.OperatorKind.*;
@@ -27,6 +29,7 @@ import static org.gdl2.expression.OperatorKind.*;
  * Java interpreter of GDL.
  */
 public class Interpreter {
+    private static final Pattern VARIABLE_REGEX = Pattern.compile("\\{\\$gt([0-9.])+[a-zA-Z_0-9]*}");
     public static final String CURRENT_DATETIME = "currentDateTime";
     public static final String OBJECT_CREATOR = "objectCreator";
     private static final String COUNT = "count";
@@ -330,8 +333,8 @@ public class Interpreter {
             source = processReferencedSource(source, guideline.getDescription());
         }
         return Card.builder()
-                .summary(card.getSummary())
-                .detail(card.getDetail())
+                .summary(replaceVariablesWithValues(card.getSummary(), input))
+                .detail(replaceVariablesWithValues(card.getDetail(), input))
                 .indicator(card.getIndicator())
                 .source(source)
                 .suggestions(card.getSuggestions())
@@ -364,6 +367,34 @@ public class Interpreter {
             }
         }
         return Source.builder().label(label).url(url).build();
+    }
+
+    private String replaceVariablesWithValues(String source, Map<String, List<Object>> values) {
+        if (source == null) {
+            return null;
+        }
+        StringBuffer stringBuffer = new StringBuffer();
+        Matcher matcher = VARIABLE_REGEX.matcher(source);
+        while (matcher.find()) {
+            String text = matcher.group();
+            String expression = text.substring(1, text.length() - 1);
+            Variable variable = parseVariable(expression);
+            Object value = evaluateExpressionItem(variable, values);
+            if (value != null) {
+                matcher.appendReplacement(stringBuffer, value.toString());
+            }
+        }
+        matcher.appendTail(stringBuffer);
+        return stringBuffer.toString();
+    }
+
+    private Variable parseVariable(String expression) {
+        int index = expression.indexOf(".");
+        if (index < 0) {
+            return new Variable(expression.substring(1));
+        } else {
+            return new Variable(expression.substring(1, index), null, null, expression.substring(index + 1));
+        }
     }
 
     private Suggestion processSuggestion(Suggestion suggestion, Map<String, List<Object>> input, Guideline guideline) {

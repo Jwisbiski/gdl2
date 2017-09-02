@@ -2,6 +2,7 @@ package org.gdl2.runtime;
 
 import org.gdl2.cdshooks.Action;
 import org.gdl2.cdshooks.Card;
+import org.gdl2.datatypes.DvCodedText;
 import org.gdl2.datatypes.DvDateTime;
 import org.gdl2.model.Guideline;
 import org.hamcrest.Matchers;
@@ -66,6 +67,20 @@ public class CreateCdsHooksCardsTest extends TestCommon {
         assertThat("Goal expected", card.getSuggestions().get(1).getActions().get(0).getResource() instanceof Goal);
         assertThat(card.getSuggestions().get(2).getActions().size(), is(1));
         assertThat("Appointment expected", card.getSuggestions().get(2).getActions().get(0).getResource() instanceof Appointment);
+    }
+
+    @Test
+    public void can_create_cdshooks_card_dynamic_summary_detail() throws Exception {
+        input.add(new DataInstance.Builder()
+                .modelId("org.hl7.fhir.dstu3.model.MedicationStatement")
+                .addValue("/medicationCodeableConcept/coding[0]", DvCodedText.valueOf("ATC::C10AA05|Statin|"))
+                .build());
+        guidelines = loadSingleGuideline("cdshooks_card_dynamic_summary_detail_test.v0.1.gdl2");
+        List<Card> cardList = interpreter.executeCdsHooksGuidelines(guidelines, input);
+        assertThat(cardList.size(), is(1));
+        Card card = cardList.get(0);
+        assertThat(card.getSummary(), is("card summary: Statin"));
+        assertThat(card.getDetail(), is("card detail: ATC::C10AA05|Statin|"));
     }
 
     private Interpreter buildInterpreterWithFhirPluginAndCurrentDateTime(String datetime) {

@@ -25,7 +25,8 @@ class TemplateFiller {
 
         while (matcher.find()) {
             String text = matcher.group();
-            Object value = values.get(text.substring(2, text.length() - 1));
+            String key = text.substring(2, text.length() - 1);
+            Object value = values.get(key);
             if (value != null) {
                 String stringValue;
                 if (value instanceof Date) {
