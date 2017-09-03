@@ -83,6 +83,15 @@ public class CreateCdsHooksCardsTest extends TestCommon {
         assertThat(card.getDetail(), is("card detail: ATC::C10AA05|Statin|"));
     }
 
+    @Test
+    public void can_create_multiple_cards_by_different_rules() throws Exception {
+        guidelines = loadSingleGuideline("cdshooks_multiple_cards_test.v0.1.gdl2");
+        List<Card> cardList = interpreter.executeCdsHooksGuidelines(guidelines, input);
+        assertThat(cardList.size(), is(2));
+        assertThat(cardList.get(0).getSummary(), is("card 1"));
+        assertThat(cardList.get(1).getSummary(), is("card 2"));
+    }
+
     private Interpreter buildInterpreterWithFhirPluginAndCurrentDateTime(String datetime) {
         Map<String, Object> params = new HashMap<>();
         if (datetime != null) {

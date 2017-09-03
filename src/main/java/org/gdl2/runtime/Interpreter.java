@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import static org.gdl2.expression.OperatorKind.*;
 
 /**
- * Java interpreter of GDL.
+ * Java interpreter of GDL2 guidelines.
  */
 public class Interpreter {
     private static final Pattern VARIABLE_REGEX = Pattern.compile("\\{\\$gt([0-9.])+[a-zA-Z_0-9]*}");
@@ -35,8 +35,6 @@ public class Interpreter {
     private static final String COUNT = "count";
     private static final String SUM = "sum";
     private static final String REFERENCE_NOT_FOUND = "Reference not found";
-    private static final String CARDS = "cards";
-
     private static final long HOUR_IN_MILLISECONDS = 3600 * 1000L;
     private Map<String, Object> systemParameters;
     private ObjectCreatorPlugin objectCreatorPlugin;
@@ -67,15 +65,28 @@ public class Interpreter {
         }
     }
 
-    // TODO sort guides according to dependency
     public List<DataInstance> executeGuidelines(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
+        return executeGuidelinesWithCards(guidelines, inputDataInstances, null);
+    }
+
+    public List<Card> executeCdsHooksGuidelines(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
+        List<Card> cardList = new ArrayList<>();
+        executeGuidelinesWithCards(guidelines, inputDataInstances, cardList);
+        return cardList;
+    }
+
+    // TODO sort guidelines according to dependency
+    private List<DataInstance> executeGuidelinesWithCards(List<Guideline> guidelines,
+                                                          List<DataInstance> inputDataInstances,
+                                                          List<Card> cards) {
         assertNotNull(guidelines, "List<Guideline> cannot be null.");
         assertNotNull(inputDataInstances, "List<DataInstance> cannot be null.");
+
         Map<String, DataInstance> allResults = new HashMap<>();
         List<DataInstance> input = new ArrayList<>(inputDataInstances);
         List<DataInstance> totalResult = new ArrayList<>();
         for (Guideline guide : guidelines) {
-            List<DataInstance> resultPerExecution = executeSingleGuideline(guide, input);
+            List<DataInstance> resultPerExecution = executeSingleGuidelineWithCards(guide, input, cards);
             for (DataInstance dataInstance : resultPerExecution) {
                 DataInstance existing = allResults.get(dataInstance.modelId());
                 if (existing == null) {
@@ -91,34 +102,13 @@ public class Interpreter {
         return totalResult;
     }
 
-    public List<Card> executeCdsHooksGuidelines(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
-        assertNotNull(guidelines, "List<Guideline> cannot be null.");
-        assertNotNull(inputDataInstances, "List<DataInstance> cannot be null.");
-        Map<String, DataInstance> allResults = new HashMap<>();
-        List<DataInstance> input = new ArrayList<>(inputDataInstances);
-        List<Card> cardList = new ArrayList<>();
-        for (Guideline guide : guidelines) {
-            Map<String, Object> resultMap = execute(guide, input);
-            if (resultMap.containsKey(CARDS)) {
-                cardList.addAll((List<Card>) resultMap.get(CARDS));
-            }
-            List<DataInstance> resultPerExecution = collectDataInstancesFromValueMap(resultMap, guide.getDefinition());
-            for (DataInstance dataInstance : resultPerExecution) {
-                DataInstance existing = allResults.get(dataInstance.modelId());
-                if (existing == null) {
-                    allResults.put(dataInstance.modelId(), dataInstance);
-                } else {
-                    existing.merge(dataInstance);
-                }
-            }
-            input = new ArrayList<>(inputDataInstances);
-            input.addAll(allResults.values());
-        }
-        return cardList;
+    public List<DataInstance> executeSingleGuideline(Guideline guide, List<DataInstance> dataInstances) {
+        return executeSingleGuidelineWithCards(guide, dataInstances, null);
     }
 
-    public List<DataInstance> executeSingleGuideline(Guideline guide, List<DataInstance> dataInstances) {
-        Map<String, Object> resultMap = execute(guide, dataInstances);
+    private List<DataInstance> executeSingleGuidelineWithCards(Guideline guide, List<DataInstance> dataInstances,
+                                                               List<Card> cards) {
+        Map<String, Object> resultMap = execute(guide, dataInstances, cards);
         return collectDataInstancesFromValueMap(resultMap, guide.getDefinition());
     }
 
@@ -141,41 +131,39 @@ public class Interpreter {
         return codesFromAssignments;
     }
 
-    Map<String, Object> execute(Guideline guide, List<DataInstance> dataInstances) {
-        assertNotNull(guide, "Guideline cannot not be null.");
+    Map<String, Object> execute(Guideline guideline, List<DataInstance> dataInstances) {
+        return execute(guideline, dataInstances, null);
+    }
+
+    Map<String, Object> execute(Guideline guideline, List<DataInstance> dataInstances, List<Card> cards) {
+        assertNotNull(guideline, "Guideline cannot not be null.");
         assertNotNull(dataInstances, "List<DataInstance> cannot be null.");
 
         Map<String, List<Object>> inputValues = selectDataInstancesUsingPredicatesAndSortWithElementBindingCode(
-                dataInstances, guide);
+                dataInstances, guideline);
         Map<String, Object> resultDefaultRuleExecution = new HashMap<>();
         Map<String, Class> typeMap = new HashMap<>();
         Set<String> firedRules = new HashSet<>();
         boolean allPreconditionsAreTrue = true;
-        if (guide.getDefinition().getPreConditions() != null) {
-            allPreconditionsAreTrue = guide.getDefinition().getPreConditions().stream()
-                    .allMatch(expressionItem -> evaluateBooleanExpression(expressionItem, inputValues, guide, null));
+        if (guideline.getDefinition().getPreConditions() != null) {
+            allPreconditionsAreTrue = guideline.getDefinition().getPreConditions().stream()
+                    .allMatch(expressionItem -> evaluateBooleanExpression(expressionItem, inputValues, guideline, null));
         }
         if (!allPreconditionsAreTrue) {
             return collectValueListMap(inputValues);
         }
-        if (guide.getDefinition().getDefaultActions() != null) {
-            for (ExpressionItem assignmentExpression : guide.getDefinition().getDefaultActions()) {
+        if (guideline.getDefinition().getDefaultActions() != null) {
+            for (ExpressionItem assignmentExpression : guideline.getDefinition().getDefaultActions()) {
                 performAssignmentStatements((AssignmentExpression) assignmentExpression, inputValues, typeMap,
-                        resultDefaultRuleExecution, guide);
+                        resultDefaultRuleExecution, guideline);
                 mergeValueMapIntoListValueMap(resultDefaultRuleExecution, inputValues);
             }
         }
-        List<Rule> sortedRules = sortRulesByPriority(guide.getDefinition().getRules().values());
+        List<Rule> sortedRules = sortRulesByPriority(guideline.getDefinition().getRules().values());
 
         Map<String, List<Object>> inputAndResult = new HashMap<>(inputValues);
         for (Rule rule : sortedRules) {
-            Map<String, Object> resultPerRuleExecution = evaluateRuleWithPossibleMultipleValues(
-                    rule,
-                    inputValues,
-                    inputAndResult,
-                    guide.getDefinition().getTemplates(),
-                    guide,
-                    firedRules);
+            Map<String, Object> resultPerRuleExecution = evaluateRule(rule, inputAndResult, guideline, firedRules, cards);
             mergeValueMapIntoListValueMap(resultPerRuleExecution, inputAndResult);
         }
         return collectValueListMap(inputAndResult);
@@ -265,29 +253,8 @@ public class Interpreter {
         return rules.stream().sorted(new RuleComparator()).collect(Collectors.toList());
     }
 
-    private Map<String, Object> evaluateRuleWithPossibleMultipleValues(Rule rule, Map<String, List<Object>> originalInput,
-                                                                       Map<String, List<Object>> inputAndResult,
-                                                                       Map<String, Template> templateMap,
-                                                                       Guideline guideline, Set<String> firedRules) {
-        for (Map.Entry<String, List<Object>> entry : originalInput.entrySet()) {
-            List<Object> list = entry.getValue();
-            List<Object> listForLoop = new ArrayList<>(list);
-            if (list.size() == 1) {
-                continue;
-            }
-            for (Object dataValue : listForLoop) {
-                entry.setValue(Collections.singletonList(dataValue));
-                Map<String, Object> result = evaluateRuleWithPossibleMultipleValues(rule, originalInput, inputAndResult,
-                        templateMap, guideline, firedRules);
-                mergeValueMapIntoListValueMap(result, inputAndResult);
-            }
-        }
-        return evaluateRuleWithSingleValueForEachInputVariable(rule, inputAndResult, templateMap, guideline, firedRules);
-    }
-
-    private Map<String, Object> evaluateRuleWithSingleValueForEachInputVariable(Rule rule, Map<String, List<Object>> input,
-                                                                                Map<String, Template> templateMap,
-                                                                                Guideline guideline, Set<String> firedRules) {
+    private Map<String, Object> evaluateRule(Rule rule, Map<String, List<Object>> input, Guideline guideline,
+                                             Set<String> firedRules, List<Card> cards) {
         Map<String, Object> result = new HashMap<>();
         boolean allWhenStatementsAreTrue = rule.getWhen() == null || rule.getWhen().stream()
                 .allMatch(whenStatement -> evaluateBooleanExpression(whenStatement, input, guideline, firedRules));
@@ -296,6 +263,7 @@ public class Interpreter {
         }
         if (rule.getThen() != null) {
             Map<String, Class> typeMap = typeBindingThroughAssignmentStatements(rule.getThen());
+            Map<String, Template> templateMap = guideline.getDefinition().getTemplates();
             for (ExpressionItem thenStatement : rule.getThen()) {
                 if (thenStatement instanceof AssignmentExpression) {
                     performAssignmentStatements((AssignmentExpression) thenStatement, input, typeMap, result, guideline);
@@ -307,14 +275,7 @@ public class Interpreter {
         }
         if (rule.getCards() != null) {
             for (Card card : rule.getCards()) {
-                List<Card> cardList;
-                if (result.containsKey(CARDS)) {
-                    cardList = (List<Card>) result.get(CARDS);
-                } else {
-                    cardList = new ArrayList<>();
-                    result.put(CARDS, cardList);
-                }
-                cardList.add(processCard(card, input, guideline));
+                cards.add(processCard(card, input, guideline));
             }
         }
         firedRules.add(rule.getId());
@@ -455,7 +416,6 @@ public class Interpreter {
                         .add(variable.getAttribute());
             }
         }
-
         TypeBinding typeBinding = new TypeBinding();
         return attributesMap.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, s -> typeBinding.possibleType(s.getValue())));
