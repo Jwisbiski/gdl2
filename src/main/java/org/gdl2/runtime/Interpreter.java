@@ -66,7 +66,7 @@ public class Interpreter {
     }
 
     public List<DataInstance> executeGuidelines(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
-        return executeGuidelinesWithCards(guidelines, inputDataInstances, null);
+        return executeGuidelinesWithCards(guidelines, inputDataInstances, new ArrayList<>());
     }
 
     public List<Card> executeCdsHooksGuidelines(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
