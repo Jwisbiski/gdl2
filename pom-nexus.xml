@@ -6,16 +6,6 @@
     <version>0.5.8-SNAPSHOT</version>
     <name>GDL2</name>
     <description>Guideline Definition Language v2 reference java implementation</description>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
-        <jacoco.it.execution.data.file>${project.build.directory}/jacoco-it.exec</jacoco.it.execution.data.file>
-        <jacoco.ut.execution.data.file>${project.build.directory}/jacoco.exec</jacoco.ut.execution.data.file>
-        <sonar.jacoco.itReportPath>${project.build.directory}/jacoco-it.exec</sonar.jacoco.itReportPath>
-        <sonar.jacoco.reportPath>${project.build.directory}/jacoco.exec</sonar.jacoco.reportPath>
-        <sonar.exclusions>**/*generated*</sonar.exclusions>
-    </properties>
-
     <url>https://github.com/gdl-lang/gdl2</url>
 
     <issueManagement>
