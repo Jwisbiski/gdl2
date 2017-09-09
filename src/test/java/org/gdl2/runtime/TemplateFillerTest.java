@@ -14,7 +14,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.testng.Assert.assertEquals;
 
-public class TemplateFillerTests extends TestCommon {
+public class TemplateFillerTest extends TestCommon {
     private TemplateFiller templateFiller = new TemplateFiller();
     private String source;
     private Map<String, Object> values;

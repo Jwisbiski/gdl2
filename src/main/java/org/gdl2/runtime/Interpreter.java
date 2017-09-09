@@ -9,6 +9,7 @@ import org.gdl2.resources.Reference;
 import org.gdl2.resources.ResourceDescription;
 import org.gdl2.terminology.Binding;
 import org.gdl2.terminology.TermBinding;
+import org.gdl2.terminology.TermDefinition;
 
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -63,6 +64,14 @@ public class Interpreter {
         assertNotNull(language, "language can not be null");
         this.runtimeConfiguration = RuntimeConfiguration.builder()
                 .currentDateTime(currentDateTime)
+                .language(language)
+                .objectCreatorPlugin(new DefaultObjectCreator())
+                .build();
+    }
+
+    public Interpreter(String language) {
+        assertNotNull(language, "language can not be null");
+        this.runtimeConfiguration = RuntimeConfiguration.builder()
                 .language(language)
                 .objectCreatorPlugin(new DefaultObjectCreator())
                 .build();
@@ -500,9 +509,36 @@ public class Interpreter {
             result.put(variable.getCode(), DvText.valueOf((String) value));
         } else if ("true".equalsIgnoreCase(value.toString()) || "false".equalsIgnoreCase(value.toString())) {
             result.put(variable.getCode(), DvBoolean.valueOf(value.toString()));
+        } else if (value instanceof DvCodedText && guideline != null) {
+            DvCodedText dvCodedText = findTermOfDesignatedLanguage((DvCodedText) value,
+                    guideline.getOntology().getTermDefinitions());
+            result.put(assignmentExpression.getVariable().getCode(), dvCodedText);
         } else {
             result.put(assignmentExpression.getVariable().getCode(), value);
         }
+    }
+
+    private boolean isGuidelineTerm(CodePhrase codePhrase) {
+        return "local".equals(codePhrase.getTerminology())
+                && codePhrase.getCode().startsWith("gt");
+    }
+
+    private DvCodedText findTermOfDesignatedLanguage(DvCodedText dvCodedText, Map<String, TermDefinition> termDefinitionMap) {
+        if (!isGuidelineTerm(dvCodedText.getDefiningCode())) {
+            return dvCodedText;
+        }
+        TermDefinition termDefinition = termDefinitionMap.get(this.runtimeConfiguration.getLanguage());
+        if (termDefinition == null) {
+            return dvCodedText;
+        }
+        String text = termDefinition.getTermText(dvCodedText.getDefiningCode().getCode());
+        if (text == null) {
+            return dvCodedText;
+        }
+        return DvCodedText.builder()
+                .definingCode(dvCodedText.getDefiningCode())
+                .value(text)
+                .build();
     }
 
     private void performUseTemplateStatement(UseTemplateExpression useTemplateExpression, Map<String, Template> templateMap,
