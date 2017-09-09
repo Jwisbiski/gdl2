@@ -29,34 +29,59 @@ import static org.gdl2.expression.OperatorKind.*;
  * Java interpreter of GDL2 guidelines.
  */
 public class Interpreter {
+    static final String CURRENT_DATETIME = "currentDateTime";
     private static final Pattern VARIABLE_REGEX = Pattern.compile("\\{\\$gt([0-9.])+[a-zA-Z_0-9]*}");
-    public static final String CURRENT_DATETIME = "currentDateTime";
-    public static final String OBJECT_CREATOR = "objectCreator";
     private static final String COUNT = "count";
     private static final String SUM = "sum";
     private static final String REFERENCE_NOT_FOUND = "Reference not found";
     private static final long HOUR_IN_MILLISECONDS = 3600 * 1000L;
-    private Map<String, Object> systemParameters;
-    private ObjectCreatorPlugin objectCreatorPlugin;
-    private TemplateFiller templateFiller;
+    private static final String ENGLISH_LANGUAGE = "en";
+
+    private RuntimeConfiguration runtimeConfiguration;
+    private TemplateFiller templateFiller = new TemplateFiller();
 
     public Interpreter() {
-        this.systemParameters = new HashMap<>();
-        this.systemParameters.put(CURRENT_DATETIME, new DvDateTime());
-        this.objectCreatorPlugin = new DefaultObjectCreator();
-        this.templateFiller = new TemplateFiller();
+        this.runtimeConfiguration = defaultRuntimeConfiguration();
     }
 
-    public Interpreter(Map<String, Object> systemParameters) {
-        this();
-        assertNotNull(systemParameters, "systemParameters can not be null");
-        this.systemParameters.putAll(systemParameters);
-        Object objectCreator = systemParameters.get(OBJECT_CREATOR);
-        if (objectCreator instanceof ObjectCreatorPlugin) {
-            this.objectCreatorPlugin = (ObjectCreatorPlugin) systemParameters.get(OBJECT_CREATOR);
-        } else {
-            this.objectCreatorPlugin = new DefaultObjectCreator();
-        }
+    public Interpreter(RuntimeConfiguration runtimeConfiguration) {
+        assertNotNull(runtimeConfiguration, "runtimeConfiguration can not be null");
+        this.runtimeConfiguration = setDefaultRuntimeConfigurationIfMissing(runtimeConfiguration);
+    }
+
+    public Interpreter(DvDateTime currentDateTime) {
+        assertNotNull(currentDateTime, "currentDateTime can not be null");
+        this.runtimeConfiguration = RuntimeConfiguration.builder()
+                .currentDateTime(currentDateTime)
+                .language(ENGLISH_LANGUAGE)
+                .objectCreatorPlugin(new DefaultObjectCreator())
+                .build();
+    }
+
+    public Interpreter(DvDateTime currentDateTime, String language) {
+        assertNotNull(currentDateTime, "currentDateTime can not be null");
+        assertNotNull(language, "language can not be null");
+        this.runtimeConfiguration = RuntimeConfiguration.builder()
+                .currentDateTime(currentDateTime)
+                .language(language)
+                .objectCreatorPlugin(new DefaultObjectCreator())
+                .build();
+    }
+
+    private RuntimeConfiguration defaultRuntimeConfiguration() {
+        return RuntimeConfiguration.builder()
+                .currentDateTime(new DvDateTime())
+                .language(ENGLISH_LANGUAGE)
+                .objectCreatorPlugin(new DefaultObjectCreator())
+                .build();
+    }
+
+    private RuntimeConfiguration setDefaultRuntimeConfigurationIfMissing(RuntimeConfiguration runtimeConfiguration) {
+        return RuntimeConfiguration.builder()
+                .currentDateTime(runtimeConfiguration.getCurrentDateTime() == null ? new DvDateTime() : runtimeConfiguration.getCurrentDateTime())
+                .language(runtimeConfiguration.getLanguage() == null ? ENGLISH_LANGUAGE : runtimeConfiguration.getLanguage())
+                .objectCreatorPlugin(runtimeConfiguration.getObjectCreatorPlugin() == null ? new DefaultObjectCreator() : runtimeConfiguration.getObjectCreatorPlugin())
+                .build();
     }
 
     private static void assertNotNull(Object object, String message) {
@@ -397,7 +422,7 @@ public class Interpreter {
         Map<String, Object> localMapCopy = new HashMap<>(template.getObject());
         this.templateFiller.traverseMapAndReplaceAllVariablesWithValues(localMapCopy, useTemplateLocalResult);
         try {
-            return this.objectCreatorPlugin.create(template.getModelId(), localMapCopy);
+            return this.runtimeConfiguration.getObjectCreatorPlugin().create(template.getModelId(), localMapCopy);
         } catch (ClassNotFoundException cnf) {
             System.out.println("failed to create object using template(" + template.getModelId() + "), class not found..");
             cnf.printStackTrace();
@@ -496,7 +521,7 @@ public class Interpreter {
         Map<String, Object> localMapCopy = new HashMap<>(template.getObject());
         this.templateFiller.traverseMapAndReplaceAllVariablesWithValues(localMapCopy, useTemplateLocalResult);
         try {
-            Object object = this.objectCreatorPlugin.create(template.getModelId(), localMapCopy);
+            Object object = this.runtimeConfiguration.getObjectCreatorPlugin().create(template.getModelId(), localMapCopy);
             result.put(variable.getCode(), object);
         } catch (ClassNotFoundException cnf) {
             System.out.println("failed to create object using template(" + template.getModelId() + "), class not found..");
@@ -742,7 +767,7 @@ public class Interpreter {
     }
 
     private LocalDateTime systemCurrentDateTime() {
-        return ((DvDateTime) systemParameters.get(CURRENT_DATETIME)).getDateTime();
+        return this.runtimeConfiguration.getCurrentDateTime().getDateTime();
     }
 
     private Object evaluateDateTimeExpression(OperatorKind operator, Object leftValue, Object rightValue) {
@@ -948,7 +973,7 @@ public class Interpreter {
         }
         Object dataValue;
         if (CURRENT_DATETIME.equals(variable.getCode())) {
-            dataValue = systemParameters.get(CURRENT_DATETIME);
+            dataValue = this.runtimeConfiguration.getCurrentDateTime();
         } else {
             List<Object> valueList = valueMap.get(key);
             if (valueList == null) {

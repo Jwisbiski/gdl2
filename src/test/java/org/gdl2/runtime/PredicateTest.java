@@ -8,10 +8,9 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import static org.gdl2.runtime.Interpreter.CURRENT_DATETIME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
@@ -19,7 +18,6 @@ public class PredicateTest extends TestCommon {
     private String archetypeId;
     private Interpreter interpreter;
     private Guideline guideline;
-    private final String CURRENT_DATETIME = "currentDateTime";
 
     @BeforeMethod
     public void setUp() {
@@ -243,9 +241,7 @@ public class PredicateTest extends TestCommon {
                 .modelId("weight")
                 .addValue("/data/events/time", DvDateTime.valueOf("2014-02-15T18:18:00"))
                 .build();
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put(CURRENT_DATETIME, DvDateTime.valueOf("2015-01-10T00:00:00"));
-        interpreter = new Interpreter(parameters);
+        interpreter = new Interpreter(DvDateTime.valueOf("2015-01-10T00:00:00"));
         BinaryExpression binaryExpression = new BinaryExpression(
                 new Variable(CURRENT_DATETIME, null, null, "value"),
                 new QuantityConstant(new DvQuantity("mo", 12.0, 0)), OperatorKind.SUBTRACTION);
@@ -264,9 +260,7 @@ public class PredicateTest extends TestCommon {
                 .modelId("weight")
                 .addValue("/data[at0001]/items[at0003]", DvDateTime.valueOf("2014-02-15T18:18:00"))
                 .build();
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put(CURRENT_DATETIME, DvDateTime.valueOf("2015-01-10T00:00:00"));
-        interpreter = new Interpreter(parameters);
+        interpreter = new Interpreter(DvDateTime.valueOf("2015-01-10T00:00:00"));
         BinaryExpression binaryExpression = new BinaryExpression(
                 new Variable(CURRENT_DATETIME, null, null, "value"),
                 new QuantityConstant(new DvQuantity("mo", 12.0, 0)), OperatorKind.SUBTRACTION);
@@ -276,6 +270,4 @@ public class PredicateTest extends TestCommon {
         assertThat(result.size(), Matchers.is(1));
         assertThat(result.get(0).modelId(), is("weight"));
     }
-
-
 }

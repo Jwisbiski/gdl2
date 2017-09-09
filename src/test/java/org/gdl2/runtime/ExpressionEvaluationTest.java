@@ -349,9 +349,7 @@ public class ExpressionEvaluationTest extends TestCommon {
     @Test
     public void can_evaluate_variable_with_set_currentDateTime_value() {
         Variable variable = Variable.createByCode(Interpreter.CURRENT_DATETIME);
-        HashMap<String, Object> systemParameters = new HashMap<>();
-        systemParameters.put(Interpreter.CURRENT_DATETIME, DvDateTime.valueOf("2000-01-01T00:00:00"));
-        interpreter = new Interpreter(systemParameters);
+        interpreter = new Interpreter(DvDateTime.valueOf("2000-01-01T00:00:00"));
         value = interpreter.evaluateExpressionItem(variable, inputMap);
         assertThat(((DvDateTime) value).getDateTime().getYear(), is(2000));
     }

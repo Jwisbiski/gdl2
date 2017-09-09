@@ -1,6 +1,9 @@
 package org.gdl2.runtime;
 
-import org.gdl2.datatypes.*;
+import org.gdl2.datatypes.DvCodedText;
+import org.gdl2.datatypes.DvDateTime;
+import org.gdl2.datatypes.DvOrdinal;
+import org.gdl2.datatypes.DvQuantity;
 import org.gdl2.model.Guideline;
 import org.hl7.fhir.dstu3.model.Appointment;
 import org.hl7.fhir.dstu3.model.Goal;
@@ -10,7 +13,9 @@ import org.testng.annotations.Test;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -135,12 +140,10 @@ public class UseTemplateExpressionTest extends TestCommon {
     }
 
     private Interpreter buildInterpreterWithFhirPluginAndCurrentDateTime(String datetime) {
-        Map<String, Object> params = new HashMap<>();
-        if(datetime != null) {
-            params.put(Interpreter.CURRENT_DATETIME, DvDateTime.valueOf(datetime));
-        }
-        params.put(Interpreter.OBJECT_CREATOR, new FhirDstu3ResourceCreator());
-        return new Interpreter(params);
+        return new Interpreter(RuntimeConfiguration.builder()
+                .currentDateTime(datetime == null ? new DvDateTime() : DvDateTime.valueOf(datetime))
+                .objectCreatorPlugin(new FhirDstu3ResourceCreator())
+                .build());
     }
 
     private Interpreter buildInterpreterWithFhirPluginAndCurrentDateTime() {

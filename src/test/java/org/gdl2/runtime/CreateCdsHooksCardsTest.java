@@ -15,9 +15,7 @@ import org.testng.annotations.Test;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -93,11 +91,10 @@ public class CreateCdsHooksCardsTest extends TestCommon {
     }
 
     private Interpreter buildInterpreterWithFhirPluginAndCurrentDateTime(String datetime) {
-        Map<String, Object> params = new HashMap<>();
-        if (datetime != null) {
-            params.put(Interpreter.CURRENT_DATETIME, DvDateTime.valueOf(datetime));
-        }
-        params.put(Interpreter.OBJECT_CREATOR, new FhirDstu3ResourceCreator());
-        return new Interpreter(params);
+        return new Interpreter(
+                RuntimeConfiguration.builder()
+                        .currentDateTime(datetime == null ? new DvDateTime() : DvDateTime.valueOf(datetime))
+                        .objectCreatorPlugin(new FhirDstu3ResourceCreator())
+                        .build());
     }
 }
