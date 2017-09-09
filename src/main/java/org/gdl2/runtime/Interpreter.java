@@ -8,6 +8,7 @@ import org.gdl2.model.*;
 import org.gdl2.resources.Reference;
 import org.gdl2.resources.ResourceDescription;
 import org.gdl2.terminology.Binding;
+import org.gdl2.terminology.Term;
 import org.gdl2.terminology.TermBinding;
 import org.gdl2.terminology.TermDefinition;
 
@@ -72,6 +73,7 @@ public class Interpreter {
     public Interpreter(String language) {
         assertNotNull(language, "language can not be null");
         this.runtimeConfiguration = RuntimeConfiguration.builder()
+                .currentDateTime(new DvDateTime())
                 .language(language)
                 .objectCreatorPlugin(new DefaultObjectCreator())
                 .build();
@@ -531,13 +533,13 @@ public class Interpreter {
         if (termDefinition == null) {
             return dvCodedText;
         }
-        String text = termDefinition.getTermText(dvCodedText.getDefiningCode().getCode());
-        if (text == null) {
+        Term term = termDefinition.getTerms().get(dvCodedText.getDefiningCode().getCode());
+        if (term == null) {
             return dvCodedText;
         }
         return DvCodedText.builder()
                 .definingCode(dvCodedText.getDefiningCode())
-                .value(text)
+                .value(term.getText())
                 .build();
     }
 

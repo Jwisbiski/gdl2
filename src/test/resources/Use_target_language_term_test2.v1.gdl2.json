@@ -64,7 +64,8 @@
         "id": "gt0017",
         "when": [],
         "then": [
-          "$gt0005=local::gt0006|Five|"
+          "$gt0005=local::gt0006|Five|",
+          "$gt0025=local::gt0007|Six|"
         ],
         "priority": 1
       }
@@ -84,6 +85,11 @@
             "id": "gt0006",
             "text": "Five",
             "description": "The score is five."
+          },
+          "gt0007": {
+            "id": "gt0007",
+            "text": "Six",
+            "description": "The score is six."
           }
         }
       },
