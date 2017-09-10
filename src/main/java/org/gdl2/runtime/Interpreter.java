@@ -7,10 +7,7 @@ import org.gdl2.expression.*;
 import org.gdl2.model.*;
 import org.gdl2.resources.Reference;
 import org.gdl2.resources.ResourceDescription;
-import org.gdl2.terminology.Binding;
-import org.gdl2.terminology.Term;
-import org.gdl2.terminology.TermBinding;
-import org.gdl2.terminology.TermDefinition;
+import org.gdl2.terminology.*;
 
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -40,7 +37,8 @@ public class Interpreter {
     private static final String ENGLISH_LANGUAGE = "en";
 
     private RuntimeConfiguration runtimeConfiguration;
-    private TemplateFiller templateFiller = new TemplateFiller();
+    private static final TemplateFiller templateFiller = new TemplateFiller();
+    private static final SubsumptionEvaluator defaultSubsumptionEvaluator = new DefaultSubsumptionEvaluator();
 
     public Interpreter() {
         this.runtimeConfiguration = defaultRuntimeConfiguration();
@@ -57,6 +55,7 @@ public class Interpreter {
                 .currentDateTime(currentDateTime)
                 .language(ENGLISH_LANGUAGE)
                 .objectCreatorPlugin(new DefaultObjectCreator())
+                .terminologySubsumptionEvaluators(Collections.emptyMap())
                 .build();
     }
 
@@ -67,6 +66,7 @@ public class Interpreter {
                 .currentDateTime(currentDateTime)
                 .language(language)
                 .objectCreatorPlugin(new DefaultObjectCreator())
+                .terminologySubsumptionEvaluators(Collections.emptyMap())
                 .build();
     }
 
@@ -76,6 +76,7 @@ public class Interpreter {
                 .currentDateTime(new DvDateTime())
                 .language(language)
                 .objectCreatorPlugin(new DefaultObjectCreator())
+                .terminologySubsumptionEvaluators(Collections.emptyMap())
                 .build();
     }
 
@@ -84,6 +85,7 @@ public class Interpreter {
                 .currentDateTime(new DvDateTime())
                 .language(ENGLISH_LANGUAGE)
                 .objectCreatorPlugin(new DefaultObjectCreator())
+                .terminologySubsumptionEvaluators(Collections.emptyMap())
                 .build();
     }
 
@@ -92,6 +94,9 @@ public class Interpreter {
                 .currentDateTime(runtimeConfiguration.getCurrentDateTime() == null ? new DvDateTime() : runtimeConfiguration.getCurrentDateTime())
                 .language(runtimeConfiguration.getLanguage() == null ? ENGLISH_LANGUAGE : runtimeConfiguration.getLanguage())
                 .objectCreatorPlugin(runtimeConfiguration.getObjectCreatorPlugin() == null ? new DefaultObjectCreator() : runtimeConfiguration.getObjectCreatorPlugin())
+                .terminologySubsumptionEvaluators(
+                        runtimeConfiguration.getTerminologySubsumptionEvaluators() == null
+                                ? Collections.emptyMap() : runtimeConfiguration.getTerminologySubsumptionEvaluators())
                 .build();
     }
 
@@ -963,9 +968,18 @@ public class Interpreter {
             return false;
         }
         Binding binding = termBinding.getBindings().get(bindingDefiningCode.getCode());
+        SubsumptionEvaluator subsumptionEvaluator = getSubsumptionEvaluator(terminology);
         return binding != null && binding.getCodes().stream()
                 .map(CodePhrase::getCode)
-                .anyMatch(bindingCode -> codedTextDefiningCode.getCode().startsWith(bindingCode));
+                .anyMatch(bindingCode -> subsumptionEvaluator.isA(codedTextDefiningCode.getCode(), bindingCode));
+    }
+
+    private SubsumptionEvaluator getSubsumptionEvaluator(String terminology) {
+        SubsumptionEvaluator subsumptionEvaluator = this.runtimeConfiguration.getTerminologySubsumptionEvaluators().get(terminology);
+        if (subsumptionEvaluator == null) {
+            subsumptionEvaluator = defaultSubsumptionEvaluator;
+        }
+        return subsumptionEvaluator;
     }
 
     private Object evaluateAggregationSum(Variable variable, Map<String, List<Object>> valueMap) {
