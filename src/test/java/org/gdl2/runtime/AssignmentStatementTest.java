@@ -205,4 +205,15 @@ public class AssignmentStatementTest extends TestCommon {
         DvCount dvQuantity = (DvCount) dataValue;
         assertThat(dvQuantity.getMagnitude(), is(44));
     }
+
+    @Test
+    public void can_assign_current_datetime_to_variable() throws Exception {
+        AssignmentExpression assignment = parseAssignmentExpression("$gt0005=$currentDateTime");
+        interpreter = new Interpreter(RuntimeConfiguration.builder()
+                .currentDateTime(DvDateTime.valueOf("2017-03-17T10:52:10")).build());
+        interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
+        dataValue = resultMap.get("gt0005");
+        DvDateTime dvDateTime = (DvDateTime) dataValue;
+        assertThat(dvDateTime.toString(), is("2017-03-17T10:52:10"));
+    }
 }

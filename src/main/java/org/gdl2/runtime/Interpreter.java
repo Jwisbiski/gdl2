@@ -168,6 +168,12 @@ public class Interpreter {
                 .flatMap(createInstanceExpression -> ((CreateInstanceExpression) createInstanceExpression).getAssignmentExpressions().stream())
                 .map(assignmentExpression -> assignmentExpression.getVariable().getCode())
                 .collect(Collectors.toSet());
+        if (guideDefinition.getDefaultActions() != null) {
+            Set<String> codesFromDefaultActions = guideDefinition.getDefaultActions().stream()
+                    .map(assignmentExpression -> ((AssignmentExpression) assignmentExpression).getVariable().getCode())
+                    .collect(Collectors.toSet());
+            codesFromAssignments.addAll(codesFromDefaultActions);
+        }
         codesFromAssignments.addAll(codesFromCreateStatements);
         return codesFromAssignments;
     }

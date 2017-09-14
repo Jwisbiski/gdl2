@@ -1,0 +1,60 @@
+{
+  "gdl_version": "0.1",
+  "id": "Default_action_test2.v1",
+  "concept": "gt0001",
+  "language": {
+    "original_language": "ISO_639-1::en"
+  },
+  "description": {
+    "original_author": {
+      "date": "2017/09/14",
+      "name": "Rong Chen",
+      "organisation": "Cambio Healthcare Systems",
+      "email": "rong.chen@cambio.se"
+    }
+  },
+  "definition": {
+    "default_actions": [
+      "$gt0024=$currentDateTime"
+    ],
+    "data_bindings": {
+      "gt0005": {
+        "id": "gt0005",
+        "model_id": "openEHR-EHR-EVALUATION.screening.v0",
+        "type": "OUTPUT",
+        "elements": {
+          "gt0024": {
+            "id": "gt0024",
+            "path": "/data[at0001]/items[at0002]"
+          }
+        }
+      }
+    },
+    "rules": {
+      "gt0054": {
+        "id": "gt0054",
+        "priority": 4,
+        "when": [
+          "$gt0052!=null"
+        ],
+        "then": [
+          "$gt0012=true"
+        ]
+      }
+    }
+  },
+  "ontology": {
+    "term_definitions": {
+      "en": {
+        "id": "en",
+        "terms": {
+          "gt0024": {
+            "id": "gt0024",
+            "text": "Screening Datetime",
+            "description": "*"
+          }
+        }
+      }
+    }
+  }
+}
