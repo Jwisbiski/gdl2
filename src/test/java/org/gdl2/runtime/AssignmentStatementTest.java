@@ -165,7 +165,7 @@ public class AssignmentStatementTest extends TestCommon {
 
 
     @Test
-    public void can_assign_dv_datxetime_with_current_datetime() {
+    public void can_assign_dv_datetime_with_current_datetime() {
         // "$gt0124.value=$currentDateTime.value"
         String code = "gt0124";
         AssignmentExpression assignment = new AssignmentExpression(new Variable(code, "datetime", "path", "value"),

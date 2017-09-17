@@ -52,6 +52,16 @@ public class CreateCdsHooksCardsTest extends TestCommon {
     }
 
     @Test
+    public void can_create_cdshooks_card_with_referenced_links() throws Exception {
+        guidelines = loadSingleGuideline("cdshooks_card_referenced_link_test.v0.1.gdl2");
+        List<Card> cardList = interpreter.executeCdsHooksGuidelines(guidelines, input);
+        assertThat(cardList.size(), is(1));
+        Card card = cardList.get(0);
+        assertThat(card.getLinks().get(0).getLabel(), is("NICE guideline"));
+        assertThat(card.getLinks().get(0).getUrl().toString(), is("https://www.nice.org.uk/guidance/CG181"));
+    }
+
+    @Test
     public void can_create_cdshooks_card_without_side_effect() throws Exception {
         guidelines = loadSingleGuideline("cdshooks_card_single_suggestion_test.v0.1.gdl2");
         List<Card> cardList = interpreter.executeCdsHooksGuidelines(guidelines, input);

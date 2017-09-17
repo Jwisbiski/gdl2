@@ -73,7 +73,6 @@ public class Interpreter {
     public Interpreter(String language) {
         assertNotNull(language, "language can not be null");
         this.runtimeConfiguration = RuntimeConfiguration.builder()
-                .currentDateTime(new DvDateTime())
                 .language(language)
                 .objectCreatorPlugin(new DefaultObjectCreator())
                 .terminologySubsumptionEvaluators(Collections.emptyMap())
@@ -82,7 +81,6 @@ public class Interpreter {
 
     private RuntimeConfiguration defaultRuntimeConfiguration() {
         return RuntimeConfiguration.builder()
-                .currentDateTime(new DvDateTime())
                 .language(ENGLISH_LANGUAGE)
                 .objectCreatorPlugin(new DefaultObjectCreator())
                 .terminologySubsumptionEvaluators(Collections.emptyMap())
@@ -91,7 +89,7 @@ public class Interpreter {
 
     private RuntimeConfiguration setDefaultRuntimeConfigurationIfMissing(RuntimeConfiguration runtimeConfiguration) {
         return RuntimeConfiguration.builder()
-                .currentDateTime(runtimeConfiguration.getCurrentDateTime() == null ? new DvDateTime() : runtimeConfiguration.getCurrentDateTime())
+                .currentDateTime(runtimeConfiguration.getCurrentDateTime())
                 .language(runtimeConfiguration.getLanguage() == null ? ENGLISH_LANGUAGE : runtimeConfiguration.getLanguage())
                 .objectCreatorPlugin(runtimeConfiguration.getObjectCreatorPlugin() == null ? new DefaultObjectCreator() : runtimeConfiguration.getObjectCreatorPlugin())
                 .terminologySubsumptionEvaluators(
@@ -340,13 +338,19 @@ public class Interpreter {
         if (source != null) {
             source = processReferencedSource(source, guideline.getDescription());
         }
+        List<Link> links = new ArrayList<>();
+        if (card.getLinks() != null) {
+            for (Link link : card.getLinks()) {
+                links.add(processReferencedLink(link, guideline.getDescription()));
+            }
+        }
         return Card.builder()
                 .summary(replaceVariablesWithValues(card.getSummary(), input))
                 .detail(replaceVariablesWithValues(card.getDetail(), input))
                 .indicator(card.getIndicator())
                 .source(source)
                 .suggestions(suggestions)
-                .links(card.getLinks())
+                .links(links)
                 .build();
     }
 
@@ -354,27 +358,44 @@ public class Interpreter {
         if (description == null) {
             return source;
         }
-        String labelRef = source.getLabelReference();
-        String label = source.getLabel();
+        String label = fromReferencedLabel(source.getLabelReference(), description);
+        URL url = fromReferencedUrl(source.getUrlReference(), description);
+        return Source.builder().label(label).url(url).build();
+    }
+
+    private Link processReferencedLink(Link link, ResourceDescription description) {
+        if (description == null) {
+            return link;
+        }
+        String label = fromReferencedLabel(link.getLabelReference(), description);
+        URL url = fromReferencedUrl(link.getUrlReference(), description);
+        return Link.builder().label(label).url(url).type(Link.LinkType.ABSOLUTE).build();
+    }
+
+    private String fromReferencedLabel(String labelRef, ResourceDescription resourceDescription) {
+        String label = "";
         if (labelRef != null && labelRef.startsWith("$ref[") && labelRef.endsWith("].label")) {
             int index = Integer.parseInt(labelRef.substring(5, labelRef.indexOf("]"))) - 1;
-            if (index < description.getReferences().size()) {
-                label = description.getReferences().get(index).getLabel();
+            if (index < resourceDescription.getReferences().size()) {
+                label = resourceDescription.getReferences().get(index).getLabel();
             }
         }
-        String urlReference = source.getUrlReference();
-        URL url = source.getUrl();
+        return label;
+    }
+
+    private URL fromReferencedUrl(String urlReference, ResourceDescription resourceDescription) {
+        URL url = null;
         if (urlReference != null && urlReference.startsWith("$ref[") && urlReference.endsWith("].url")) {
             int index = Integer.parseInt(urlReference.substring(5, urlReference.indexOf("]"))) - 1;
-            if (index < description.getReferences().size()) {
+            if (index < resourceDescription.getReferences().size()) {
                 try {
-                    url = new URL(description.getReferences().get(index).getUrl());
+                    url = new URL(resourceDescription.getReferences().get(index).getUrl());
                 } catch (MalformedURLException murle) {
                     // ignore
                 }
             }
         }
-        return Source.builder().label(label).url(url).build();
+        return url;
     }
 
     private String replaceVariablesWithValues(String source, Map<String, List<Object>> values) {
@@ -815,15 +836,15 @@ public class Interpreter {
         }
     }
 
-    private LocalDateTime systemCurrentDateTime() {
-        return this.runtimeConfiguration.getCurrentDateTime().getDateTime();
+    private DvDateTime systemCurrentDateTime() {
+        return this.runtimeConfiguration.getCurrentDateTime() == null ? new DvDateTime() : this.runtimeConfiguration.getCurrentDateTime();
     }
 
     private Object evaluateDateTimeExpression(OperatorKind operator, Object leftValue, Object rightValue) {
         if (leftValue instanceof Period && rightValue instanceof Period) {
             Period periodLeft = (Period) leftValue;
             Period periodRight = (Period) rightValue;
-            LocalDateTime localDateTime = systemCurrentDateTime();
+            LocalDateTime localDateTime = systemCurrentDateTime().getDateTime();
             LocalDateTime localDateTimeLeft = localDateTime.plus(periodLeft);
             LocalDateTime localDateTimeRight = localDateTime.plus(periodRight);
             if (operator == GREATER_THAN) {
@@ -856,7 +877,7 @@ public class Interpreter {
             return operator == NOT;
         } else if (operator == DIVISION && rightValue instanceof Period && leftValue instanceof Double) {
             // special case when datetime.value is divided by period (1,a)
-            LocalDateTime localDateTime = systemCurrentDateTime();
+            LocalDateTime localDateTime = systemCurrentDateTime().getDateTime();
             LocalDateTime localDateTimeWithPeriod = localDateTime.plus((Period) rightValue);
             double rightValueDouble = Long.valueOf(ChronoUnit.MILLIS.between(localDateTime, localDateTimeWithPeriod)).doubleValue();
             return ((Double) leftValue) / rightValueDouble;
@@ -1031,7 +1052,7 @@ public class Interpreter {
         }
         Object dataValue;
         if (CURRENT_DATETIME.equals(variable.getCode())) {
-            dataValue = this.runtimeConfiguration.getCurrentDateTime();
+            dataValue = systemCurrentDateTime();
         } else {
             List<Object> valueList = valueMap.get(key);
             if (valueList == null) {
