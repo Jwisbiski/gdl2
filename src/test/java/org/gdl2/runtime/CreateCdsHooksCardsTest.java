@@ -19,6 +19,7 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.testng.Assert.assertNotNull;
 
 public class CreateCdsHooksCardsTest extends TestCommon {
     private Interpreter interpreter;
@@ -48,6 +49,15 @@ public class CreateCdsHooksCardsTest extends TestCommon {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         assertThat(appointment.getRequestedPeriod().get(0).getStart(), Matchers.is(dateFormat.parse("2013-04-20")));
         assertThat(appointment.getRequestedPeriod().get(0).getEnd(), Matchers.is(dateFormat.parse("2013-04-25")));
+    }
+
+    @Test
+    public void can_create_cdshooks_card_without_side_effect() throws Exception {
+        guidelines = loadSingleGuideline("cdshooks_card_single_suggestion_test.v0.1.gdl2");
+        List<Card> cardList = interpreter.executeCdsHooksGuidelines(guidelines, input);
+        assertThat(cardList.get(0).getSuggestions().get(0).getActions().size(), is(1));
+        assertNotNull(guidelines.get(0).getDefinition().getRules().get("gt0034")
+                .getCards().get(0).getSuggestions().get(0).getActions().get(0).getResourceTemplate());
     }
 
     @Test

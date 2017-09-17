@@ -330,10 +330,10 @@ public class Interpreter {
     }
 
     private Card processCard(Card card, Map<String, List<Object>> input, Guideline guideline) {
+        List<Suggestion> suggestions = new ArrayList<>();
         if (card.getSuggestions() != null) {
             for (int i = 0, j = card.getSuggestions().size(); i < j; i++) {
-                Suggestion suggestion = processSuggestion(card.getSuggestions().get(i), input, guideline);
-                card.getSuggestions().set(i, suggestion); // TODO
+                suggestions.add(processSuggestion(card.getSuggestions().get(i), input, guideline));
             }
         }
         Source source = card.getSource();
@@ -345,7 +345,7 @@ public class Interpreter {
                 .detail(replaceVariablesWithValues(card.getDetail(), input))
                 .indicator(card.getIndicator())
                 .source(source)
-                .suggestions(card.getSuggestions())
+                .suggestions(suggestions)
                 .links(card.getLinks())
                 .build();
     }
