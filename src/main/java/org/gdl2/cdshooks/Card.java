@@ -24,6 +24,6 @@ public class Card {
         WARNING,
 
         @SerializedName("hard-stop")
-        HARD_STOP;
+        HARD_STOP
     }
 }

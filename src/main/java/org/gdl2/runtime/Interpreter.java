@@ -333,7 +333,7 @@ public class Interpreter {
         if (card.getSuggestions() != null) {
             for (int i = 0, j = card.getSuggestions().size(); i < j; i++) {
                 Suggestion suggestion = processSuggestion(card.getSuggestions().get(i), input, guideline);
-                card.getSuggestions().set(i, suggestion);
+                card.getSuggestions().set(i, suggestion); // TODO
             }
         }
         Source source = card.getSource();
