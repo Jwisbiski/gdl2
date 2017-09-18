@@ -22,6 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.gdl2.cdshooks.Link.LinkType.ABSOLUTE;
 import static org.gdl2.expression.OperatorKind.*;
 
 /**
@@ -364,12 +365,12 @@ public class Interpreter {
     }
 
     private Link processReferencedLink(Link link, ResourceDescription description) {
-        if (description == null) {
+        if (description == null || !ABSOLUTE.equals(link.getType())) {
             return link;
         }
         String label = fromReferencedLabel(link.getLabelReference(), description);
         URL url = fromReferencedUrl(link.getUrlReference(), description);
-        return Link.builder().label(label).url(url).type(Link.LinkType.ABSOLUTE).build();
+        return Link.builder().label(label).url(url).type(ABSOLUTE).build();
     }
 
     private String fromReferencedLabel(String labelRef, ResourceDescription resourceDescription) {

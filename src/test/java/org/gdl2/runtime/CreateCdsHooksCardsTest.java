@@ -2,6 +2,7 @@ package org.gdl2.runtime;
 
 import org.gdl2.cdshooks.Action;
 import org.gdl2.cdshooks.Card;
+import org.gdl2.cdshooks.Link;
 import org.gdl2.datatypes.DvCodedText;
 import org.gdl2.datatypes.DvDateTime;
 import org.gdl2.model.Guideline;
@@ -52,13 +53,39 @@ public class CreateCdsHooksCardsTest extends TestCommon {
     }
 
     @Test
-    public void can_create_cdshooks_card_with_referenced_links() throws Exception {
+    public void can_create_cdshooks_card_with_referenced_link() throws Exception {
         guidelines = loadSingleGuideline("cdshooks_card_referenced_link_test.v0.1.gdl2");
         List<Card> cardList = interpreter.executeCdsHooksGuidelines(guidelines, input);
         assertThat(cardList.size(), is(1));
         Card card = cardList.get(0);
-        assertThat(card.getLinks().get(0).getLabel(), is("NICE guideline"));
-        assertThat(card.getLinks().get(0).getUrl().toString(), is("https://www.nice.org.uk/guidance/CG181"));
+        assertLink(card.getLinks().get(0), "NICE guideline", "https://www.nice.org.uk/guidance/CG181", "absolute");
+    }
+
+    @Test
+    public void can_create_cdshooks_card_with_smart_link() throws Exception {
+        guidelines = loadSingleGuideline("cdshooks_card_smart_link_test.v0.1.gdl2");
+        List<Card> cardList = interpreter.executeCdsHooksGuidelines(guidelines, input);
+        assertThat(cardList.size(), is(1));
+        Card card = cardList.get(0);
+        assertThat(card.getLinks().size(), is(1));
+        assertLink(card.getLinks().get(0), "Smart app label", "https://cambiocds.com/test-app", "smart");
+    }
+
+    @Test
+    public void can_create_cdshooks_card_with_referenced_link_and_smart_link() throws Exception {
+        guidelines = loadSingleGuideline("cdshooks_card_referenced_and_smart_link_test.v0.1.gdl2");
+        List<Card> cardList = interpreter.executeCdsHooksGuidelines(guidelines, input);
+        assertThat(cardList.size(), is(1));
+        Card card = cardList.get(0);
+        assertThat(card.getLinks().size(), is(2));
+        assertLink(card.getLinks().get(0), "NICE guideline", "https://www.nice.org.uk/guidance/CG181", "absolute");
+        assertLink(card.getLinks().get(1), "Smart app label", "https://cambiocds.com/test-app", "smart");
+    }
+
+    private void assertLink(Link link, String label, String url, String type) {
+        assertThat(link.getLabel(), is(label));
+        assertThat(link.getUrl().toString(), is(url));
+        assertThat(link.getType().toString().toLowerCase(), is(type));
     }
 
     @Test
