@@ -59,7 +59,7 @@ public class TerminologyBindingTest extends TestCommon {
 
     @Test
     public void can_check_isa_relationship_with_read_codes_v2_three_bytes_expect_true() throws Exception {
-        guide = loadGuideline("Readv2_test.v1.gdl2");
+        guide = loadGuideline("ReadV2_test.v1.gdl2");
         inputMap.put("gt0040", asList(
                 new DvCodedText("Acute congestive heart failure", "UKTC_READ_V2", "G5800")));
         expression = parseExpression("$gt0040 is_a local::gt0100|Heart failure|");
@@ -69,7 +69,7 @@ public class TerminologyBindingTest extends TestCommon {
 
     @Test
     public void can_check_isa_relationship_with_read_codes_v2_four_bytes_expect_true() throws Exception {
-        guide = loadGuideline("Readv2_test.v1.gdl2");
+        guide = loadGuideline("ReadV2_test.v1.gdl2");
         inputMap.put("gt0040", asList(
                 new DvCodedText("Acute congestive heart failure", "UKTC_READ_V2", "G5800")));
         expression = parseExpression("$gt0040 is_a local::gt0101|Congestive heart failure|");
@@ -79,7 +79,7 @@ public class TerminologyBindingTest extends TestCommon {
 
     @Test
     public void can_check_isa_relationship_with_read_codes_v2_code_list_expect_true() throws Exception {
-        guide = loadGuideline("Readv2_test.v1.gdl2");
+        guide = loadGuideline("ReadV2_test.v1.gdl2");
         inputMap.put("gt0040", asList(
                 new DvCodedText("Acute congestive heart failure", "UKTC_READ_V2", "G5800")));
         expression = parseExpression("$gt0040 is_a local::gt0102|Congestive heart failure|");
@@ -89,7 +89,7 @@ public class TerminologyBindingTest extends TestCommon {
 
     @Test
     public void can_check_isa_relationship_with_read_codes_v2() throws Exception {
-        guide = loadGuideline("Readv2_test.v1.gdl2");
+        guide = loadGuideline("ReadV2_test.v1.gdl2");
         inputMap.put("gt0040", asList(
                 new DvCodedText("Acute congestive heart failure", "UKTC_READ_V2", "G5700")));
         expression = parseExpression("$gt0040 is_a local::gt0100|Congestive heart failure|");
