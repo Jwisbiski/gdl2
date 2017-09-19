@@ -1,6 +1,7 @@
 package org.gdl2.cdshooks;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.annotations.SerializedName;
 import lombok.Builder;
 import lombok.Value;
@@ -15,12 +16,15 @@ public class Action {
     private UseTemplate resourceTemplate;
 
     public enum ActionType {
+        @JsonProperty("create")
         @SerializedName("create")
         CREATE,
 
+        @JsonProperty("update")
         @SerializedName("update")
         UPDATE,
 
+        @JsonProperty("delete")
         @SerializedName("delete")
         DELETE,
     }
