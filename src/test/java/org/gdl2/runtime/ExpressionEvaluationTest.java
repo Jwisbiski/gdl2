@@ -347,14 +347,6 @@ public class ExpressionEvaluationTest extends TestCommon {
     }
 
     @Test
-    public void can_evaluate_variable_with_set_currentDateTime_value() {
-        Variable variable = Variable.createByCode(Interpreter.CURRENT_DATETIME);
-        interpreter = new Interpreter(DvDateTime.valueOf("2000-01-01T00:00:00"));
-        value = interpreter.evaluateExpressionItem(variable, inputMap);
-        assertThat(((DvDateTime) value).getDateTime().getYear(), is(2000));
-    }
-
-    @Test
     public void can_evaluate_binary_expression_with_datetime_constant_expected_true() {
         expressionItem = parseExpression("$gt0006>=(2016-01-01T00:00:00)");
         inputMap.put("gt0006", asList(DvDateTime.valueOf("2016-01-03T00:00:00")));

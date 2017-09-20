@@ -30,6 +30,7 @@ import static org.gdl2.expression.OperatorKind.*;
  */
 public class Interpreter {
     static final String CURRENT_DATETIME = "currentDateTime";
+    private static final String CURRENT_DATE = "currentDate";
     private static final Pattern VARIABLE_REGEX = Pattern.compile("\\{\\$gt([0-9.])+[a-zA-Z_0-9]*}");
     private static final String COUNT = "count";
     private static final String SUM = "sum";
@@ -1054,6 +1055,8 @@ public class Interpreter {
         Object dataValue;
         if (CURRENT_DATETIME.equals(variable.getCode())) {
             dataValue = systemCurrentDateTime();
+        } else if (CURRENT_DATE.equals(variable.getCode())) {
+            dataValue = systemCurrentDateTime().date();
         } else {
             List<Object> valueList = valueMap.get(key);
             if (valueList == null) {
@@ -1070,9 +1073,12 @@ public class Interpreter {
                 }
             }
             return dataValue;
-        }
-        if (TypeBinding.VALUE.equals(attribute) && dataValue instanceof DvDateTime) {
+        } else if (TypeBinding.VALUE.equals(attribute) && dataValue instanceof DvDateTime) {
             return ((DvDateTime) dataValue).getDateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        } else if (TypeBinding.VALUE.equals(attribute) && dataValue instanceof DvDate) {
+            return ((DvDate) dataValue).getDate().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        } else if (TypeBinding.STRING.equals(attribute)) {
+            return dataValue.toString();
         }
         try {
             String getterName = "get" + attribute.substring(0, 1).toUpperCase() + attribute.substring(1);

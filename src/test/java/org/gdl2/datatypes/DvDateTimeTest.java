@@ -8,7 +8,7 @@ import java.time.format.DateTimeParseException;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class ParseDvDateTimeValueTest {
+public class DvDateTimeTest {
 
     @Test
     public void can_parse_iso_datetime_value_without_timezone() {
@@ -24,6 +24,13 @@ public class ParseDvDateTimeValueTest {
     @Test(expectedExceptions = DateTimeParseException.class)
     public void can_parse_iso_datetime_value_timezone_expect_parsing_failure() {
         DvDateTime.valueOf("2012-01-10T05:07:15+01:00");
+    }
+
+    @Test
+    public void can_get_date() {
+        DvDateTime dateTime = DvDateTime.valueOf("2012-01-10T05:07:15");
+        DvDate dvDate = dateTime.date();
+        assertThat(dvDate.toString(), is("2012-01-10"));
     }
 
     @Test

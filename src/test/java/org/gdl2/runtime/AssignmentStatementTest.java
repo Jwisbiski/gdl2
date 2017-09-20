@@ -163,7 +163,6 @@ public class AssignmentStatementTest extends TestCommon {
         assertThat(dvOrdinal.getTerminologyId(), is("local"));
     }
 
-
     @Test
     public void can_assign_dv_datetime_with_current_datetime() {
         // "$gt0124.value=$currentDateTime.value"
@@ -173,6 +172,17 @@ public class AssignmentStatementTest extends TestCommon {
         interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
         dataValue = resultMap.get(code);
         assertThat(dataValue, instanceOf(DvDateTime.class));
+    }
+
+    @Test
+    public void can_assign_dv_date_with_current_date() {
+        // "$gt0124=$currentDate"
+        String code = "gt0124";
+        AssignmentExpression assignment = new AssignmentExpression(new Variable(code, "datetime", "path", null),
+                new Variable("currentDate"));
+        interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
+        dataValue = resultMap.get(code);
+        assertThat(dataValue, instanceOf(DvDate.class));
     }
 
     @Test
@@ -215,5 +225,32 @@ public class AssignmentStatementTest extends TestCommon {
         dataValue = resultMap.get("gt0005");
         DvDateTime dvDateTime = (DvDateTime) dataValue;
         assertThat(dvDateTime.toString(), is("2017-03-17T10:52:10"));
+    }
+
+    @Test
+    public void can_assign_current_date_as_string_to_variable() throws Exception {
+        AssignmentExpression assignment = parseAssignmentExpression("$gt0005=$currentDate.string");
+        interpreter = new Interpreter(RuntimeConfiguration.builder()
+                .currentDateTime(DvDateTime.valueOf("2017-09-20T21:30:15")).build());
+        interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
+        assertThat(resultMap.get("gt0005"), is("2017-09-20"));
+    }
+
+    @Test
+    public void can_assign_current_datetime_as_string_to_variable() throws Exception {
+        AssignmentExpression assignment = parseAssignmentExpression("$gt0005=$currentDateTime.string");
+        interpreter = new Interpreter(RuntimeConfiguration.builder()
+                .currentDateTime(DvDateTime.valueOf("2017-09-20T21:30:15")).build());
+        interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
+        assertThat(resultMap.get("gt0005"), is("2017-09-20T21:30:15"));
+    }
+
+    //@Test
+    public void can_assign_current_date_plus_three_months() throws Exception {
+        AssignmentExpression assignment = parseAssignmentExpression("$gt0005=$currentDate.value+3,mo");
+        interpreter = new Interpreter(RuntimeConfiguration.builder()
+                .currentDateTime(DvDateTime.valueOf("2017-09-20T21:30:15")).build());
+        interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
+        assertThat(resultMap.get("gt0005").toString(), is("2017-12-20"));
     }
 }

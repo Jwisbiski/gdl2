@@ -3,6 +3,7 @@ package org.gdl2.runtime;
 import org.gdl2.datatypes.DvDateTime;
 import org.gdl2.datatypes.DvQuantity;
 import org.gdl2.expression.ExpressionItem;
+import org.gdl2.expression.Variable;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -23,6 +24,14 @@ public class EvaluateTimeQuantityExpressionTest extends TestCommon {
     public void setUp() {
         interpreter = new Interpreter();
         inputMap.clear();
+    }
+
+    @Test
+    public void can_evaluate_variable_with_set_currentDateTime_value() {
+        Variable variable = Variable.createByCode(Interpreter.CURRENT_DATETIME);
+        interpreter = new Interpreter(DvDateTime.valueOf("2000-01-01T00:00:00"));
+        value = interpreter.evaluateExpressionItem(variable, inputMap);
+        assertThat(((DvDateTime) value).getDateTime().getYear(), is(2000));
     }
 
     @Test
