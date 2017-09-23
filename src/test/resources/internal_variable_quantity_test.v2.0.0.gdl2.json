@@ -42,9 +42,9 @@
           "$gt0005==2"
         ],
         "then": [
-          "$gt0019.units='%'",
-          "$gt0019.precision=1",
-          "$gt0019.magnitude=3.2"
+          "$gt0019|risk|.units='%'",
+          "$gt0019|risk|.precision=1",
+          "$gt0019|risk|.magnitude=3.2"
         ],
         "cards": [
           {
@@ -62,12 +62,12 @@
         "terms": {
           "gt0005": {
             "id": "gt0005",
-            "text": "CHA2DS2-VASc Score",
-            "description": ""
+            "text": "CHA2DS2-VASc Score"
           },
           "gt0019": {
             "id": "gt0019",
-            "text": "Yearly risk in %"
+            "text": "risk",
+            "description": "Yearly risk in %"
           }
         }
       }
