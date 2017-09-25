@@ -11,7 +11,7 @@ public class DoubleConstant extends ConstantExpression {
     public DoubleConstant(String value) {
         super(value);
         if (value.startsWith("(")) {
-            value = value.substring(value.lastIndexOf("(") + 1, value.indexOf(")"));
+            value = value.substring(1, value.length() - 1);
         }
         this.doubleValue = Double.valueOf(value);
     }
