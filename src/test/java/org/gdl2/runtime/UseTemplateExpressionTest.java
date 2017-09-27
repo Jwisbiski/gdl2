@@ -1,5 +1,6 @@
 package org.gdl2.runtime;
 
+import org.gdl2.cdshooks.Card;
 import org.gdl2.datatypes.DvCodedText;
 import org.gdl2.datatypes.DvDateTime;
 import org.gdl2.datatypes.DvOrdinal;

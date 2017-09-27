@@ -1,5 +1,6 @@
 package org.gdl2.runtime;
 
+import com.google.gson.Gson;
 import lombok.NonNull;
 import org.gdl2.cdshooks.*;
 import org.gdl2.datatypes.*;
@@ -464,7 +465,8 @@ public class Interpreter {
             Object value = evaluateExpressionItem(assignmentExpression.getAssignment(), input, guideline, null);
             useTemplateLocalResult.put(assignmentExpression.getVariable().getCode(), value);
         }
-        Map<String, Object> localMapCopy = new HashMap<>(template.getObject());
+
+        Map<String, Object> localMapCopy = deepCopy(template.getObject());
         this.templateFiller.traverseMapAndReplaceAllVariablesWithValues(localMapCopy, useTemplateLocalResult);
         try {
             return this.runtimeConfiguration.getObjectCreatorPlugin().create(template.getModelId(), localMapCopy);
@@ -473,6 +475,12 @@ public class Interpreter {
             cnf.printStackTrace();
             return null;
         }
+    }
+
+    private Map<String, Object> deepCopy(Map<String, Object> map) {
+        Gson gson = new Gson();
+        String json = gson.toJson(map);
+        return gson.fromJson(json, Map.class);
     }
 
     // mainly to resolve ambiguity between DvCount and DvQuantity
