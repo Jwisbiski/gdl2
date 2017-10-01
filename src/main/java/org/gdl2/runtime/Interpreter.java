@@ -693,7 +693,7 @@ public class Interpreter {
         } else if (expressionItem instanceof BinaryExpression) {
             return processBinaryExpression(expressionItem, input, guideline, firedRules);
         } else if (expressionItem instanceof UnaryExpression) {
-            return processUnaryExpression((UnaryExpression) expressionItem, firedRules);
+            return processUnaryExpression((UnaryExpression) expressionItem, input, guideline, firedRules);
         } else if (expressionItem instanceof FunctionalExpression) {
             return processFunctionalExpression((FunctionalExpression) expressionItem, input, guideline, firedRules);
         } else {
@@ -804,11 +804,14 @@ public class Interpreter {
         }
     }
 
-    private Object processUnaryExpression(UnaryExpression unaryExpression, Set<String> firedRules) {
+    private Object processUnaryExpression(UnaryExpression unaryExpression, Map<String, List<Object>> input,
+                                          Guideline guideline, Set<String> firedRules) {
         if (OperatorKind.FIRED.equals(unaryExpression.getOperator())) {
             return firedRules.contains(((Variable) unaryExpression.getOperand()).getCode());
         } else if (OperatorKind.NOT_FIRED.equals(unaryExpression.getOperator())) {
             return !firedRules.contains(((Variable) unaryExpression.getOperand()).getCode());
+        } else if (OperatorKind.NOT.equals(unaryExpression.getOperator())) {
+            return !Boolean.valueOf(evaluateExpressionItem(unaryExpression.getOperand(), input, guideline, firedRules).toString());
         } else {
             throw new UnsupportedOperationException("Unsupported unary operation: " + unaryExpression);
         }

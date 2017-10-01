@@ -202,6 +202,38 @@ public class ExpressionEvaluationTest extends TestCommon {
     }
 
     @Test
+    public void can_evaluate_binary_expression_with_not_operator_expected_false() {
+        expressionItem = parseExpression("not($gt0001==1)");
+        inputMap.put("gt0001", asList(new DvCount(1)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(false));
+    }
+
+    @Test
+    public void can_evaluate_binary_expression_with_not_operator_expected_true() {
+        expressionItem = parseExpression("not($gt0001==1)");
+        inputMap.put("gt0001", asList(new DvCount(2)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
+    }
+
+    @Test
+    public void can_evaluate_value_expression_with_not_operator_expected_false() {
+        expressionItem = parseExpression("not($gt0001)");
+        inputMap.put("gt0001", asList(DvBoolean.TRUE));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(false));
+    }
+
+    @Test
+    public void can_evaluate_value_expression_with_not_operator_expected_true() {
+        expressionItem = parseExpression("not($gt0001)");
+        inputMap.put("gt0001", asList(DvBoolean.FALSE));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
+    }
+
+    @Test
     public void can_evaluate_DvQuantity_with_quantity_constant() {
         expressionItem = parseExpression("$gt0006<=2.0,mg");
         inputMap.put("gt0006", asList(DvQuantity.valueOf("9.0,mg")));

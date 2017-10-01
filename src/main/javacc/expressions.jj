@@ -89,7 +89,6 @@ TOKEN : /* SYMBOLS - common */
 | < SYM_COMMA : "," >
 | < SYM_TWO_COLONS : "::" >
 | < SYM_COLON : ":" >
-| < SYM_EXCLAMATION : "!" >
 | < SYM_L_PARENTHESIS : "(" >
 | < SYM_R_PARENTHESIS : ")" >
 | < SYM_DOLLAR : "$" >
@@ -103,13 +102,9 @@ TOKEN : /* SYMBOLS - common */
 | < SYM_LT : "<" >
 | < SYM_GT : ">" >
 | < SYM_NE : "!=" >
-| < SYM_NOT : "not" >
-| < SYM_AND :
-    "and"
-  | "&&" >
-| < SYM_OR :
-    "or"
-  | "||" >
+| < SYM_NOT : "not" | "!" >
+| < SYM_AND : "and" | "&&" >
+| < SYM_OR :  "or"  | "||" >
 | < SYM_FALSE : "false" >
 | < SYM_TRUE : "true" >
 | < SYM_NULL : "null" >
@@ -121,6 +116,7 @@ TOKEN : /* SYMBOLS - common */
 | < SYM_MATH_FUNCTION : "abs" | "ceil" | "exp" | "floor" | "log" | "log10" |  "log1p" | "round" | "sqrt">
 | < SYM_E : "e" >
 | < SYM_FIRED : "fired" >
+| < SYM_NOT_FIRED : "!fired" >
 | < SYM_CURRENT_DATETIME : "currentDateTime" >
 | < SYM_CURRENT_DATE : "currentDate" >
 | < SYM_REF : "ref" >
@@ -457,6 +453,10 @@ ExpressionItem expression_node() :
       {
         op = OperatorKind.FOR_ALL;
       }
+    | < SYM_NOT > item = expression_leaf()
+      {
+        op = OperatorKind.NOT;
+      }
     | < SYM_MAX > item = expression_leaf()
       {
         op = OperatorKind.MAX;
@@ -481,7 +481,7 @@ ExpressionItem expression_node() :
       }
     |
       LOOKAHEAD(2)
-      < SYM_EXCLAMATION > < SYM_FIRED > item = expression_leaf()
+      < SYM_NOT_FIRED > item = expression_leaf()
       {
         op = OperatorKind.NOT_FIRED;
       }
