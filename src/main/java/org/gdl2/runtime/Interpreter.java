@@ -1085,6 +1085,10 @@ public class Interpreter {
             return ((DvDateTime) dataValue).getDateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         } else if (TypeBinding.VALUE.equals(attribute) && dataValue instanceof DvDate) {
             return ((DvDate) dataValue).getDate().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        } else if (TypeBinding.YEAR.equals(attribute) && dataValue instanceof DvDateTime) {
+            return ((DvDateTime) dataValue).getDateTime().getYear();
+        } else if (TypeBinding.YEAR.equals(attribute) && dataValue instanceof DvDate) {
+            return ((DvDate) dataValue).getDate().getYear();
         } else if (TypeBinding.STRING.equals(attribute)) {
             return dataValue.toString();
         }

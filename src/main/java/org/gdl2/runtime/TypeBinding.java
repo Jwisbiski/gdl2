@@ -10,6 +10,7 @@ import java.util.Set;
  */
 class TypeBinding {
     static final String VALUE = "value";
+    static final String YEAR = "year";
     static final String STRING = "string";
     static final String PRECISION = "precision";
     static final String MAGNITUDE = "magnitude";

@@ -1,5 +1,6 @@
 package org.gdl2.runtime;
 
+import org.gdl2.datatypes.DvDate;
 import org.gdl2.datatypes.DvDateTime;
 import org.gdl2.datatypes.DvQuantity;
 import org.gdl2.expression.ExpressionItem;
@@ -35,12 +36,47 @@ public class EvaluateTimeQuantityExpressionTest extends TestCommon {
     }
 
     @Test
+    public void can_evaluate_current_datetime_year() {
+        Variable variable = new Variable(Interpreter.CURRENT_DATETIME, null, null, "year");
+        interpreter = new Interpreter(DvDateTime.valueOf("2000-01-01T00:00:00"));
+        value = interpreter.evaluateExpressionItem(variable, inputMap);
+        assertThat(value, is(2000));
+    }
+
+    @Test
+    public void can_evaluate_any_datetime_year() {
+        Variable variable = new Variable("gt0100", null, null, "year");
+        interpreter = new Interpreter();
+        inputMap.put("gt0100", asList(DvDateTime.valueOf("1952-01-10T00:00:00")));
+        value = interpreter.evaluateExpressionItem(variable, inputMap);
+        assertThat(value, is(1952));
+    }
+
+    @Test
+    public void can_evaluate_any_date_year() {
+        Variable variable = new Variable("gt0100", null, null, "year");
+        interpreter = new Interpreter();
+        inputMap.put("gt0100", asList(DvDate.valueOf("1952-01-10")));
+        value = interpreter.evaluateExpressionItem(variable, inputMap);
+        assertThat(value, is(1952));
+    }
+
+    @Test
     public void can_compare_datetime_and_years_expect_false() {
         expressionItem = parseExpression("$gt0113.value<=($currentDateTime.value-65,a)");
         inputMap.put("gt0113", asList(DvDateTime.valueOf("1952-01-10T00:00:00")));
         interpreter = new Interpreter(DvDateTime.valueOf("2017-01-09T23:59:59"));
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
         assertThat(value, is(false));
+    }
+
+    @Test
+    public void can_compute_datetime_variables_with_years() {
+        expressionItem = parseExpression("$currentDateTime.year-$gt0008.year");
+        inputMap.put("gt0008", asList(DvDateTime.valueOf("1960-01-10T00:00:00")));
+        interpreter = new Interpreter(DvDateTime.valueOf("2000-01-09T23:59:59"));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(40.0));
     }
 
     @Test
