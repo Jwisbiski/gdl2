@@ -1,9 +1,7 @@
 package org.gdl2.deserializers;
 
 
-import org.gdl2.expression.ExpressionItem;
-import org.gdl2.expression.OperatorKind;
-import org.gdl2.expression.UnaryExpression;
+import org.gdl2.expression.*;
 import org.testng.annotations.Test;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -39,5 +37,16 @@ public class ParseExpressionItemTest {
         UnaryExpression unaryExpression = (UnaryExpression) expressionItem;
         assertThat(unaryExpression.getOperator(), is(OperatorKind.NOT));
         assertThat(unaryExpression.getOperand().toString(), is("$gt0016==5"));
+    }
+
+    @Test
+    public void can_parse_dv_ordinal_with_negative_value() throws Exception {
+        expressionItem = deserializer.parse("$gt0013=-1|local::at0018|45+ years|");
+        assertThat(expressionItem, instanceOf(AssignmentExpression.class));
+        AssignmentExpression assignmentExpression = (AssignmentExpression) expressionItem;
+        assertThat(assignmentExpression.getVariable().getCode(), is("gt0013"));
+        assertThat(assignmentExpression.getAssignment(), instanceOf(OrdinalConstant.class));
+        OrdinalConstant ordinalConstant = (OrdinalConstant) assignmentExpression.getAssignment();
+        assertThat(ordinalConstant.getOrdinal().getValue(), is(-1));
     }
 }
