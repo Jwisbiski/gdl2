@@ -839,7 +839,7 @@ public class Interpreter {
         } else if (operator == EQUALITY) {
             return evaluateEqualityExpression(leftValue, rightValue);
         } else if (operator == INEQUAL) {
-            return !(leftValue == null && rightValue == null) && (leftValue == null || !leftValue.equals(rightValue));
+            return !evaluateEqualityExpression(leftValue, rightValue);
         } else if (operator == IS_A) {     // todo IS_A_NOT
             return evaluateIsARelationship(leftValue, rightValue, guideline.getOntology());
         } else if (operator == AND && leftValue != null && rightValue != null) {

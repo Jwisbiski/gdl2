@@ -285,6 +285,14 @@ public class ExpressionEvaluationTest extends TestCommon {
     }
 
     @Test
+    public void can_evaluate_inequality_DvBoolean_and_boolean_constant_expected_true() {
+        expressionItem = parseExpression("$gt0004!=true");
+        inputMap.put("gt0004", asList(DvBoolean.valueOf(true)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(false));
+    }
+
+    @Test
     public void can_evaluate_greater_than_expected_false() {
         expressionItem = parseExpression("10>18");
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
