@@ -382,7 +382,8 @@ ExpressionItem expression_item() :
   (
     LOOKAHEAD(4)
     item = expression_node()
-  | LOOKAHEAD(4)
+  |
+    LOOKAHEAD(4)
     item = expression_leaf()
   )
   {
@@ -490,8 +491,10 @@ ExpressionItem expression_node() :
       return new UnaryExpression(item, op);
   	}
   |
+    LOOKAHEAD(3)
     (
       item = expression_leaf()
+    [
       (
         < SYM_EQ >
         {
@@ -568,8 +571,13 @@ ExpressionItem expression_node() :
         }
       )
       item2 = expression_leaf()
+    ]
       {
-        ret = new BinaryExpression(item, item2, op);
+        if(item2 != null && op != null) {
+          ret = new BinaryExpression(item, item2, op);
+        } else {
+          ret = item;
+        }
       }
     )
   )

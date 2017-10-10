@@ -2,6 +2,7 @@ package org.gdl2.deserializers;
 
 
 import org.gdl2.expression.*;
+import org.gdl2.runtime.Interpreter;
 import org.testng.annotations.Test;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -48,5 +49,14 @@ public class ParseExpressionItemTest {
         assertThat(assignmentExpression.getAssignment(), instanceOf(OrdinalConstant.class));
         OrdinalConstant ordinalConstant = (OrdinalConstant) assignmentExpression.getAssignment();
         assertThat(ordinalConstant.getOrdinal().getValue(), is(-1));
+    }
+
+    @Test
+    public void can_parse_variable_current_datetime_year_attribute() throws Exception {
+        expressionItem = deserializer.parse("$currentDateTime.year");
+        assertThat(expressionItem, instanceOf(Variable.class));
+        Variable variable = (Variable) expressionItem;
+        assertThat(variable.getCode(), is("currentDateTime"));
+        assertThat(variable.getAttribute(), is("year"));
     }
 }
