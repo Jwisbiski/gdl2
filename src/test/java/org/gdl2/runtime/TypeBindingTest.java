@@ -38,7 +38,7 @@ public class TypeBindingTest {
     public void can_bind_to_dv_quantity_with_units_magnitude() {
         code = "gt0001";
         assignmentExpressionList.add(
-                new AssignmentExpression(new Variable(code, null, null, TypeBinding.UNITS),
+                new AssignmentExpression(new Variable(code, null, null, TypeBinding.UNIT),
                         new ConstantExpression("kg")));
         assignmentExpressionList.add(
                 new AssignmentExpression(new Variable(code, null, null, TypeBinding.MAGNITUDE),
@@ -51,7 +51,7 @@ public class TypeBindingTest {
     public void can_bind_to_dv_quantity_with_units() {
         code = "gt0001";
         assignmentExpressionList.add(
-                new AssignmentExpression(new Variable(code, null, null, TypeBinding.UNITS),
+                new AssignmentExpression(new Variable(code, null, null, TypeBinding.UNIT),
                         new ConstantExpression("kg")));
         typeMap = interpreter.typeBindingThroughAssignmentStatements(assignmentExpressionList);
         assertThat(typeMap.get(code), Is.<Class>is(DvQuantity.class));

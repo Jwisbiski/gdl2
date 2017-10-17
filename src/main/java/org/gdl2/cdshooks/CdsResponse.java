@@ -9,5 +9,4 @@ import java.util.List;
 @Builder
 public class CdsResponse {
     private List<Card> cards;
-    private List<Decision> decisions;
 }

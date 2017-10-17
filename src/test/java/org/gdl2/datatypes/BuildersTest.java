@@ -26,11 +26,11 @@ public class BuildersTest {
         DvQuantity dvQuantity = DvQuantity.builder()
                 .magnitude(120.0)
                 .precision(1)
-                .units("mm[Hg]")
+                .unit("mm[Hg]")
                 .build();
         assertThat(dvQuantity.getMagnitude(), is(120.0));
         assertThat(dvQuantity.getPrecision(), is(1));
-        assertThat(dvQuantity.getUnits(), is("mm[Hg]"));
+        assertThat(dvQuantity.getUnit(), is("mm[Hg]"));
     }
 
     @Test

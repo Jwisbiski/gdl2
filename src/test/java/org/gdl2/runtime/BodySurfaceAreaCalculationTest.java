@@ -33,7 +33,7 @@ public class BodySurfaceAreaCalculationTest extends TestCommon {
         DvQuantity dvQuantity = dataInstance.getDvQuantity("/data[at0001]/events[at0002]/data[at0003]/items[at0004]");
         assertThat(dvQuantity.getMagnitude(), closeTo(1.90, 0.1));
         assertThat(dvQuantity.getPrecision(), is(2));
-        assertThat(dvQuantity.getUnits(), is("m2"));
+        assertThat(dvQuantity.getUnit(), is("m2"));
     }
 
     @Test
@@ -48,7 +48,7 @@ public class BodySurfaceAreaCalculationTest extends TestCommon {
         DvQuantity dvQuantity = dataInstance.getDvQuantity("/data[at0001]/events[at0002]/data[at0003]/items[at0004]");
         assertThat(dvQuantity.getMagnitude(), closeTo(1.90, 0.1));
         assertThat(dvQuantity.getPrecision(), is(2));
-        assertThat(dvQuantity.getUnits(), is("m2"));
+        assertThat(dvQuantity.getUnit(), is("m2"));
     }
 
     @Test
@@ -63,6 +63,6 @@ public class BodySurfaceAreaCalculationTest extends TestCommon {
         DvQuantity dvQuantity = dataInstance.getDvQuantity("/data[at0001]/events[at0002]/data[at0003]/items[at0004]");
         assertThat(dvQuantity.getMagnitude(), closeTo(1.90, 0.1));
         assertThat(dvQuantity.getPrecision(), is(2));
-        assertThat(dvQuantity.getUnits(), is("m2"));
+        assertThat(dvQuantity.getUnit(), is("m2"));
     }
 }

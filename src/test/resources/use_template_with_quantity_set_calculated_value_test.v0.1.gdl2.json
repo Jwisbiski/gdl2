@@ -40,7 +40,7 @@
         "id": "gt0022",
         "model_id": "org.gdl2.datatypes.DvQuantity",
         "object": {
-          "units": "mg",
+          "unit": "mg",
           "magnitude": "{$gt2000}",
           "precision": 1
         }

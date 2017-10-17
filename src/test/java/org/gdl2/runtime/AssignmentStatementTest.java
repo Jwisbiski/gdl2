@@ -107,7 +107,7 @@ public class AssignmentStatementTest extends TestCommon {
         assertThat(dataValue, Matchers.instanceOf(DvQuantity.class));
         DvQuantity dvQuantity = (DvQuantity) dataValue;
         assertThat(dvQuantity.getMagnitude(), is(0.0));
-        assertThat(dvQuantity.getUnits(), is("d"));
+        assertThat(dvQuantity.getUnit(), is("d"));
     }
 
     @Test

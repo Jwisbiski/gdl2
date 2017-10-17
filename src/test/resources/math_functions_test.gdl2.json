@@ -62,7 +62,7 @@
         "id": "gt0012",
         "when": [],
         "then": [
-          "$gt0003.units='m'",
+          "$gt0003.unit='m'",
           "$gt0003.magnitude=(abs((-5.3)))"
         ],
         "priority": 9
@@ -71,7 +71,7 @@
         "id": "gt0013",
         "when": [],
         "then": [
-          "$gt0004.units='m'",
+          "$gt0004.unit='m'",
           "$gt0004.magnitude=(ceil(1.2))"
         ],
         "priority": 8
@@ -80,7 +80,7 @@
         "id": "gt0020",
         "when": [],
         "then": [
-          "$gt0011.units='m'",
+          "$gt0011.unit='m'",
           "$gt0011.magnitude=(sqrt(16))"
         ],
         "priority": 1
@@ -89,7 +89,7 @@
         "id": "gt0018",
         "when": [],
         "then": [
-          "$gt0009.units='m'",
+          "$gt0009.unit='m'",
           "$gt0009.magnitude=(log1p(10))",
           "$gt0009.precision=2"
         ],
@@ -99,7 +99,7 @@
         "id": "gt0019",
         "when": [],
         "then": [
-          "$gt0010.units='m'",
+          "$gt0010.unit='m'",
           "$gt0010.magnitude=(round(7.6))"
         ],
         "priority": 2
@@ -108,7 +108,7 @@
         "id": "gt0014",
         "when": [],
         "then": [
-          "$gt0005.units='m'",
+          "$gt0005.unit='m'",
           "$gt0005.precision=2",
           "$gt0005.magnitude=(exp(3))"
         ],
@@ -118,7 +118,7 @@
         "id": "gt0015",
         "when": [],
         "then": [
-          "$gt0006.units='m'",
+          "$gt0006.unit='m'",
           "$gt0006.magnitude=(floor(1.35))"
         ],
         "priority": 6
@@ -127,7 +127,7 @@
         "id": "gt0016",
         "when": [],
         "then": [
-          "$gt0007.units='m'",
+          "$gt0007.unit='m'",
           "$gt0007.precision=2",
           "$gt0007.magnitude=(log(100))"
         ],
@@ -137,7 +137,7 @@
         "id": "gt0017",
         "when": [],
         "then": [
-          "$gt0008.units='m'",
+          "$gt0008.unit='m'",
           "$gt0008.magnitude=(log10(1000))",
           "$gt0008.precision=2"
         ],

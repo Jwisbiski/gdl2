@@ -12,14 +12,14 @@ import java.text.DecimalFormatSymbols;
 @NoArgsConstructor(force = true)
 public final class DvQuantity {
     private static final char DECIMAL_SEPARATOR = '.';
-    private String units;
+    private String unit;
     private double magnitude;
     private int precision;
 
-    public DvQuantity(String units, double magnitude, int precision) {
+    public DvQuantity(String unit, double magnitude, int precision) {
         this.magnitude = magnitude;
         this.precision = precision;
-        this.units = units;
+        this.unit = unit;
     }
 
     public DvQuantity(double magnitude) {
@@ -57,6 +57,6 @@ public final class DvQuantity {
         dfs.setDecimalSeparator(DECIMAL_SEPARATOR);
         format.setDecimalFormatSymbols(dfs);
         format.setGroupingUsed(false);
-        return format.format(magnitude) + ((units == null || units.isEmpty()) ? "" : "," + getUnits());
+        return format.format(magnitude) + ((unit == null || unit.isEmpty()) ? "" : "," + getUnit());
     }
 }

@@ -1,6 +1,5 @@
 package org.gdl2.runtime;
 
-import org.gdl2.cdshooks.Card;
 import org.gdl2.datatypes.DvCodedText;
 import org.gdl2.datatypes.DvDateTime;
 import org.gdl2.datatypes.DvOrdinal;
@@ -82,7 +81,7 @@ public class UseTemplateExpressionTest extends TestCommon {
         input.add(new DataInstance.Builder()
                 .modelId("org.hl7.fhir.dstu3.model.Observation")
                 .addValue("/code/coding[0]", DvCodedText.valueOf("LOINC::13457-7|LDL Cholesterol|"))
-                .addValue("/valueQuantity", DvQuantity.builder().magnitude(10.0).precision(1).units("mmol/l").build())
+                .addValue("/valueQuantity", DvQuantity.builder().magnitude(10.0).precision(1).unit("mmol/l").build())
                 .addValue("/issued", new DvDateTime())
                 .build());
         output = interpreter.executeGuidelines(guidelines, input);

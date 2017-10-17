@@ -522,10 +522,10 @@ public class Interpreter {
             DvQuantity dvQuantity = retrieveDvQuantityFromResultMapOrCreateNew(variable.getCode(), result);
             try {
                 if (value instanceof String) {
-                    DvQuantity newQuantity = new DvQuantity(dvQuantity.getUnits(), dvQuantity.getMagnitude(), Integer.parseInt((String) value));
+                    DvQuantity newQuantity = new DvQuantity(dvQuantity.getUnit(), dvQuantity.getMagnitude(), Integer.parseInt((String) value));
                     result.put(variable.getCode(), newQuantity);
                 } else if (value instanceof Integer) {
-                    DvQuantity newQuantity = new DvQuantity(dvQuantity.getUnits(), dvQuantity.getMagnitude(), (Integer) value);
+                    DvQuantity newQuantity = new DvQuantity(dvQuantity.getUnit(), dvQuantity.getMagnitude(), (Integer) value);
                     result.put(variable.getCode(), newQuantity);
                 } else {
                     throw new IllegalArgumentException("Unexpected integer value: " + value + ", in assignmentExpression: " + assignmentExpression);
@@ -533,7 +533,7 @@ public class Interpreter {
             } catch (NumberFormatException nfe) {
                 throw new IllegalArgumentException("Unexpected integer string value: " + value + ", in assignmentExpression: " + assignmentExpression);
             }
-        } else if (TypeBinding.UNITS.equals(attribute)) {
+        } else if (TypeBinding.UNIT.equals(attribute)) {
             DvQuantity dvQuantity = retrieveDvQuantityFromResultMapOrCreateNew(variable.getCode(), result);
             if (value instanceof String) {
                 DvQuantity newQuantity = new DvQuantity((String) value, dvQuantity.getMagnitude(), dvQuantity.getPrecision());
@@ -627,16 +627,16 @@ public class Interpreter {
                     magnitude = (Double) value;
                 } else if (value instanceof Long) {
                     magnitude = ((Long) value).doubleValue();
-                    result.put(variable.getCode(), new DvQuantity(dvQuantity.getUnits(), ((Long) value).doubleValue(), dvQuantity.getPrecision()));
+                    result.put(variable.getCode(), new DvQuantity(dvQuantity.getUnit(), ((Long) value).doubleValue(), dvQuantity.getPrecision()));
                 } else if (value instanceof Integer) {
                     magnitude = ((Integer) value).doubleValue();
-                    result.put(variable.getCode(), new DvQuantity(dvQuantity.getUnits(), ((Integer) value).doubleValue(), dvQuantity.getPrecision()));
+                    result.put(variable.getCode(), new DvQuantity(dvQuantity.getUnit(), ((Integer) value).doubleValue(), dvQuantity.getPrecision()));
                 } else if (value instanceof String) {
                     magnitude = Double.parseDouble((String) value);
                 } else {
                     throw new IllegalArgumentException("Unexpected double value: " + value + ", in assignmentExpression: " + assignmentExpression);
                 }
-                result.put(variable.getCode(), new DvQuantity(dvQuantity.getUnits(), magnitude, dvQuantity.getPrecision()));
+                result.put(variable.getCode(), new DvQuantity(dvQuantity.getUnit(), magnitude, dvQuantity.getPrecision()));
             } catch (NumberFormatException nfe) {
                 throw new IllegalArgumentException("Unexpected integer string value: " + value + ", in assignmentExpression: " + assignmentExpression);
             }
@@ -747,7 +747,7 @@ public class Interpreter {
     }
 
     private Object evaluateQuantityValue(@NonNull DvQuantity dvQuantity) {
-        if (isTimePeriodUnits(dvQuantity.getUnits())) {
+        if (isTimePeriodUnits(dvQuantity.getUnit())) {
             return convertTimeQuantityToPeriodOrMilliSeconds(dvQuantity);
         }
         return dvQuantity.getMagnitude();
@@ -759,16 +759,16 @@ public class Interpreter {
 
     private Object convertTimeQuantityToPeriodOrMilliSeconds(DvQuantity dvQuantity) {
         int magnitude = Double.valueOf(dvQuantity.getMagnitude()).intValue();
-        if ("a".equals(dvQuantity.getUnits())) {
+        if ("a".equals(dvQuantity.getUnit())) {
             return Period.ofYears(magnitude);
-        } else if ("mo".equals(dvQuantity.getUnits())) {
+        } else if ("mo".equals(dvQuantity.getUnit())) {
             return Period.ofMonths(magnitude);
-        } else if ("d".equals(dvQuantity.getUnits())) {
+        } else if ("d".equals(dvQuantity.getUnit())) {
             return Period.ofDays(magnitude);
-        } else if ("h".equals(dvQuantity.getUnits())) {
+        } else if ("h".equals(dvQuantity.getUnit())) {
             return HOUR_IN_MILLISECONDS * magnitude;
         }
-        throw new UnsupportedOperationException("Unsupported time period unit: " + dvQuantity.getUnits());
+        throw new UnsupportedOperationException("Unsupported time period unit: " + dvQuantity.getUnit());
     }
 
     private boolean evaluateBooleanExpression(ExpressionItem whenStatement, Map<String, List<Object>> input,
@@ -1079,7 +1079,7 @@ public class Interpreter {
         if (attribute == null) {
             if (dataValue instanceof DvQuantity) {
                 DvQuantity dvQuantity = (DvQuantity) dataValue;
-                if (isTimePeriodUnits(dvQuantity.getUnits())) {
+                if (isTimePeriodUnits(dvQuantity.getUnit())) {
                     return convertTimeQuantityToPeriodOrMilliSeconds(dvQuantity);
                 }
             }

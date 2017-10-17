@@ -33,14 +33,14 @@ public class DeserializeGdl2Test {
     public void can_parse_guideline_pre_conditions() throws Exception {
         assertThat(guideline.getDefinition().getPreConditions().size(), is(2));
         assertThat(guideline.getDefinition().getPreConditions().get(0).toString(),
-                is("$gt0005.units=='kg'"));
+                is("$gt0005.unit=='kg'"));
     }
 
     @Test
     public void can_parse_guideline_default_actions() throws Exception {
         assertThat(guideline.getDefinition().getDefaultActions().size(), is(1));
         assertThat(guideline.getDefinition().getDefaultActions().get(0).toString(),
-                is("$gt0004.units='kg/m2'"));
+                is("$gt0004.unit='kg/m2'"));
     }
 
     @Test
@@ -57,7 +57,7 @@ public class DeserializeGdl2Test {
         assertThat(guideline.getDefinition().getRules().get("gt0009").getPriority(), is(3));
         assertThat(guideline.getDefinition().getRules().get("gt0009").getWhen().size(), is(2));
         assertThat(guideline.getDefinition().getRules().get("gt0009").getWhen().get(0).toString(),
-                is("$gt0005.units=='kg'"));
+                is("$gt0005.unit=='kg'"));
         assertThat(guideline.getDefinition().getRules().get("gt0009").getThen().size(), is(3));
         assertThat(guideline.getDefinition().getRules().get("gt0009").getThen().get(0).toString(),
                 is("$gt0013.magnitude=((($gt0005.magnitude*$gt0006.magnitude)/3600)^0.5)"));

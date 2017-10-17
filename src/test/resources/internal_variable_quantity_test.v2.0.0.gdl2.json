@@ -42,7 +42,7 @@
           "$gt0005==2"
         ],
         "then": [
-          "$gt0019|risk|.units='%'",
+          "$gt0019|risk|.unit='%'",
           "$gt0019|risk|.precision=1",
           "$gt0019|risk|.magnitude=3.2"
         ],

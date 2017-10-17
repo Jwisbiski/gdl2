@@ -115,7 +115,7 @@
         "then": [
           "$gt0013.magnitude=((($gt0005.magnitude*$gt0006.magnitude)/3600)^0.5)",
           "$gt0013.precision=2",
-          "$gt0013.units='m2'"
+          "$gt0013.unit='m2'"
         ],
         "priority": 3
       },

@@ -112,7 +112,7 @@ public class AggregationFunctionSumTest extends TestCommon {
     private DataInstance withQuantity(double dose) {
         return new DataInstance.Builder()
                 .modelId(MEDICATION)
-                .addValue(INPUT_PATH, DvQuantity.builder().magnitude(dose).precision(1).units("mg").build())
+                .addValue(INPUT_PATH, DvQuantity.builder().magnitude(dose).precision(1).unit("mg").build())
                 .build();
     }
 

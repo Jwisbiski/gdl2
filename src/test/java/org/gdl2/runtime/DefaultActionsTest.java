@@ -28,7 +28,7 @@ public class DefaultActionsTest extends TestCommon {
         Object dataValue = result.get("gt0013");
         assertThat(dataValue, Matchers.instanceOf(DvQuantity.class));
         DvQuantity dvQuantity = (DvQuantity) dataValue;
-        assertThat(dvQuantity.getUnits(), is("m2"));
+        assertThat(dvQuantity.getUnit(), is("m2"));
     }
 
     @Test

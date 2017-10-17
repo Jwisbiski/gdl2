@@ -85,11 +85,11 @@
       "gt0009": {
         "id": "gt0009",
         "when": [
-          "$gt0005.units=='kg'",
-          "$gt0006.units=='cm'"
+          "$gt0005.unit=='kg'",
+          "$gt0006.unit=='cm'"
         ],
         "then": [
-          "$gt0019.create($gt0013.precision=2;$gt0013.units='m2';$gt0013.magnitude=((($gt0005.magnitude*$gt0006.magnitude)/3600)^0.5))"
+          "$gt0019.create($gt0013.precision=2;$gt0013.unit='m2';$gt0013.magnitude=((($gt0005.magnitude*$gt0006.magnitude)/3600)^0.5))"
         ],
         "priority": 1
       }

@@ -1,12 +1,10 @@
 package org.gdl2.runtime;
 
-import org.gdl2.cdshooks.Action;
 import org.gdl2.cdshooks.Card;
 import org.gdl2.datatypes.DvDateTime;
 import org.gdl2.datatypes.DvQuantity;
 import org.gdl2.model.Guideline;
 import org.hl7.fhir.dstu3.model.MedicationRequest;
-import org.hl7.fhir.dstu3.model.Resource;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -43,7 +41,7 @@ public class CdsHooksGuidelinesTest extends TestCommon {
         DvQuantity dvQuantity = dataInstance.getDvQuantity("/data[at0001]/events[at0002]/data[at0003]/items[at0004]");
         assertThat(dvQuantity.getMagnitude(), closeTo(1.90, 0.1));
         assertThat(dvQuantity.getPrecision(), is(2));
-        assertThat(dvQuantity.getUnits(), is("m2"));
+        assertThat(dvQuantity.getUnit(), is("m2"));
     }
 
     @Test
