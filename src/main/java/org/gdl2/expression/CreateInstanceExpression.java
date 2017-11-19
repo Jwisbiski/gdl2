@@ -17,4 +17,19 @@ public final class CreateInstanceExpression extends AssignmentExpression {
     public List<AssignmentExpression> getAssignmentExpressions() {
         return ((MultipleAssignmentExpression) getAssignment()).getAssignmentExpressions();
     }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getVariable());
+        sb.append("(");
+        List<AssignmentExpression> assignmentExpressions = getAssignmentExpressions();
+        for (int i = 0, j = assignmentExpressions.size(); i < j; i++) {
+            sb.append(assignmentExpressions.get(i).toString());
+            if(i != j - 1) {
+                sb.append(";");
+            }
+        }
+        sb.append(")");
+        return sb.toString();
+    }
 }

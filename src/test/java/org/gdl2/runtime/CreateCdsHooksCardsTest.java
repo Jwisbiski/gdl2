@@ -17,6 +17,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -34,7 +35,7 @@ public class CreateCdsHooksCardsTest extends TestCommon {
     }
 
     @Test
-    public void can_create_cdshooks_card_single_suggestion_with_specific_reference_and_appointment_dates() throws Exception {
+    public void can_create_cdshooks_card_single_suggestion_with_specific_reference_uuid_and_appointment_dates() throws Exception {
         guidelines = loadSingleGuideline("cdshooks_card_single_suggestion_test.v0.1.gdl2");
         List<Card> cardList = interpreter.executeCdsHooksGuidelines(guidelines, input);
         assertThat(cardList.size(), is(1));
@@ -43,6 +44,7 @@ public class CreateCdsHooksCardsTest extends TestCommon {
         assertThat(card.getSource().getUrl().toString(), is("https://www.nice.org.uk/guidance/CG181"));
         assertThat(card.getSuggestions().size(), is(1));
 
+        assertThat(card.getSuggestions().get(0).getUuid(), is(UUID.fromString("5f6ad92d-3b39-4766-831d-23586f7999e3")));
         assertThat(card.getSuggestions().get(0).getActions().get(0).getType(), is(Action.ActionType.CREATE));
         Object object = card.getSuggestions().get(0).getActions().get(0).getResource();
         assertThat("Appointment expected", object instanceof Appointment);

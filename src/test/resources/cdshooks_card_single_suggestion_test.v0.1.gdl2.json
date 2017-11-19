@@ -134,6 +134,7 @@
             "suggestions": [
               {
                 "label": "suggestion label",
+                "uuid": "5f6ad92d-3b39-4766-831d-23586f7999e3",
                 "actions": [
                   {
                     "type": "create",

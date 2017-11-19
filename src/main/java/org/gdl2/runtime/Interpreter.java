@@ -438,6 +438,7 @@ public class Interpreter {
         }
         return Suggestion.builder().actions(actions)
                 .label(suggestion.getLabel())
+                .uuid(suggestion.getUuid())
                 .build();
     }
 
