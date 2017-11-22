@@ -25,7 +25,7 @@ public final class CreateInstanceExpression extends AssignmentExpression {
         List<AssignmentExpression> assignmentExpressions = getAssignmentExpressions();
         for (int i = 0, j = assignmentExpressions.size(); i < j; i++) {
             sb.append(assignmentExpressions.get(i).toString());
-            if(i != j - 1) {
+            if (i != j - 1) {
                 sb.append(";");
             }
         }
