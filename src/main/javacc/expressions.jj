@@ -663,7 +663,6 @@ ConstantExpression constant_expression() :
   Token t = null;
   CodePhrase definingCode = null;
   String text = null;
-  String unit = null;
   Integer order = null;
 }
 {
