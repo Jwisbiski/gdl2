@@ -108,6 +108,10 @@ public class CreateCdsHooksCardsTest extends TestCommon {
         assertThat(card.getSource().getLabel(), is("NICE guideline"));
         assertThat(card.getSource().getUrl().toString(), is("https://www.nice.org.uk/guidance/CG181"));
         assertThat(card.getSuggestions().size(), is(3));
+        assertThat(card.getSuggestions().get(0).getLabel(), is("suggestion one"));
+        assertThat(card.getSuggestions().get(1).getLabel(), is("suggestion two"));
+        assertThat(card.getSuggestions().get(2).getLabel(), is("suggestion three"));
+
         assertThat(card.getSuggestions().get(0).getActions().size(), is(1));
         assertThat("MedicationRequest expected", card.getSuggestions().get(0).getActions().get(0).getResource() instanceof MedicationRequest);
         assertThat(card.getSuggestions().get(1).getActions().size(), is(1));

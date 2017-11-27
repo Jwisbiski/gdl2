@@ -217,7 +217,7 @@
             },
             "suggestions": [
               {
-                "label": "suggestion label",
+                "label": "suggestion one",
                 "actions": [
                   {
                     "type": "create",
@@ -232,7 +232,7 @@
                 ]
               },
               {
-                "label": "suggestion label",
+                "label": "suggestion two",
                 "actions": [
                   {
                     "type": "create",
@@ -247,7 +247,7 @@
                 ]
               },
               {
-                "label": "suggestion label",
+                "label": "suggestion three",
                 "actions": [
                   {
                     "type": "create",
