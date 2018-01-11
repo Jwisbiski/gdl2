@@ -18,7 +18,7 @@ public final class DvDateTime {
     }
 
     public static DvDateTime valueOf(String value) {
-        LocalDateTime dateTime = LocalDateTime.parse(value);
+        LocalDateTime dateTime = LocalDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME);
         return new DvDateTime(dateTime);
     }
 

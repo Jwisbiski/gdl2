@@ -3,7 +3,6 @@ package org.gdl2.datatypes;
 import org.testng.annotations.Test;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -21,8 +20,8 @@ public class DvDateTimeTest {
         assertThat(dateTime.getSecond(), is(15));
     }
 
-    @Test(expectedExceptions = DateTimeParseException.class)
-    public void can_parse_iso_datetime_value_timezone_expect_parsing_failure() {
+    @Test
+    public void can_parse_iso_datetime_value_timezone() {
         DvDateTime.valueOf("2012-01-10T05:07:15+01:00");
     }
 
