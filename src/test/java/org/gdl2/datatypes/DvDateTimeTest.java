@@ -26,6 +26,11 @@ public class DvDateTimeTest {
     }
 
     @Test
+    public void can_parse_iso_datetime_value_with_Z() {
+        DvDateTime.valueOf("2012-01-10T05:07:15Z");
+    }
+
+    @Test
     public void can_get_date() {
         DvDateTime dateTime = DvDateTime.valueOf("2012-01-10T05:07:15");
         DvDate dvDate = dateTime.date();
