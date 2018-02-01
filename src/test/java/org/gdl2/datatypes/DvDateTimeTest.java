@@ -27,7 +27,7 @@ public class DvDateTimeTest {
 
     @Test
     public void can_parse_iso_datetime_value_with_Z() {
-        DvDateTime.valueOf("2012-01-10T05:07:15Z");
+        DvDateTime.valueOf("2017-10-01T00:00:00Z");
     }
 
     @Test
