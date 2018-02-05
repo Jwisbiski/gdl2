@@ -244,13 +244,4 @@ public class AssignmentStatementTest extends TestCommon {
         interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
         assertThat(resultMap.get("gt0005"), is("2017-09-20T21:30:15"));
     }
-
-    //@Test
-    public void can_assign_current_date_plus_three_months() throws Exception {
-        AssignmentExpression assignment = parseAssignmentExpression("$gt0005=$currentDate.value+3,mo");
-        interpreter = new Interpreter(RuntimeConfiguration.builder()
-                .currentDateTime(DvDateTime.valueOf("2017-09-20T21:30:15")).build());
-        interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
-        assertThat(resultMap.get("gt0005").toString(), is("2017-12-20"));
-    }
 }
