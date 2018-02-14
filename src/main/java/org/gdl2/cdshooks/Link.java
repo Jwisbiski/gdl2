@@ -25,6 +25,10 @@ public class Link {
 
         @JsonProperty("smart")
         @SerializedName("smart")
-        SMART
+        SMART,
+
+        @JsonProperty("app")
+        @SerializedName("app")
+        APP
     }
 }
