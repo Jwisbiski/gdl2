@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.gdl2</groupId>
     <artifactId>gdl2</artifactId>
-    <version>0.6.2-SNAPSHOTgit s</version>
+    <version>0.6.2-SNAPSHOT</version>
     <name>GDL2</name>
     <description>Guideline Definition Language v2 reference java implementation</description>
     <url>https://github.com/gdl-lang/gdl2</url>
