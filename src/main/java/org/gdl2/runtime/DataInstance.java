@@ -106,6 +106,11 @@ public class DataInstance {
         return (DvDateTime) this.values.get(key);
     }
 
+    public DvDate getDvDate(String key) {
+        check(key);
+        return (DvDate) this.values.get(key);
+    }
+
     /**
      * Set keyed value of dataInstance.
      *
