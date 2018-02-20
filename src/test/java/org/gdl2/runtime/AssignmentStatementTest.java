@@ -136,19 +136,6 @@ public class AssignmentStatementTest extends TestCommon {
         assertThat(dvQuantity.getPrecision(), is(2));
     }
 
-    @Test(enabled = false)
-    public void can_assign_dv_ordinal_magnitude_with_double_constant() {
-        // "$gt0004.magnitude=22.2"
-        String code = "gt0004";
-        AssignmentExpression assignment = new AssignmentExpression(
-                new Variable(code, "name", "path", "magnitude"), ConstantExpression.create("22.2"));
-        interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
-        dataValue = resultMap.get(code);
-        assertThat(dataValue, is(instanceOf(DvQuantity.class)));
-        DvQuantity dvQuantity = (DvQuantity) dataValue;
-        assertThat(dvQuantity.getMagnitude(), is(22.2));
-    }
-
     @Test
     public void can_assign_dv_ordinal() {
         // "$gt0010=1|local::at0028|Present|"
