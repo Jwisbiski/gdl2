@@ -38,6 +38,7 @@ public class Interpreter {
     private static final String REFERENCE_NOT_FOUND = "Reference not found";
     private static final long HOUR_IN_MILLISECONDS = 3600 * 1000L;
     private static final String ENGLISH_LANGUAGE = "en";
+    private static final String TERM = "term";
 
     private RuntimeConfiguration runtimeConfiguration;
     private static final TemplateFiller templateFiller = new TemplateFiller();
@@ -347,9 +348,13 @@ public class Interpreter {
                 links.add(processReferencedLink(link, guideline.getDescription()));
             }
         }
+        TermDefinition termDefinition = guideline.getOntology().getTermDefinitions().get(this.runtimeConfiguration.getLanguage());
+        if (termDefinition == null) {
+            termDefinition = guideline.getOntology().getTermDefinitions().get(ENGLISH_LANGUAGE);
+        }
         return Card.builder()
-                .summary(replaceVariablesWithValues(card.getSummary(), input))
-                .detail(replaceVariablesWithValues(card.getDetail(), input))
+                .summary(replaceVariablesWithValues(card.getSummary(), input, termDefinition))
+                .detail(replaceVariablesWithValues(card.getDetail(), input, termDefinition))
                 .indicator(card.getIndicator())
                 .source(source)
                 .suggestions(suggestions)
@@ -401,7 +406,7 @@ public class Interpreter {
         return url;
     }
 
-    private String replaceVariablesWithValues(String source, Map<String, List<Object>> values) {
+    private String replaceVariablesWithValues(String source, Map<String, List<Object>> values, TermDefinition termDefinition) {
         if (source == null) {
             return null;
         }
@@ -411,13 +416,23 @@ public class Interpreter {
             String text = matcher.group();
             String expression = text.substring(1, text.length() - 1);
             Variable variable = parseVariable(expression);
-            Object value = evaluateExpressionItem(variable, values);
+            Object value;
+            if (TERM.equals(variable.getAttribute())) {
+                value = getStringValueFromTerm(variable, termDefinition);
+            } else {
+                value = evaluateExpressionItem(variable, values);
+            }
             if (value != null) {
                 matcher.appendReplacement(stringBuffer, value.toString());
             }
         }
         matcher.appendTail(stringBuffer);
         return stringBuffer.toString();
+    }
+
+    private String getStringValueFromTerm(Variable variable, TermDefinition termDefinition) {
+        Term term = termDefinition.getTerms().get(variable.getCode());
+        return term == null ? null : term.getText();
     }
 
     private Variable parseVariable(String expression) {
@@ -1051,6 +1066,10 @@ public class Interpreter {
         } else {
             throw new IllegalArgumentException("Supported data type for sum(): " + first.getClass());
         }
+    }
+
+    private Object retrieveValueFromTermDefinitions() {
+        return null;
     }
 
     private Object retrieveValueFromValueMap(Variable variable, Map<String, List<Object>> valueMap) {

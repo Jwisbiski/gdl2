@@ -126,8 +126,8 @@
         ],
         "cards": [
           {
-            "summary": "BSA",
-            "detail": "Body surface area",
+            "summary": "{$gt2000.term}",
+            "detail": "{$gt2001.term}",
             "indicator": "info",
             "suggestions": [],
             "links": []
@@ -200,6 +200,27 @@
             "id": "gt0017",
             "text": "test rule not fired",
             "description": "."
+          },
+          "gt2000": {
+            "id": "gt2000",
+            "text": "BSA summary"
+          },
+          "gt2001": {
+            "id": "gt2001",
+            "text": "Body surface area description"
+          }
+        }
+      },
+      "sv": {
+        "id": "sv",
+        "terms": {
+          "gt2000": {
+            "id": "gt2000",
+            "text": "BSA sammanfattning"
+          },
+          "gt2001": {
+            "id": "gt2001",
+            "text": "Beskrivning av kroppsytan"
           }
         }
       }

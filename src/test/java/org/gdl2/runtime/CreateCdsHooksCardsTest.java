@@ -143,6 +143,34 @@ public class CreateCdsHooksCardsTest extends TestCommon {
         assertThat(cardList.get(1).getSummary(), is("card 2"));
     }
 
+    @Test
+    public void can_get_card_with_swedish_summary_detail() throws Exception {
+        interpreter = new Interpreter("sv");
+        guidelines = loadSingleGuideline("BSA_Calculation_cdshooks_test.v1.gdl2");
+        ArrayList<DataInstance> dataInstances = new ArrayList<>();
+        dataInstances.add(toWeight("72.0,kg"));
+        dataInstances.add(toHeight("180.0,cm"));
+
+        List<Card> cardList = interpreter.executeCdsHooksGuidelines(guidelines, dataInstances);
+        assertThat(cardList.size(), Matchers.is(1));
+        assertThat(cardList.get(0).getSummary(), Matchers.is("BSA sammanfattning"));
+        assertThat(cardList.get(0).getDetail(), Matchers.is("Beskrivning av kroppsytan"));
+    }
+
+    @Test
+    public void can_get_card_with_english_summary_detail_when_unsupported_language_requested() throws Exception {
+        interpreter = new Interpreter("no");
+        guidelines = loadSingleGuideline("BSA_Calculation_cdshooks_test.v1.gdl2");
+        ArrayList<DataInstance> dataInstances = new ArrayList<>();
+        dataInstances.add(toWeight("72.0,kg"));
+        dataInstances.add(toHeight("180.0,cm"));
+
+        List<Card> cardList = interpreter.executeCdsHooksGuidelines(guidelines, dataInstances);
+        assertThat(cardList.size(), Matchers.is(1));
+        assertThat(cardList.get(0).getSummary(), Matchers.is("BSA summary"));
+        assertThat(cardList.get(0).getDetail(), Matchers.is("Body surface area description"));
+    }
+
     private Interpreter buildInterpreterWithFhirPluginAndCurrentDateTime(String datetime) {
         return new Interpreter(
                 RuntimeConfiguration.builder()
