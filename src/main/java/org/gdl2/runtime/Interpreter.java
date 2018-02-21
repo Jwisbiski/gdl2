@@ -236,7 +236,10 @@ public class Interpreter {
             if (DataBinding.Type.INPUT.equals(dataBinding.getType())) {
                 continue;
             }
-            DataInstance dataInstance = new DataInstance.Builder().modelId(dataBinding.getModelId()).build();
+            DataInstance dataInstance = new DataInstance.Builder()
+                    .id(dataBinding.getId())
+                    .modelId(dataBinding.getModelId())
+                    .build();
             for (Map.Entry<String, Element> elementBindingEntry : dataBinding.getElements().entrySet()) {
                 String elementId = elementBindingEntry.getValue().getId();
                 String elementPath = elementBindingEntry.getValue().getPath();
@@ -256,6 +259,7 @@ public class Interpreter {
                 Template template = entry.getValue();
                 if (valueMap.containsKey(template.getId())) {
                     dataInstances.add(new DataInstance.Builder()
+                            .id(template.getId())
                             .modelId(template.getModelId())
                             .addValue("/", valueMap.get(template.getId()))
                             .build());

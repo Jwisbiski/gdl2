@@ -9,6 +9,7 @@ import java.util.*;
  * and output of GDL guideline executions.
  */
 public class DataInstance {
+    private String id; // set by engine with data_binding gt_code after execution
     private String modelId;
     private Map<String, Object> values; // values indexed by path
 
@@ -132,6 +133,10 @@ public class DataInstance {
         return this.modelId;
     }
 
+    public String id() {
+        return this.id;
+    }
+
     /**
      * Get the object at root path.
      *
@@ -143,6 +148,12 @@ public class DataInstance {
 
     public static class Builder {
         private DataInstance dataInstance = new DataInstance();
+
+        public Builder id(String id) {
+            assertNotNull(id, "Null id");
+            dataInstance.id = id;
+            return this;
+        }
 
         public Builder modelId(String modelId) {
             assertNotNull(modelId, "Null modelId");

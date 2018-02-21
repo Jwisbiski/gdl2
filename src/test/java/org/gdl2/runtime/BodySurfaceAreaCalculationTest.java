@@ -45,6 +45,7 @@ public class BodySurfaceAreaCalculationTest extends TestCommon {
 
         List<DataInstance> result = interpreter.executeGuidelines(Collections.singletonList(guideline), dataInstances);
         DataInstance dataInstance = result.get(0);
+        assertThat(dataInstance.id(), is("gt0019"));
         DvQuantity dvQuantity = dataInstance.getDvQuantity("/data[at0001]/events[at0002]/data[at0003]/items[at0004]");
         assertThat(dvQuantity.getMagnitude(), closeTo(1.90, 0.1));
         assertThat(dvQuantity.getPrecision(), is(2));
