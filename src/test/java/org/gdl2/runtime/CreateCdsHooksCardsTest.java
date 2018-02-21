@@ -155,6 +155,9 @@ public class CreateCdsHooksCardsTest extends TestCommon {
         assertThat(cardList.size(), Matchers.is(1));
         assertThat(cardList.get(0).getSummary(), Matchers.is("BSA sammanfattning"));
         assertThat(cardList.get(0).getDetail(), Matchers.is("Beskrivning av kroppsytan"));
+        assertThat(cardList.get(0).getSuggestions().get(0).getLabel(), Matchers.is("Förslagetikett"));
+        assertThat(cardList.get(0).getSuggestions().get(0).getActions().get(0).getDescription(), Matchers.is("Åtgärds beskrivning"));
+        assertThat(cardList.get(0).getLinks().get(0).getLabel(), Matchers.is("Länk etikett"));
     }
 
     @Test
@@ -169,6 +172,9 @@ public class CreateCdsHooksCardsTest extends TestCommon {
         assertThat(cardList.size(), Matchers.is(1));
         assertThat(cardList.get(0).getSummary(), Matchers.is("BSA summary"));
         assertThat(cardList.get(0).getDetail(), Matchers.is("Body surface area description"));
+        assertThat(cardList.get(0).getSuggestions().get(0).getLabel(), Matchers.is("Suggestion label"));
+        assertThat(cardList.get(0).getSuggestions().get(0).getActions().get(0).getDescription(), Matchers.is("Action description"));
+        assertThat(cardList.get(0).getLinks().get(0).getLabel(), Matchers.is("Link label"));
     }
 
     private Interpreter buildInterpreterWithFhirPluginAndCurrentDateTime(String datetime) {

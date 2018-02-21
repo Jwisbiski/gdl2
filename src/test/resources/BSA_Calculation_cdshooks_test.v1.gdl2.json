@@ -129,8 +129,25 @@
             "summary": "{$gt2000.term}",
             "detail": "{$gt2001.term}",
             "indicator": "info",
-            "suggestions": [],
-            "links": []
+            "suggestions": [
+              {
+                "label": "{$gt2002.term}",
+                "uuid": "540e561e-ed46-48e7-804b-db40365fc029",
+                "actions": [
+                  {
+                    "type": "create",
+                    "description": "{$gt2003.term}"
+                  }
+                ]
+              }
+            ],
+            "links": [
+              {
+                "label": "{$gt2004.term}",
+                "url": "https://www.nice.org.uk/guidance/topic/lifestyle-and-wellbeing/physical-activity",
+                "type": "app"
+              }
+            ]
           }
         ],
         "priority": 3
@@ -208,6 +225,18 @@
           "gt2001": {
             "id": "gt2001",
             "text": "Body surface area description"
+          },
+          "gt2002": {
+            "id": "gt2002",
+            "text": "Suggestion label"
+          },
+          "gt2003": {
+            "id": "gt2003",
+            "text": "Action description"
+          },
+          "gt2004": {
+            "id": "gt2004",
+            "text": "Link label"
           }
         }
       },
@@ -221,6 +250,18 @@
           "gt2001": {
             "id": "gt2001",
             "text": "Beskrivning av kroppsytan"
+          },
+          "gt2002": {
+            "id": "gt2002",
+            "text": "Förslagetikett"
+          },
+          "gt2003": {
+            "id": "gt2003",
+            "text": "Åtgärds beskrivning"
+          },
+          "gt2004": {
+            "id": "gt2004",
+            "text": "Länk etikett"
           }
         }
       }

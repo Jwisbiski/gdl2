@@ -332,10 +332,14 @@ public class Interpreter {
     }
 
     private Card processCard(Card card, Map<String, List<Object>> input, Guideline guideline) {
+        TermDefinition termDefinition = guideline.getOntology().getTermDefinitions().get(this.runtimeConfiguration.getLanguage());
+        if (termDefinition == null) {
+            termDefinition = guideline.getOntology().getTermDefinitions().get(ENGLISH_LANGUAGE);
+        }
         List<Suggestion> suggestions = new ArrayList<>();
         if (card.getSuggestions() != null) {
             for (int i = 0, j = card.getSuggestions().size(); i < j; i++) {
-                suggestions.add(processSuggestion(card.getSuggestions().get(i), input, guideline));
+                suggestions.add(processSuggestion(card.getSuggestions().get(i), input, guideline, termDefinition));
             }
         }
         Source source = card.getSource();
@@ -345,12 +349,8 @@ public class Interpreter {
         List<Link> links = new ArrayList<>();
         if (card.getLinks() != null) {
             for (Link link : card.getLinks()) {
-                links.add(processReferencedLink(link, guideline.getDescription()));
+                links.add(processLink(link, guideline.getDescription(), input, termDefinition));
             }
-        }
-        TermDefinition termDefinition = guideline.getOntology().getTermDefinitions().get(this.runtimeConfiguration.getLanguage());
-        if (termDefinition == null) {
-            termDefinition = guideline.getOntology().getTermDefinitions().get(ENGLISH_LANGUAGE);
         }
         return Card.builder()
                 .summary(replaceVariablesWithValues(card.getSummary(), input, termDefinition))
@@ -371,13 +371,31 @@ public class Interpreter {
         return Source.builder().label(label).url(url).build();
     }
 
-    private Link processReferencedLink(Link link, ResourceDescription description) {
-        if (description == null || !ABSOLUTE.equals(link.getType())) {
-            return link;
+    private Link processLink(Link link, ResourceDescription resourceDescription,
+                             Map<String, List<Object>> values, TermDefinition termDefinition) {
+        if (ABSOLUTE.equals(link.getType()) && resourceDescription != null) {
+            return processReferencedLink(link, resourceDescription);
+        } else {
+            return processLanguageSpecificLabel(link, values, termDefinition);
         }
-        String label = fromReferencedLabel(link.getLabelReference(), description);
-        URL url = fromReferencedUrl(link.getUrlReference(), description);
-        return Link.builder().label(label).url(url).type(ABSOLUTE).build();
+    }
+
+    private Link processReferencedLink(Link link, ResourceDescription resourceDescription) {
+        String label = fromReferencedLabel(link.getLabelReference(), resourceDescription);
+        URL url = fromReferencedUrl(link.getUrlReference(), resourceDescription);
+        return Link.builder()
+                .label(label)
+                .url(url)
+                .type(ABSOLUTE)
+                .build();
+    }
+
+    private Link processLanguageSpecificLabel(Link link, Map<String, List<Object>> values, TermDefinition termDefinition) {
+        return Link.builder()
+                .label(replaceVariablesWithValues(link.getLabel(), values, termDefinition))
+                .url(link.getUrl())
+                .type(link.getType())
+                .build();
     }
 
     private String fromReferencedLabel(String labelRef, ResourceDescription resourceDescription) {
@@ -444,22 +462,23 @@ public class Interpreter {
         }
     }
 
-    private Suggestion processSuggestion(Suggestion suggestion, Map<String, List<Object>> input, Guideline guideline) {
+    private Suggestion processSuggestion(Suggestion suggestion, Map<String, List<Object>> input, Guideline guideline,
+                                         TermDefinition termDefinition) {
         List<Action> actions = new ArrayList<>();
         if (suggestion.getActions() != null) {
             for (Action action : suggestion.getActions()) {
-                actions.add(processAction(action, input, guideline));
+                actions.add(processAction(action, input, guideline, termDefinition));
             }
         }
         return Suggestion.builder().actions(actions)
-                .label(suggestion.getLabel())
+                .label(replaceVariablesWithValues(suggestion.getLabel(), input, termDefinition))
                 .uuid(suggestion.getUuid())
                 .build();
     }
 
-    private Action processAction(Action action, Map<String, List<Object>> input, Guideline guideline) {
+    private Action processAction(Action action, Map<String, List<Object>> input, Guideline guideline, TermDefinition termDefinition) {
         Action.ActionBuilder actionBuilder = Action.builder()
-                .description(action.getDescription())
+                .description(replaceVariablesWithValues(action.getDescription(), input, termDefinition))
                 .type(action.getType());
         if (action.getResourceTemplate() != null) {
             actionBuilder.resource(processUseTemplate(action.getResourceTemplate(), input, guideline));
