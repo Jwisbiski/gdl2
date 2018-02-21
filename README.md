@@ -15,8 +15,3 @@ This is dev project of gdl2 in order to explore new features and ideas on the la
 1. Light-weight java8 runtime interpreter
 1. Immutable value objects for the model and data type classes 
 
-# Contributors
-- Rong Chen
-- Iago Corbal
-- Johan Rende
-- Manuel Palacio
