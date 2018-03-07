@@ -2,7 +2,6 @@ package org.gdl2.deserializers;
 
 
 import org.gdl2.expression.*;
-import org.gdl2.runtime.Interpreter;
 import org.testng.annotations.Test;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -49,6 +48,28 @@ public class ParseExpressionItemTest {
         assertThat(assignmentExpression.getAssignment(), instanceOf(OrdinalConstant.class));
         OrdinalConstant ordinalConstant = (OrdinalConstant) assignmentExpression.getAssignment();
         assertThat(ordinalConstant.getOrdinal().getValue(), is(-1));
+    }
+
+    @Test
+    public void can_parse_dv_quantity_with_egfr_unit() throws Exception {
+        expressionItem = deserializer.parse("$gt0013=60,mL/min/{1.73_m2}");
+        assertThat(expressionItem, instanceOf(AssignmentExpression.class));
+        AssignmentExpression assignmentExpression = (AssignmentExpression) expressionItem;
+        assertThat(assignmentExpression.getVariable().getCode(), is("gt0013"));
+        assertThat(assignmentExpression.getAssignment(), instanceOf(QuantityConstant.class));
+        QuantityConstant quantityConstant = (QuantityConstant) assignmentExpression.getAssignment();
+        assertThat(quantityConstant.getQuantity().getUnit(), is("mL/min/{1.73_m2}"));
+    }
+
+    @Test
+    public void can_parse_dv_quantity_with_egfr_unit2() throws Exception {
+        expressionItem = deserializer.parse("$gt0013=60,ml/min/1.73m2");
+        assertThat(expressionItem, instanceOf(AssignmentExpression.class));
+        AssignmentExpression assignmentExpression = (AssignmentExpression) expressionItem;
+        assertThat(assignmentExpression.getVariable().getCode(), is("gt0013"));
+        assertThat(assignmentExpression.getAssignment(), instanceOf(QuantityConstant.class));
+        QuantityConstant quantityConstant = (QuantityConstant) assignmentExpression.getAssignment();
+        assertThat(quantityConstant.getQuantity().getUnit(), is("ml/min/1.73m2"));
     }
 
     @Test
