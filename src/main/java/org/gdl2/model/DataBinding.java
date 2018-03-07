@@ -11,6 +11,7 @@ public class DataBinding {
     private String id;
     private Type type;
     private String modelId;
+    private String templateId;
     private Map<String, Element> elements;
     private List<ExpressionItem> predicates;
 

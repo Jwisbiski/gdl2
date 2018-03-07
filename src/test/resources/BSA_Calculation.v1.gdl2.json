@@ -93,6 +93,7 @@
       "gt0016": {
         "id": "gt0016",
         "model_id": "openEHR-EHR-OBSERVATION.body_weight.v1",
+        "template_id": "body_weight_template.v1",
         "type": "INPUT",
         "elements": {
           "gt0005": {

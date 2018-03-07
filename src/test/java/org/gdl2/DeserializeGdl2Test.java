@@ -52,6 +52,12 @@ public class DeserializeGdl2Test {
     }
 
     @Test
+    public void can_parse_guideline_data_bindings_and_get_template_id() throws Exception {
+        assertThat(guideline.getDefinition().getDataBindings().get("gt0016").getTemplateId(),
+                is("body_weight_template.v1"));
+    }
+
+    @Test
     public void can_parse_guideline_rules() throws Exception {
         assertThat(guideline.getDefinition().getRules().size(), is(3));
         assertThat(guideline.getDefinition().getRules().get("gt0009").getPriority(), is(3));
