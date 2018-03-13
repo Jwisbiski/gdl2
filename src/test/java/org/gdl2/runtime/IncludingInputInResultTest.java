@@ -71,7 +71,7 @@ public class IncludingInputInResultTest extends TestCommon {
                 .objectCreatorPlugin(new DefaultObjectCreator())
                 .terminologySubsumptionEvaluators(Collections.emptyMap())
                 .build());
-        List<DataInstance> result = interpreter.executeSingleGuideline(guideline, dataInstances);
+        List<DataInstance> result = interpreter.executeGuidelines(Collections.singletonList(guideline), dataInstances);
         assertThat(result.size(), is(4));
         DataInstance dataInstance = result.get(0);
         assertThat(dataInstance.modelId(), is("openEHR-EHR-OBSERVATION.body_surface_area.v1"));

@@ -134,7 +134,7 @@ public class Interpreter {
             List<DataInstance> resultPerExecution = executeSingleGuidelineWithCards(guide, input, cards);
             for (DataInstance dataInstance : resultPerExecution) {
                 DataInstance existing = allResults.get(dataInstance.modelId());
-                if (existing == null) {
+                if (existing == null || isInputData(dataInstance, guide)) {
                     allResults.put(dataInstance.modelId(), dataInstance);
                 } else {
                     existing.merge(dataInstance);
@@ -145,6 +145,10 @@ public class Interpreter {
             totalResult.addAll(resultPerExecution);
         }
         return totalResult;
+    }
+
+    private boolean isInputData(DataInstance dataInstance, Guideline guideline) {
+        return guideline.getDefinition().getDataBindings().get(dataInstance.id()).getType().equals(INPUT);
     }
 
     public List<DataInstance> executeSingleGuideline(Guideline guide, List<DataInstance> dataInstances) {
