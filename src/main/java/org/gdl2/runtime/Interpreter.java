@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import static org.gdl2.cdshooks.Link.LinkType.ABSOLUTE;
 import static org.gdl2.expression.OperatorKind.*;
+import static org.gdl2.model.DataBinding.Type.INPUT;
 
 /**
  * Java interpreter of GDL2 guidelines.
@@ -94,6 +95,7 @@ public class Interpreter {
     private RuntimeConfiguration setDefaultRuntimeConfigurationIfMissing(RuntimeConfiguration runtimeConfiguration) {
         return RuntimeConfiguration.builder()
                 .currentDateTime(runtimeConfiguration.getCurrentDateTime())
+                .includingInputWithPredicate(runtimeConfiguration.isIncludingInputWithPredicate())
                 .language(runtimeConfiguration.getLanguage() == null ? ENGLISH_LANGUAGE : runtimeConfiguration.getLanguage())
                 .objectCreatorPlugin(runtimeConfiguration.getObjectCreatorPlugin() == null ? new DefaultObjectCreator() : runtimeConfiguration.getObjectCreatorPlugin())
                 .terminologySubsumptionEvaluators(
@@ -151,8 +153,8 @@ public class Interpreter {
 
     private List<DataInstance> executeSingleGuidelineWithCards(Guideline guide, List<DataInstance> dataInstances,
                                                                List<Card> cards) {
-        Map<String, Object> resultMap = execute(guide, dataInstances, cards);
-        return collectDataInstancesFromValueMap(resultMap, guide.getDefinition());
+        Map<String, List<Object>> resultMap = execute(guide, dataInstances, cards);
+        return collectDataInstancesFromValueListMap(resultMap, guide.getDefinition());
     }
 
     private Set<String> getCodesForAssignableVariables(GuideDefinition guideDefinition) {
@@ -180,15 +182,15 @@ public class Interpreter {
         return codesFromAssignments;
     }
 
-    Map<String, Object> execute(Guideline guideline, List<DataInstance> dataInstances) {
+    Map<String, List<Object>> execute(Guideline guideline, List<DataInstance> dataInstances) {
         return execute(guideline, dataInstances, null);
     }
 
-    Map<String, Object> execute(Guideline guideline, List<DataInstance> dataInstances, List<Card> cards) {
+    Map<String, List<Object>> execute(Guideline guideline, List<DataInstance> dataInstances, List<Card> cards) {
         assertNotNull(guideline, "Guideline cannot not be null.");
         assertNotNull(dataInstances, "List<DataInstance> cannot be null.");
 
-        Map<String, List<Object>> inputValues = selectDataInstancesUsingPredicatesAndSortWithElementBindingCode(
+        Map<String, List<Object>> selectedInput = selectDataInstancesUsingPredicatesAndSortWithElementBindingCode(
                 dataInstances, guideline);
         Map<String, Object> resultDefaultRuleExecution = new HashMap<>();
         Map<String, Class> typeMap = new HashMap<>();
@@ -196,31 +198,26 @@ public class Interpreter {
         boolean allPreconditionsAreTrue = true;
         if (guideline.getDefinition().getPreConditions() != null) {
             allPreconditionsAreTrue = guideline.getDefinition().getPreConditions().stream()
-                    .allMatch(expressionItem -> evaluateBooleanExpression(expressionItem, inputValues, guideline, null));
+                    .allMatch(expressionItem -> evaluateBooleanExpression(expressionItem, selectedInput, guideline, null));
         }
         if (!allPreconditionsAreTrue) {
-            return collectValueListMap(inputValues);
+            return selectedInput;
         }
         if (guideline.getDefinition().getDefaultActions() != null) {
             for (ExpressionItem assignmentExpression : guideline.getDefinition().getDefaultActions()) {
-                performAssignmentStatements((AssignmentExpression) assignmentExpression, inputValues, typeMap,
+                performAssignmentStatements((AssignmentExpression) assignmentExpression, selectedInput, typeMap,
                         resultDefaultRuleExecution, guideline);
-                mergeValueMapIntoListValueMap(resultDefaultRuleExecution, inputValues);
+                mergeValueMapIntoListValueMap(resultDefaultRuleExecution, selectedInput);
             }
         }
         List<Rule> sortedRules = sortRulesByPriority(guideline.getDefinition().getRules().values());
 
-        Map<String, List<Object>> inputAndResult = new HashMap<>(inputValues);
+        Map<String, List<Object>> inputAndResult = new HashMap<>(selectedInput);
         for (Rule rule : sortedRules) {
             Map<String, Object> resultPerRuleExecution = evaluateRule(rule, inputAndResult, guideline, firedRules, cards);
             mergeValueMapIntoListValueMap(resultPerRuleExecution, inputAndResult);
         }
-        return collectValueListMap(inputAndResult);
-    }
-
-    private Map<String, Object> collectValueListMap(Map<String, List<Object>> valueListMap) {
-        return valueListMap.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, s -> s.getValue().get(s.getValue().size() - 1)));
+        return inputAndResult;
     }
 
     private void mergeValueMapIntoListValueMap(Map<String, Object> valueMap, Map<String, List<Object>> valueListMap) {
@@ -229,44 +226,81 @@ public class Interpreter {
         }
     }
 
-    private List<DataInstance> collectDataInstancesFromValueMap(Map<String, Object> valueMap, GuideDefinition guideDefinition) {
+    private List<DataInstance> collectDataInstancesFromValueListMap(Map<String, List<Object>> valueListMap,
+                                                                    GuideDefinition guideDefinition) {
         List<DataInstance> dataInstances = new ArrayList<>();
         Set<String> assignableCodes = getCodesForAssignableVariables(guideDefinition);
         for (DataBinding dataBinding : guideDefinition.getDataBindings().values()) {
-            if (DataBinding.Type.INPUT.equals(dataBinding.getType())) {
-                continue;
+            if (INPUT.equals(dataBinding.getType())) {
+                if (!this.runtimeConfiguration.isIncludingInputWithPredicate()
+                        || (this.runtimeConfiguration.isIncludingInputWithPredicate()
+                        && (dataBinding.getPredicates() == null || dataBinding.getPredicates().size() == 0))) {
+                    continue;
+                }
             }
-            DataInstance dataInstance = new DataInstance.Builder()
-                    .id(dataBinding.getId())
-                    .modelId(dataBinding.getModelId())
-                    .build();
+            Map<String, List<Object>> pathValueListMap = new HashMap<>();
+            int total = 0;
             for (Map.Entry<String, Element> elementBindingEntry : dataBinding.getElements().entrySet()) {
                 String elementId = elementBindingEntry.getValue().getId();
                 String elementPath = elementBindingEntry.getValue().getPath();
-                for (Map.Entry<String, Object> entry : valueMap.entrySet()) {
+                for (Map.Entry<String, List<Object>> entry : valueListMap.entrySet()) {
                     String valueKey = entry.getKey();
-                    if (assignableCodes.contains(valueKey) && elementId.equals(valueKey)) {
-                        dataInstance.setValue(elementPath, entry.getValue());
+                    List<Object> objects = entry.getValue();
+                    if (elementId.equals(valueKey)) {
+                        if (this.runtimeConfiguration.isIncludingInputWithPredicate()
+                                && INPUT.equals(dataBinding.getType())) {
+                            if (total < objects.size()) {
+                                total = objects.size();
+                            }
+                            pathValueListMap.put(elementPath, objects);
+                        } else if (assignableCodes.contains(valueKey)) {
+                            total = 1; // only take last element for output type
+                            pathValueListMap.put(elementPath, Collections.singletonList(objects.get(objects.size() - 1)));
+                        }
                     }
                 }
             }
-            if (dataInstance.values().size() != 0) {
-                dataInstances.add(dataInstance);
-            }
+            dataInstances.addAll(
+                    createFromValueListsUsingSingleDataBinding(dataBinding.getId(), dataBinding.getModelId(), pathValueListMap, total));
         }
         if (guideDefinition.getTemplates() != null) {
             for (Map.Entry<String, Template> entry : guideDefinition.getTemplates().entrySet()) {
                 Template template = entry.getValue();
-                if (valueMap.containsKey(template.getId())) {
+                if (valueListMap.containsKey(template.getId())) {
+                    List<Object> list = valueListMap.get(template.getId());
                     dataInstances.add(new DataInstance.Builder()
                             .id(template.getId())
                             .modelId(template.getModelId())
-                            .addValue("/", valueMap.get(template.getId()))
+                            .addValue("/", list.get(list.size() - 1))
                             .build());
                 }
             }
         }
         return dataInstances;
+    }
+
+    private List<DataInstance> createFromValueListsUsingSingleDataBinding(String bindingId,
+                                                                          String modelId,
+                                                                          Map<String, List<Object>> pathValueListMap,
+                                                                          int total) {
+        List<DataInstance> dataInstanceList = new ArrayList<>(total);
+        for (int i = 0; i < total; i++) {
+            DataInstance dataInstance = new DataInstance.Builder()
+                    .id(bindingId)
+                    .modelId(modelId)
+                    .build();
+            for (Map.Entry<String, List<Object>> entry : pathValueListMap.entrySet()) {
+                String path = entry.getKey();
+                List<Object> objects = entry.getValue();
+                if (objects.size() > i) {
+                    dataInstance.setValue(path, objects.get(i));
+                }
+            }
+            if (dataInstance.values().size() != 0) {
+                dataInstanceList.add(dataInstance);
+            }
+        }
+        return dataInstanceList;
     }
 
     private Map<String, List<Object>> selectDataInstancesUsingPredicatesAndSortWithElementBindingCode(

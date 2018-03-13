@@ -6,8 +6,7 @@ import org.hamcrest.Matchers;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -29,8 +28,8 @@ public class FiredRulesTest extends TestCommon {
         dataInstances.add(toWeight("72.0,kg"));
         dataInstances.add(toHeight("180.0,cm"));
 
-        Map<String, Object> result = interpreter.execute(guideline, dataInstances);
-        Object dataValue = result.get("gt0014");
+        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances);
+        Object dataValue = result.get("gt0014").get(0);
         assertThat(dataValue, Matchers.instanceOf(DvBoolean.class));
         DvBoolean dvBoolean = (DvBoolean) dataValue;
         assertThat(dvBoolean.getValue(), is(true));
@@ -43,8 +42,8 @@ public class FiredRulesTest extends TestCommon {
         dataInstances.add(toWeight("158.7,lbs"));
         dataInstances.add(toHeight("5.95,ft"));
 
-        Map<String, Object> result = interpreter.execute(guideline, dataInstances);
-        Object dataValue = result.get("gt0014");
+        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances);
+        Object dataValue = result.get("gt0014").get(0);
         assertThat(dataValue, Matchers.instanceOf(DvBoolean.class));
         DvBoolean dvBoolean = (DvBoolean) dataValue;
         assertThat(dvBoolean.getValue(), is(false));

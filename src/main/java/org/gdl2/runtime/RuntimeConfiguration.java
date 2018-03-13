@@ -12,6 +12,7 @@ import java.util.Map;
 public class RuntimeConfiguration {
     private String language;
     private DvDateTime currentDateTime;
+    private boolean includingInputWithPredicate;
     private ObjectCreatorPlugin objectCreatorPlugin;
     private Map<String, SubsumptionEvaluator> terminologySubsumptionEvaluators;
 }

@@ -25,9 +25,9 @@ public class FloorFunctionAfterCalculationTest extends TestCommon {
                 .addValue("/data[at0001]/events[at0002]/data[at0003]/items[at0008]", DvDateTime.valueOf("1953-12-05T00:00:00"))
                 .build());
 
-        Map<String, Object> result = new Interpreter(DvDateTime.valueOf("2017-10-04T11:38:00"))
+        Map<String, List<Object>> result = new Interpreter(DvDateTime.valueOf("2017-10-04T11:38:00"))
                 .execute(guideline, dataInstances);
-        Object dataValue = result.get("gt0005");
+        Object dataValue = result.get("gt0005").get(0);
         assertThat(dataValue, Matchers.instanceOf(DvQuantity.class));
         DvQuantity dvQuantity = (DvQuantity) dataValue;
         assertThat(dvQuantity.getMagnitude(), is(63.0));
