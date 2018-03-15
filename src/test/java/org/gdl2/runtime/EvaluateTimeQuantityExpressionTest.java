@@ -125,6 +125,24 @@ public class EvaluateTimeQuantityExpressionTest extends TestCommon {
     }
 
     @Test
+    public void can_compare_datetime_and_2_hours_expect_true() {
+        expressionItem = parseExpression("$gt0113.value<($currentDateTime.value-2,h)");
+        inputMap.put("gt0113", asList(DvDateTime.valueOf("2017-01-16T00:00:00")));
+        interpreter = new Interpreter(DvDateTime.valueOf("2017-01-16T02:00:01"));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
+    }
+
+    @Test
+    public void can_compare_datetime_and_2_hours_expect_false() {
+        expressionItem = parseExpression("$gt0113.value<($currentDateTime.value-2,h)");
+        inputMap.put("gt0113", asList(DvDateTime.valueOf("2017-01-16T00:00:00")));
+        interpreter = new Interpreter(DvDateTime.valueOf("2017-01-16T01:59:59"));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(false));
+    }
+
+    @Test
     public void can_evaluate_condition_with_two_dates_within_90_days_apart_expect_true() {
         expressionItem = parseExpression("$gt0023.value<($gt0004.value+90,d)");
         inputMap.put("gt0023", asList(DvDateTime.valueOf("2014-04-10T18:18:00")));
