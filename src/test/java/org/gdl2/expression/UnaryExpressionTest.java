@@ -10,7 +10,7 @@ public class UnaryExpressionTest {
     @Test
     public void testToStringWithBooleanExpression() {
         BinaryExpression be = new BinaryExpression(new Variable("gt0001"),
-                new ConstantExpression("null"), OperatorKind.INEQUAL);
+                new ConstantExpression("null"), OperatorKind.UNEQUAL);
         UnaryExpression ue = new UnaryExpression(be, OperatorKind.FOR_ALL);
         assertThat(ue.toString(), is("for_all($gt0001!=null)"));
     }

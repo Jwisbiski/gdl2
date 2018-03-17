@@ -915,7 +915,7 @@ public class Interpreter {
             return evaluateArithmeticExpression(operator, leftValue, rightValue, expressionItem);
         } else if (operator == EQUALITY) {
             return evaluateEqualityExpression(leftValue, rightValue);
-        } else if (operator == INEQUAL) {
+        } else if (operator == UNEQUAL) {
             return !evaluateEqualityExpression(leftValue, rightValue);
         } else if (operator == IS_A) {     // todo IS_A_NOT
             return evaluateIsARelationship(leftValue, rightValue, guideline.getOntology());

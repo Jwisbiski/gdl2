@@ -22,7 +22,7 @@ public enum OperatorKind {
      * Relational operators.
      */
     EQUALITY("equal", "=="),
-    INEQUAL("unequal", "!="),
+    UNEQUAL("unequal", "!="),
     LESS_THAN("less than", "<"),
     LESS_THAN_OR_EQUAL("less than or equals", "<="),
     GREATER_THAN("greater than", ">"),

@@ -152,7 +152,7 @@ public class ExpressionEvaluationTest extends TestCommon {
     public void can_evaluate_null_negated_equality_check_expected_false() {
         Variable variable = new Variable("gt0020");
         BinaryExpression binaryExpression = new BinaryExpression(variable, ConstantExpression.create("null"),
-                OperatorKind.INEQUAL);
+                OperatorKind.UNEQUAL);
         value = interpreter.evaluateExpressionItem(binaryExpression, inputMap);
         assertThat(value, is(false));
     }
@@ -161,7 +161,7 @@ public class ExpressionEvaluationTest extends TestCommon {
     public void can_evaluate_null_negated_equality_check_expected_true() {
         Variable variable = new Variable("gt0011");
         BinaryExpression binaryExpression = new BinaryExpression(variable, ConstantExpression.create("null"),
-                OperatorKind.INEQUAL);
+                OperatorKind.UNEQUAL);
         inputMap.put(variable.getCode(), asList(new DvCount(1)));
         value = interpreter.evaluateExpressionItem(binaryExpression, inputMap);
         assertThat(value, is(true));

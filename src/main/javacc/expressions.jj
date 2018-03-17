@@ -502,7 +502,7 @@ ExpressionItem expression_node() :
         }
       | < SYM_NE >
         {
-          op = OperatorKind.INEQUAL;
+          op = OperatorKind.UNEQUAL;
         }
       | < SYM_LT >
         {
