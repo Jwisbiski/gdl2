@@ -43,6 +43,7 @@ public enum OperatorKind {
      * Conditional operators.
      */
     FOR_ALL("for all", "for_all"),
+    ANY("any", "any"),
     MAX("max", "max"),
     MIN("min", "min"),
     FIRED("fired", "fired"),

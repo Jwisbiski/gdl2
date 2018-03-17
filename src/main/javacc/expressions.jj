@@ -111,6 +111,7 @@ TOKEN : /* SYMBOLS - common */
 | < SYM_IS_A : "is_a" >
 | < SYM_IS_NOT_A : "!is_a" >
 | < SYM_FOR_ALL : "for_all" >
+| < SYM_ANY : "any" >
 | < SYM_MAX : "max" >
 | < SYM_MIN : "min" >
 | < SYM_MATH_FUNCTION : "abs" | "ceil" | "exp" | "floor" | "log" | "log10" |  "log1p" | "round" | "sqrt">
@@ -453,6 +454,10 @@ ExpressionItem expression_node() :
       < SYM_FOR_ALL > item = expression_leaf()
       {
         op = OperatorKind.FOR_ALL;
+      }
+    | < SYM_ANY > item = expression_leaf()
+      {
+        op = OperatorKind.ANY;
       }
     | < SYM_NOT > item = expression_leaf()
       {

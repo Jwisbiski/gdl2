@@ -889,9 +889,81 @@ public class Interpreter {
             return !firedRules.contains(((Variable) unaryExpression.getOperand()).getCode());
         } else if (OperatorKind.NOT.equals(unaryExpression.getOperator())) {
             return !Boolean.valueOf(evaluateExpressionItem(unaryExpression.getOperand(), input, guideline, firedRules).toString());
+        } else if (OperatorKind.ANY.equals(unaryExpression.getOperator())) {
+            return processAnyFunction(unaryExpression.getOperand(), input, guideline, firedRules);
         } else {
             throw new UnsupportedOperationException("Unsupported unary operation: " + unaryExpression);
         }
+    }
+
+    private Object processAnyFunction(ExpressionItem expressionItem, Map<String, List<Object>> input,
+                                      Guideline guideline, Set<String> firedRules) {
+        List<String> idList = getVariableIds(expressionItem, new ArrayList<>());
+        if (idList.isEmpty()) {
+            throw new IllegalArgumentException("Missing variable id in any function");
+        }
+        int maxListSize = maxValueListSize(input, idList);
+        for (int i = 0; i < maxListSize; i++) {
+            if (Boolean.valueOf(
+                    evaluateExpressionItem(
+                            expressionItem,
+                            createSingletonListByIndex(idList, input, i),
+                            guideline,
+                            firedRules).toString())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int maxValueListSize(Map<String, List<Object>> input, List<String> idList) {
+        int max = 0;
+        for (String id : idList) {
+            List<Object> list = input.get(id);
+            if (list == null) {
+                continue;
+            }
+            if (max < list.size()) {
+                max = list.size();
+            }
+        }
+        return max;
+    }
+
+    Map<String, List<Object>> createSingletonListByIndex(List<String> idList, Map<String, List<Object>> input, int index) {
+        Map<String, List<Object>> singletonListValueMap = new HashMap<>(input);
+        for (String id : idList) {
+            List<Object> valueList = input.get(id);
+            if (valueList == null) {
+                continue;
+            }
+            if (valueList.size() <= index) {
+                singletonListValueMap.put(id, Collections.singletonList(valueList.get(valueList.size() - 1)));
+            } else {
+                singletonListValueMap.put(id, Collections.singletonList(valueList.get(index)));
+            }
+        }
+        return singletonListValueMap;
+    }
+
+    List<String> getVariableIds(ExpressionItem expressionItem, List<String> idList) {
+        if (expressionItem instanceof BinaryExpression) {
+            BinaryExpression binaryExpression = (BinaryExpression) expressionItem;
+            getVariableIds(binaryExpression.getLeft(), idList);
+            getVariableIds(binaryExpression.getRight(), idList);
+        } else if (expressionItem instanceof UnaryExpression) {
+            UnaryExpression unaryExpression = (UnaryExpression) expressionItem;
+            getVariableIds(unaryExpression.getOperand(), idList);
+        } else if (expressionItem instanceof Variable) {
+            String id = ((Variable) expressionItem).getCode();
+            if (!idList.contains(id)) {
+                idList.add(id);
+            }
+            return idList;
+        } else if (expressionItem instanceof ConstantExpression) {
+            return idList;
+        }
+        return idList;
     }
 
     private Object processBinaryExpression(ExpressionItem expressionItem, Map<String, List<Object>> input,
@@ -1127,10 +1199,6 @@ public class Interpreter {
         } else {
             throw new IllegalArgumentException("Supported data type for sum(): " + first.getClass());
         }
-    }
-
-    private Object retrieveValueFromTermDefinitions() {
-        return null;
     }
 
     private Object retrieveValueFromValueMap(Variable variable, Map<String, List<Object>> valueMap) {
