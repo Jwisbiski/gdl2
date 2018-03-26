@@ -14,19 +14,19 @@ import java.util.stream.Collectors;
 public class GuideDefinitionSerializer implements JsonSerializer<GuideDefinition> {
     public JsonElement serialize(GuideDefinition src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject object = new JsonObject();
-        if (!src.getPreConditions().isEmpty()) {
+        if (src.getPreConditions() != null && !src.getPreConditions().isEmpty()) {
             object.add("pre_conditions", context.serialize(toStringList(src.getPreConditions())));
         }
-        if (!src.getDefaultActions().isEmpty()) {
+        if (src.getDefaultActions() != null && !src.getDefaultActions().isEmpty()) {
             object.add("default_actions", context.serialize(toStringList(src.getDefaultActions())));
         }
-        if (!src.getDataBindings().isEmpty()) {
+        if (src.getDataBindings() != null && !src.getDataBindings().isEmpty()) {
             object.add("data_bindings", context.serialize(src.getDataBindings()));
         }
         if (src.getTemplates() != null && !src.getTemplates().isEmpty()) {
             object.add("templates", context.serialize(src.getTemplates()));
         }
-        if (!src.getRules().isEmpty()) {
+        if (src.getRules() != null && !src.getRules().isEmpty()) {
             object.add("rules", context.serialize(src.getRules()));
         }
         return object;

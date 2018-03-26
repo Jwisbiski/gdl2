@@ -3,6 +3,7 @@ package org.gdl2;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.gdl2.cdshooks.UseTemplate;
 import org.gdl2.datatypes.CodePhrase;
 import org.gdl2.deserializers.CodePhraseDeserializer;
 import org.gdl2.deserializers.ExpressionItemDeserializer;
@@ -38,6 +39,7 @@ public class Gdl2 {
                 .registerTypeAdapter(CodePhrase.class, new CodePhraseSerializer())
                 .registerTypeAdapter(GuideDefinition.class, new GuideDefinitionSerializer())
                 .registerTypeAdapter(Rule.class, new RuleSerializer())
+                .registerTypeAdapter(UseTemplate.class, new UseTemplateSerializer())
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .setPrettyPrinting()
                 .disableHtmlEscaping()

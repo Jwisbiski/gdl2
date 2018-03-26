@@ -24,6 +24,9 @@ public class RuleSerializer implements JsonSerializer<Rule> {
                     .map(Object::toString)
                     .collect(Collectors.toList())));
         }
+        if (src.getCards() != null && !src.getCards().isEmpty()) {
+            object.add("cards", context.serialize(src.getCards()));
+        }
         return object;
     }
 }

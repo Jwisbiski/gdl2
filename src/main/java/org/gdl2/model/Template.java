@@ -8,6 +8,5 @@ import java.util.Map;
 public class Template {
     private String id;
     private String modelId;
-
     private Map<String, Object> object;
 }
