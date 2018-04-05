@@ -116,6 +116,7 @@
       "gt1002": {
         "id": "gt1002",
         "model_id": "org.hl7.fhir.dstu3.model.Appointment",
+        "template_id": "Follow_Up_Appointment",
         "object": {
           "resourceType": "Appointment",
           "id": "appointment-offer",
