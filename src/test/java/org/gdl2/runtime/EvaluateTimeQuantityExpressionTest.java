@@ -214,6 +214,4 @@ public class EvaluateTimeQuantityExpressionTest extends TestCommon {
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
         assertThat(value, is(false));
     }
-
-
 }
