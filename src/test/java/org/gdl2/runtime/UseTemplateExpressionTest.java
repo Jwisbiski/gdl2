@@ -15,6 +15,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -52,6 +53,18 @@ public class UseTemplateExpressionTest extends TestCommon {
         assertThat(output.get(0).getRoot(), instanceOf(DvQuantity.class));
         DvQuantity dvQuantity = (DvQuantity) output.get(0).getRoot();
         assertThat(dvQuantity.toString(), is("7.5,mg"));
+    }
+
+    @Test
+    public void can_use_template_create_linked_hash_map() throws Exception {
+        guideline = loadGuideline("use_template_with_linked_hash_map_test.v0.1.gdl2");
+        List<Guideline> guidelines = Collections.singletonList(guideline);
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.get(0).getRoot(), instanceOf(LinkedHashMap.class));
+        LinkedHashMap linkedHashMap = (LinkedHashMap) output.get(0).getRoot();
+        assertThat(linkedHashMap.get("unit"), is("mg"));
+        assertThat(linkedHashMap.get("precision"), is(1.0));
+        assertThat(linkedHashMap.get("magnitude"), is(0.5));
     }
 
     @Test
