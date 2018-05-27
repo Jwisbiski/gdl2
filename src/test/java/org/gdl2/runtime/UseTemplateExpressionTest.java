@@ -64,7 +64,7 @@ public class UseTemplateExpressionTest extends TestCommon {
         LinkedHashMap linkedHashMap = (LinkedHashMap) output.get(0).getRoot();
         assertThat(linkedHashMap.get("unit"), is("mg"));
         assertThat(linkedHashMap.get("precision"), is(1.0));
-        assertThat(linkedHashMap.get("magnitude"), is(0.5));
+        assertThat(linkedHashMap.get("magnitude"), is(2.0));
     }
 
     @Test
@@ -144,6 +144,19 @@ public class UseTemplateExpressionTest extends TestCommon {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         assertThat(appointment.getRequestedPeriod().get(0).getStart(), is(dateFormat.parse("2013-04-20")));
         assertThat(appointment.getRequestedPeriod().get(0).getEnd(), is(dateFormat.parse("2013-04-25")));
+    }
+
+    @Test
+    public void can_use_template_set_multiple_values_of_diff_types() throws Exception {
+        interpreter = buildInterpreterWithFhirPluginAndCurrentDateTime("2013-04-20T14:00:00");
+        guideline = loadGuideline("use_template_set_multiple_values_of_diff_types.v0.1.gdl2");
+        List<Guideline> guidelines = Collections.singletonList(guideline);
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.get(0).getRoot(), instanceOf(Appointment.class));
+        Appointment appointment = (Appointment) output.get(0).getRoot();
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        assertThat(appointment.getRequestedPeriod().get(0).getStart(), is(dateFormat.parse("2013-04-20")));
+        assertThat(appointment.getStatus().toCode(), is("proposed"));
     }
 
     @Test

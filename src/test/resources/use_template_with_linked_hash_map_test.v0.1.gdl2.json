@@ -34,9 +34,9 @@
         "id": "gt0022",
         "model_id": "java.util.LinkedHashMap",
         "object": {
-          "unit": "mg",
-          "magnitude": "{$gt2000}",
-          "precision": 1
+          "unit": "{$gt2000}",
+          "magnitude": "{$gt2001}",
+          "precision": "{$gt2002}"
         }
       }
     },
@@ -46,7 +46,7 @@
         "priority": 1,
         "when": [],
         "then": [
-          "use_template($gt0022($gt2000=0.5))"
+          "use_template($gt0022($gt2000='mg';$gt2001=2.0;$gt2002=1))"
         ]
       }
     }
