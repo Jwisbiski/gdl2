@@ -137,7 +137,8 @@ public class Interpreter {
                 if (existing == null || isInputData(dataInstance, guide)) {
                     allResults.put(dataInstance.modelId(), dataInstance);
                 } else {
-                    existing.merge(dataInstance);
+                    // TODO merge dataInstances should never happen between single guideline executions
+                    //existing.merge(dataInstance);
                 }
             }
             input = new ArrayList<>(inputDataInstances);
@@ -148,7 +149,8 @@ public class Interpreter {
     }
 
     private boolean isInputData(DataInstance dataInstance, Guideline guideline) {
-        return guideline.getDefinition().getDataBindings().get(dataInstance.id()).getType().equals(INPUT);
+        return guideline.getDefinition().getDataBindings().containsKey(dataInstance.id())
+                && guideline.getDefinition().getDataBindings().get(dataInstance.id()).getType().equals(INPUT);
     }
 
     public List<DataInstance> executeSingleGuideline(Guideline guide, List<DataInstance> dataInstances) {
@@ -272,11 +274,13 @@ public class Interpreter {
                 Template template = entry.getValue();
                 if (valueListMap.containsKey(template.getId())) {
                     List<Object> list = valueListMap.get(template.getId());
-                    dataInstances.add(new DataInstance.Builder()
-                            .id(template.getId())
-                            .modelId(template.getModelId())
-                            .addValue("/", list.get(list.size() - 1))
-                            .build());
+                    for (Object object : list) {
+                        dataInstances.add(new DataInstance.Builder()
+                                .id(template.getId())
+                                .modelId(template.getModelId())
+                                .addValue("/", object)
+                                .build());
+                    }
                 }
             }
         }
@@ -361,16 +365,47 @@ public class Interpreter {
                 } else if (thenStatement instanceof UseTemplateExpression) {
                     performUseTemplateStatement((UseTemplateExpression) thenStatement, templateMap, input, result, guideline);
                 }
-                mergeValueMapIntoListValueMap(result, input);
+                //
+                if (hasContinuousAssignments(rule) || hasCards(rule)) {
+                    mergeValueMapIntoListValueMap(result, input);
+                }
             }
         }
-        if (rule.getCards() != null) {
+        if (hasCards(rule)) {
             for (Card card : rule.getCards()) {
                 cards.add(processCard(card, input, guideline));
             }
         }
         firedRules.add(rule.getId());
         return result;
+    }
+
+    private boolean hasCards(Rule rule) {
+        return rule.getCards() != null && !rule.getCards().isEmpty();
+    }
+
+    /*
+     * continuous assignments are more than one thenStatements assigning values to the same variable of a given rule
+     */
+    private boolean hasContinuousAssignments(Rule rule) {
+        List<ExpressionItem> assignmentExpressions = rule.getThen();
+        if (assignmentExpressions == null || assignmentExpressions.size() <= 1) {
+            return false;
+        }
+        Set<String> variableIds = new HashSet<>();
+        for (ExpressionItem expressionItem : assignmentExpressions) {
+            if (!(expressionItem instanceof AssignmentExpression)) {
+                continue;
+            }
+            AssignmentExpression assignmentExpression = (AssignmentExpression) expressionItem;
+            String code = assignmentExpression.getVariable().getCode();
+            if (variableIds.contains(code)) {
+                return true;
+            } else {
+                variableIds.add(code);
+            }
+        }
+        return false;
     }
 
     private Card processCard(Card card, Map<String, List<Object>> input, Guideline guideline) {

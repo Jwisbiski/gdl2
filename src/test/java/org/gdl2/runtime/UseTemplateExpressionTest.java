@@ -68,6 +68,25 @@ public class UseTemplateExpressionTest extends TestCommon {
     }
 
     @Test
+    public void can_use_template_create_2_linked_hash_maps() throws Exception {
+        guideline = loadGuideline("use_template_with_linked_hash_map_test2.v0.1.gdl2");
+        List<Guideline> guidelines = Collections.singletonList(guideline);
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(2));
+        assertThat(output.get(0).getRoot(), instanceOf(LinkedHashMap.class));
+        LinkedHashMap linkedHashMap = (LinkedHashMap) output.get(0).getRoot();
+        assertThat(linkedHashMap.get("unit"), is("mg"));
+        assertThat(linkedHashMap.get("precision"), is(1.0));
+        assertThat(linkedHashMap.get("magnitude"), is(0.5));
+
+        assertThat(output.get(1).getRoot(), instanceOf(LinkedHashMap.class));
+        linkedHashMap = (LinkedHashMap) output.get(1).getRoot();
+        assertThat(linkedHashMap.get("unit"), is("mg"));
+        assertThat(linkedHashMap.get("precision"), is(1.0));
+        assertThat(linkedHashMap.get("magnitude"), is(2.4));
+    }
+
+    @Test
     public void can_use_template_create_quantity_with_double_variable() throws Exception {
         guideline = loadGuideline("use_template_with_quantity_set_value_test.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
