@@ -53,6 +53,15 @@ public class ExpressionEvaluationTest extends TestCommon {
     }
 
     @Test
+    public void can_evaluate_addition_of_two_DvTexts() {
+        expressionItem = parseExpression("$gt0009.value+$gt0010.value");
+        inputMap.put("gt0009", asList(DvText.valueOf("one ")));
+        inputMap.put("gt0010", asList(DvText.valueOf("two")));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is("one two"));
+    }
+
+    @Test
     public void can_evaluate_equality_of_two_dv_quantity_in_number_of_days() {
         expressionItem = parseExpression("$gt0025==30,d");
         inputMap.put("gt0025", asList(new DvQuantity("d", 30, 0)));

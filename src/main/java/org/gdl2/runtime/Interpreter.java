@@ -1116,6 +1116,9 @@ public class Interpreter {
                 throw new IllegalArgumentException("Null value in expression item: " + expressionItem + ", leftValue: " + leftValue + ", rightValue: " + rightValue);
             }
         }
+        if (ADDITION.equals(operator) && leftValue instanceof String && rightValue instanceof String) {
+            return leftValue.toString() + rightValue.toString();
+        }
         try {
             double left = convertObjectValueToDouble(leftValue);
             double right = convertObjectValueToDouble(rightValue);
