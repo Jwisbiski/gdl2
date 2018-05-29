@@ -40,6 +40,17 @@ public class Interpreter {
     private static final long HOUR_IN_MILLISECONDS = 3600 * 1000L;
     private static final String ENGLISH_LANGUAGE = "en";
     private static final String TERM = "term";
+    private static final String LOCAL = "local";
+    private static final String GT = "gt";
+    private static final String ABS = "abs";
+    private static final String CEIL = "ceil";
+    private static final String EXP = "exp";
+    private static final String FLOOR = "floor";
+    private static final String LOG = "log";
+    private static final String LOG10 = "log10";
+    private static final String LOG1P = "log1p";
+    private static final String ROUND = "round";
+    private static final String SQRT = "sqrt";
 
     private RuntimeConfiguration runtimeConfiguration;
     private static final TemplateFiller templateFiller = new TemplateFiller();
@@ -136,9 +147,6 @@ public class Interpreter {
                 DataInstance existing = allResults.get(dataInstance.modelId());
                 if (existing == null || isInputData(dataInstance, guide)) {
                     allResults.put(dataInstance.modelId(), dataInstance);
-                } else {
-                    // TODO merge dataInstances should never happen between single guideline executions
-                    //existing.merge(dataInstance);
                 }
             }
             input = new ArrayList<>(inputDataInstances);
@@ -675,8 +683,7 @@ public class Interpreter {
     }
 
     private boolean isGuidelineTerm(CodePhrase codePhrase) {
-        return "local".equals(codePhrase.getTerminology())
-                && codePhrase.getCode().startsWith("gt");
+        return LOCAL.equals(codePhrase.getTerminology()) && codePhrase.getCode().startsWith(GT);
     }
 
     private DvCodedText findTermOfDesignatedLanguage(DvCodedText dvCodedText, Map<String, TermDefinition> termDefinitionMap) {
@@ -893,23 +900,23 @@ public class Interpreter {
             List<Object>> input, Guideline guideline, Set<String> firedRules) {
         String function = functionalExpression.getFunction().toString();
         Double value = Double.valueOf(evaluateExpressionItem(functionalExpression.getItems().get(0), input, guideline, firedRules).toString());
-        if ("abs".equalsIgnoreCase(function)) {
+        if (ABS.equalsIgnoreCase(function)) {
             return Math.abs(value);
-        } else if ("ceil".equalsIgnoreCase(function)) {
+        } else if (CEIL.equalsIgnoreCase(function)) {
             return Math.ceil(value);
-        } else if ("exp".equalsIgnoreCase(function)) {
+        } else if (EXP.equalsIgnoreCase(function)) {
             return Math.exp(value);
-        } else if ("floor".equalsIgnoreCase(function)) {
+        } else if (FLOOR.equalsIgnoreCase(function)) {
             return Math.floor(value);
-        } else if ("log".equalsIgnoreCase(function)) {
+        } else if (LOG.equalsIgnoreCase(function)) {
             return Math.log(value);
-        } else if ("log10".equalsIgnoreCase(function)) {
+        } else if (LOG10.equalsIgnoreCase(function)) {
             return Math.log10(value);
-        } else if ("log1p".equalsIgnoreCase(function)) {
+        } else if (LOG1P.equalsIgnoreCase(function)) {
             return Math.log1p(value);
-        } else if ("round".equalsIgnoreCase(function)) {
+        } else if (ROUND.equalsIgnoreCase(function)) {
             return Math.round(value);
-        } else if ("sqrt".equalsIgnoreCase(function)) {
+        } else if (SQRT.equalsIgnoreCase(function)) {
             return Math.sqrt(value);
         } else {
             throw new UnsupportedOperationException("Unsupported function: " + function);
