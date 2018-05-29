@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -112,6 +113,7 @@ public class Interpreter {
                 .terminologySubsumptionEvaluators(
                         runtimeConfiguration.getTerminologySubsumptionEvaluators() == null
                                 ? Collections.emptyMap() : runtimeConfiguration.getTerminologySubsumptionEvaluators())
+                .dateTimeFormatPattern(runtimeConfiguration.getDateTimeFormatPattern())
                 .build();
     }
 
@@ -1287,7 +1289,11 @@ public class Interpreter {
         } else if (TypeBinding.YEAR.equals(attribute) && dataValue instanceof DvDate) {
             return ((DvDate) dataValue).getDate().getYear();
         } else if (TypeBinding.STRING.equals(attribute)) {
-            return dataValue.toString();
+            if (dataValue instanceof DvDateTime) {
+                return formatDateTime((DvDateTime) dataValue);
+            } else {
+                return dataValue.toString();
+            }
         }
         try {
             String getterName = "get" + attribute.substring(0, 1).toUpperCase() + attribute.substring(1);
@@ -1296,6 +1302,14 @@ public class Interpreter {
         } catch (ReflectiveOperationException exception) {
             throw new IllegalArgumentException("Failed to retrieve attribute [" + attribute + "] value for variable: " + variable);
         }
+    }
+
+    private String formatDateTime(DvDateTime dvDateTime) {
+        if (this.runtimeConfiguration.getDateTimeFormatPattern() == null) {
+            return dvDateTime.toString();
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(this.runtimeConfiguration.getDateTimeFormatPattern());
+        return dvDateTime.getDateTime().format(formatter);
     }
 
     private List<DataInstance> filterDataInstancesWithModelId(List<DataInstance> dataInstances, String modelId) {

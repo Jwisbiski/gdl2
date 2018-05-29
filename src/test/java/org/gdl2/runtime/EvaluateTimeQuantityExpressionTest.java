@@ -28,6 +28,18 @@ public class EvaluateTimeQuantityExpressionTest extends TestCommon {
     }
 
     @Test
+    public void can_evaluate_current_datetime_using_given_formatter_pattern() {
+        expressionItem = parseExpression("$currentDateTime.string");
+        interpreter = new Interpreter(
+                RuntimeConfiguration.builder()
+                        .currentDateTime(DvDateTime.valueOf("2018-05-29T17:12:19"))
+                        .dateTimeFormatPattern("yyyy-MM-dd HH:mm")
+                        .build());
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is("2018-05-29 17:12"));
+    }
+
+    @Test
     public void can_evaluate_variable_with_set_currentDateTime_value() {
         Variable variable = Variable.createByCode(Interpreter.CURRENT_DATETIME);
         interpreter = new Interpreter(DvDateTime.valueOf("2000-01-01T00:00:00"));

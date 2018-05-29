@@ -80,4 +80,13 @@ public class ParseExpressionItemTest {
         assertThat(variable.getCode(), is("currentDateTime"));
         assertThat(variable.getAttribute(), is("year"));
     }
+
+    @Test
+    public void can_parse_assignment_with_single_variable() throws Exception {
+        expressionItem = deserializer.parse("$gt0004='{$gt0003.text}'");
+        assertThat(expressionItem, instanceOf(AssignmentExpression.class));
+        AssignmentExpression assignmentExpression = (AssignmentExpression) expressionItem;
+        assertThat(assignmentExpression.getVariable().getCode(), is("gt0004"));
+        assertThat(assignmentExpression.getAssignment(), instanceOf(StringConstant.class));
+    }
 }

@@ -14,5 +14,6 @@ public class RuntimeConfiguration {
     private DvDateTime currentDateTime;
     private boolean includingInputWithPredicate;
     private ObjectCreatorPlugin objectCreatorPlugin;
+    private String dateTimeFormatPattern;
     private Map<String, SubsumptionEvaluator> terminologySubsumptionEvaluators;
 }
