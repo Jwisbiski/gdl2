@@ -18,7 +18,7 @@ build:
   image: cdsregistry.azurecr.io/tools/docker-builder
   stage: build
   script:
-    - mvn package deploy --update-snapshots -P nexus,sonar
+    - mvn package deploy --update-snapshots -P nexus,nexus-deploy
   artifacts:
     paths:
       - target/*.jar
