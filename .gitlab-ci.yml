@@ -1,0 +1,41 @@
+image: docker:latest
+services:
+  - docker:dind
+variables:
+  DOCKER_DRIVER: overlay
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+
+stages:
+  - build
+  - release
+
+
+cache:
+  paths:
+    - .m2/repository
+
+build:
+  image: cdsregistry.azurecr.io/tools/docker-builder
+  stage: build
+  script:
+    - mvn package deploy --update-snapshots -P nexus,sonar
+  artifacts:
+    paths:
+      - target/*.jar
+    expire_in: 1 week
+
+
+release:
+  image: cdsregistry.azurecr.io/tools/docker-builder
+  stage: release
+  when: manual
+  script:
+    - git remote set-url origin $(echo $CI_REPOSITORY_URL | sed -e 's/[^@]\+@\([^\/]\+\)\//git@\1\:/')
+    - mvn versions:set -DnewVersion=$CURRENT_VERSION
+    - git commit -a -m "Changing to version "$CURRENT_VERSION
+    - git tag $CURRENT_VERSION
+    - git push origin $CURRENT_VERSION --tags
+  only:
+    - master
+
+
