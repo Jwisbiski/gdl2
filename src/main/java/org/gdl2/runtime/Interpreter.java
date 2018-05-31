@@ -168,7 +168,7 @@ public class Interpreter {
     }
 
     private boolean isInputData(DataInstance dataInstance, Guideline guideline) {
-        if(guideline.getDefinition().getDataBindings() == null) {
+        if (guideline.getDefinition().getDataBindings() == null) {
             return false;
         }
         return guideline.getDefinition().getDataBindings().containsKey(dataInstance.id())
