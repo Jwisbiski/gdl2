@@ -147,8 +147,10 @@ public class Interpreter {
             List<DataInstance> resultPerExecution = executeSingleGuidelineWithCards(guide, input, cards);
             for (DataInstance dataInstance : resultPerExecution) {
                 DataInstance existing = allResults.get(dataInstance.modelId());
-                if (existing == null || isInputData(dataInstance, guide)) {
+                if (existing == null || isInputData(dataInstance, guide) || isOutputTemplateData(dataInstance, guide)) {
                     allResults.put(dataInstance.modelId(), dataInstance);
+                } else {
+                    existing.merge(dataInstance);
                 }
             }
             input = new ArrayList<>(inputDataInstances);
@@ -156,6 +158,10 @@ public class Interpreter {
             totalResult.addAll(resultPerExecution);
         }
         return totalResult;
+    }
+
+    private boolean isOutputTemplateData(DataInstance dataInstance, Guideline guideline) {
+        return guideline.getDefinition().getTemplates().containsKey(dataInstance.id());
     }
 
     private boolean isInputData(DataInstance dataInstance, Guideline guideline) {
