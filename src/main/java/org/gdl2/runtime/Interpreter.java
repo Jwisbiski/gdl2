@@ -161,10 +161,16 @@ public class Interpreter {
     }
 
     private boolean isOutputTemplateData(DataInstance dataInstance, Guideline guideline) {
+        if (guideline.getDefinition().getTemplates() == null) {
+            return false;
+        }
         return guideline.getDefinition().getTemplates().containsKey(dataInstance.id());
     }
 
     private boolean isInputData(DataInstance dataInstance, Guideline guideline) {
+        if(guideline.getDefinition().getDataBindings() == null) {
+            return false;
+        }
         return guideline.getDefinition().getDataBindings().containsKey(dataInstance.id())
                 && guideline.getDefinition().getDataBindings().get(dataInstance.id()).getType().equals(INPUT);
     }
