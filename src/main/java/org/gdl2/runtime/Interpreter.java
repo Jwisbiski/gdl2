@@ -731,7 +731,7 @@ public class Interpreter {
             Object value = evaluateExpressionItem(assignmentExpression.getAssignment(), input, guideline, null);
             useTemplateLocalResult.put(assignmentExpression.getVariable().getCode(), value);
         }
-        Map<String, Object> localMapCopy = new HashMap<>(template.getObject());
+        Map<String, Object> localMapCopy = deepCopy(template.getObject());
         this.templateFiller.traverseMapAndReplaceAllVariablesWithValues(localMapCopy, useTemplateLocalResult, input);
         try {
             Object object = this.runtimeConfiguration.getObjectCreatorPlugin().create(template.getModelId(), localMapCopy);
