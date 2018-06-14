@@ -19,14 +19,17 @@ class TemplateFiller {
     private static final Pattern INTEGER_NUM = Pattern.compile("^-?\\d+$");
     private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-    String replaceVariablesWithValues(String source, Map<String, Object> values) {
+    String replaceVariablesWithValues(String source, Map<String, Object> localValues, Map<String, List<Object>> globalValues) {
         StringBuffer stringBuffer = new StringBuffer();
         Matcher matcher = VARIABLE_REGEX.matcher(source);
 
         while (matcher.find()) {
             String text = matcher.group();
             String key = text.substring(2, text.length() - 1);
-            Object value = values.get(key);
+            Object value = localValues.get(key);
+            if (value == null && globalValues.containsKey(key)) {
+                value = globalValues.get(key).get(0);
+            }
             if (value != null) {
                 String stringValue;
                 if (value instanceof Date) {
@@ -43,37 +46,40 @@ class TemplateFiller {
         return stringBuffer.toString();
     }
 
-    void traverseMapAndReplaceAllVariablesWithValues(Map<String, Object> map, Map<String, Object> values) {
+    void traverseMapAndReplaceAllVariablesWithValues(Map<String, Object> map, Map<String, Object> localValues,
+                                                     Map<String, List<Object>> globalValues) {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             String key = entry.getKey();
             Object object = entry.getValue();
             if (object instanceof String) {
-                Object value = replaceAndCastToDoubleOrIntegerIfNeeded((String) object, values);
+                Object value = replaceAndCastToDoubleOrIntegerIfNeeded((String) object, localValues, globalValues);
                 map.put(key, value);
             } else if (object instanceof Map) {
-                traverseMapAndReplaceAllVariablesWithValues((Map) object, values);
+                traverseMapAndReplaceAllVariablesWithValues((Map) object, localValues, globalValues);
             } else if (object instanceof List) {
-                traverseListAndReplaceAllVariablesWithValues((List) object, values);
+                traverseListAndReplaceAllVariablesWithValues((List) object, localValues, globalValues);
             }
         }
     }
 
-    private void traverseListAndReplaceAllVariablesWithValues(List list, Map<String, Object> values) {
+    private void traverseListAndReplaceAllVariablesWithValues(List list, Map<String, Object> localValues,
+                                                              Map<String, List<Object>> globalValues) {
         for (int i = 0, j = list.size(); i < j; i++) {
             Object object = list.get(i);
             if (object instanceof String) {
-                Object value = replaceAndCastToDoubleOrIntegerIfNeeded((String) object, values);
+                Object value = replaceAndCastToDoubleOrIntegerIfNeeded((String) object, localValues, globalValues);
                 list.set(i, value);
             } else if (object instanceof Map) {
-                traverseMapAndReplaceAllVariablesWithValues((Map) object, values);
+                traverseMapAndReplaceAllVariablesWithValues((Map) object, localValues, globalValues);
             } else if (object instanceof List) {
-                traverseListAndReplaceAllVariablesWithValues((List) object, values);
+                traverseListAndReplaceAllVariablesWithValues((List) object, localValues, globalValues);
             }
         }
     }
 
-    private Object replaceAndCastToDoubleOrIntegerIfNeeded(String original, Map<String, Object> values) {
-        String replaced = replaceVariablesWithValues(original, values);
+    private Object replaceAndCastToDoubleOrIntegerIfNeeded(String original, Map<String, Object> localValues,
+                                                           Map<String, List<Object>> globalValues) {
+        String replaced = replaceVariablesWithValues(original, localValues, globalValues);
         if (!replaced.equals(original)) {
             Object value = replaced;
             if (isInteger(replaced)) {
