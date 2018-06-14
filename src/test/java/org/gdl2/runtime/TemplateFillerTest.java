@@ -32,14 +32,14 @@ public class TemplateFillerTest extends TestCommon {
     public void can_fill_single_integer_value_whole_string() {
         source = "{$gt2000}";
         localValues.put("gt2000", 80);
-        assertThat(templateFiller.replaceVariablesWithValues(source, localValues, globalValues), is("80"));
+        assertThat(templateFiller.replaceVariablesWithValues(source, localValues, globalValues), is(80));
     }
 
     @Test
     public void can_fill_single_integer_value_whole_string_using_global_values() {
         source = "{$gt2000}";
         globalValues.put("gt2000", Collections.singletonList(80));
-        assertThat(templateFiller.replaceVariablesWithValues(source, localValues, globalValues), is("80"));
+        assertThat(templateFiller.replaceVariablesWithValues(source, localValues, globalValues), is(80));
     }
 
     @Test
@@ -60,7 +60,7 @@ public class TemplateFillerTest extends TestCommon {
     public void can_fill_single_double_value_whole_string() {
         source = "{$gt2000}";
         localValues.put("gt2000", 8.5);
-        assertThat(templateFiller.replaceVariablesWithValues(source, localValues, globalValues), is("8.5"));
+        assertThat(templateFiller.replaceVariablesWithValues(source, localValues, globalValues), is(8.5));
     }
 
     @Test
