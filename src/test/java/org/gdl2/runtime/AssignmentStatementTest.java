@@ -53,7 +53,7 @@ public class AssignmentStatementTest extends TestCommon {
     @Test
     public void can_assign_dv_quantity_with_string_value() throws Exception {
         Guideline guideline = loadGuideline("Set_dv_quantity_value_test.v1.gdl2");
-        Map<String, List<Object>> result = interpreter.execute(guideline, new ArrayList<>());
+        Map<String, List<Object>> result = interpreter.execute(guideline, new ArrayList<>()).getResult();
         List<Object> list = result.get("gt0013");
         Object dataValue = list.get(list.size() - 1);
         assertThat(dataValue, Matchers.instanceOf(DvQuantity.class));

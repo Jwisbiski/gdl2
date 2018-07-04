@@ -24,7 +24,7 @@ public class DefaultActionsTest extends TestCommon {
     @Test
     public void can_run_default_actions() throws Exception {
         Guideline guideline = loadGuideline("Default_action_test");
-        Map<String, List<Object>> result = interpreter.execute(guideline, new ArrayList<>());
+        Map<String, List<Object>> result = interpreter.execute(guideline, new ArrayList<>()).getResult();
         Object dataValue = result.get("gt0013").get(0);
         assertThat(dataValue, Matchers.instanceOf(DvQuantity.class));
         DvQuantity dvQuantity = (DvQuantity) dataValue;

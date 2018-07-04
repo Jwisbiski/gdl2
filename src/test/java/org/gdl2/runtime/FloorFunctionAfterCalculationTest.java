@@ -26,7 +26,7 @@ public class FloorFunctionAfterCalculationTest extends TestCommon {
                 .build());
 
         Map<String, List<Object>> result = new Interpreter(DvDateTime.valueOf("2017-10-04T11:38:00"))
-                .execute(guideline, dataInstances);
+                .execute(guideline, dataInstances).getResult();
         Object dataValue = result.get("gt0005").get(0);
         assertThat(dataValue, Matchers.instanceOf(DvQuantity.class));
         DvQuantity dvQuantity = (DvQuantity) dataValue;

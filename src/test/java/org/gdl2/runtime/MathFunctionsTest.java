@@ -23,7 +23,7 @@ public class MathFunctionsTest extends TestCommon {
         Interpreter interpreter = new Interpreter();
         Guideline guideline = loadGuideline(MATH_FUNCTIONS_TEST_GUIDE);
         ArrayList<DataInstance> dataInstances = new ArrayList<>();
-        result = interpreter.execute(guideline, dataInstances);
+        result = interpreter.execute(guideline, dataInstances).getResult();
     }
 
     @Test

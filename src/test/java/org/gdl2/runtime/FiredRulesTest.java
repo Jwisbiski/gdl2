@@ -28,7 +28,7 @@ public class FiredRulesTest extends TestCommon {
         dataInstances.add(toWeight("72.0,kg"));
         dataInstances.add(toHeight("180.0,cm"));
 
-        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances);
+        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances).getResult();
         Object dataValue = result.get("gt0014").get(0);
         assertThat(dataValue, Matchers.instanceOf(DvBoolean.class));
         DvBoolean dvBoolean = (DvBoolean) dataValue;
@@ -42,7 +42,7 @@ public class FiredRulesTest extends TestCommon {
         dataInstances.add(toWeight("158.7,lbs"));
         dataInstances.add(toHeight("5.95,ft"));
 
-        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances);
+        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances).getResult();
         Object dataValue = result.get("gt0014").get(0);
         assertThat(dataValue, Matchers.instanceOf(DvBoolean.class));
         DvBoolean dvBoolean = (DvBoolean) dataValue;

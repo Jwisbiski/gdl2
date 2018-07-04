@@ -24,7 +24,7 @@ public class ContinuousAssignmentsTest extends TestCommon {
     @Test
     public void can_run_continuous_assignments_within_the_same_rule() throws Exception {
         Guideline guideline = loadGuideline("continuous_assignments_test.v1.gdl2");
-        Map<String, List<Object>> result = interpreter.execute(guideline, new ArrayList<>());
+        Map<String, List<Object>> result = interpreter.execute(guideline, new ArrayList<>()).getResult();
         List<Object> list = result.get("gt0013");
         Object dataValue = list.get(list.size() - 1);
         assertThat(dataValue, Matchers.instanceOf(DvQuantity.class));

@@ -30,7 +30,7 @@ public class AggregationFunctionSumTest extends TestCommon {
         dataInstances.add(withQuantity(80.0));
         dataInstances.add(withQuantity(50.0));
 
-        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances);
+        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances).getResult();
         Object dataValue = result.get("gt0007").get(0);
         assertThat(dataValue, Matchers.instanceOf(DvText.class));
         DvText dvText = (DvText) dataValue;
@@ -44,7 +44,7 @@ public class AggregationFunctionSumTest extends TestCommon {
         dataInstances.add(withCount(50));
         dataInstances.add(withCount(60));
 
-        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances);
+        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances).getResult();
         Object dataValue = result.get("gt0007").get(0);
         assertThat(dataValue, Matchers.instanceOf(DvText.class));
         DvText dvText = (DvText) dataValue;
@@ -58,7 +58,7 @@ public class AggregationFunctionSumTest extends TestCommon {
         dataInstances.add(withOrdinal(50));
         dataInstances.add(withOrdinal(60));
 
-        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances);
+        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances).getResult();
         Object dataValue = result.get("gt0007").get(0);
         assertThat(dataValue, Matchers.instanceOf(DvText.class));
         DvText dvText = (DvText) dataValue;
@@ -72,7 +72,7 @@ public class AggregationFunctionSumTest extends TestCommon {
         dataInstances.add(withQuantity(80.0));
         dataInstances.add(withQuantity(50.0));
 
-        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances);
+        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances).getResult();
         Object dataValue = result.get("gt0007").get(0);
         assertThat(dataValue, Matchers.instanceOf(DvQuantity.class));
         DvQuantity dvQuantity = (DvQuantity) dataValue;
@@ -87,7 +87,7 @@ public class AggregationFunctionSumTest extends TestCommon {
         dataInstances.add(withCount(40));
         dataInstances.add(withCount(5));
 
-        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances);
+        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances).getResult();
         Object dataValue = result.get("gt0007").get(0);
         assertThat(dataValue, Matchers.instanceOf(DvCount.class));
         DvCount dvCount = (DvCount) dataValue;
@@ -103,7 +103,7 @@ public class AggregationFunctionSumTest extends TestCommon {
         dataInstances.add(withOrdinal(3));
         dataInstances.add(withOrdinal(4));
 
-        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances);
+        Map<String, List<Object>> result = interpreter.execute(guideline, dataInstances).getResult();
         Object dataValue = result.get("gt0007").get(0);
         assertThat(dataValue, Matchers.instanceOf(DvCount.class));
         DvCount dvCount = (DvCount) dataValue;

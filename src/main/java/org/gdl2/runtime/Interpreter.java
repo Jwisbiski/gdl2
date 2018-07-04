@@ -124,7 +124,7 @@ public class Interpreter {
     }
 
     public List<DataInstance> executeGuidelines(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
-        return executeGuidelinesWithCards(guidelines, inputDataInstances, new ArrayList<>());
+        return executeGuidelinesWithCards(guidelines, inputDataInstances, new ArrayList<>()).getResult();
     }
 
     public List<Card> executeCdsHooksGuidelines(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
@@ -133,19 +133,31 @@ public class Interpreter {
         return cardList;
     }
 
+    // xxxxGetFiredRules methods are for gdl2-editor
+    public ExecutionOutput executeGuidelinesAndGetFiredRules(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
+        return executeGuidelinesWithCards(guidelines, inputDataInstances, new ArrayList<>());
+    }
+
+    public List<Card> executeCdsHooksGuidelinesAndGetFiredRules(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
+        List<Card> cardList = new ArrayList<>();
+        executeGuidelinesWithCards(guidelines, inputDataInstances, cardList);
+        return cardList;
+    }
+
     // TODO sort guidelines according to dependency
-    private List<DataInstance> executeGuidelinesWithCards(List<Guideline> guidelines,
-                                                          List<DataInstance> inputDataInstances,
-                                                          List<Card> cards) {
+    private ExecutionOutput executeGuidelinesWithCards(List<Guideline> guidelines,
+                                                       List<DataInstance> inputDataInstances,
+                                                       List<Card> cards) {
         assertNotNull(guidelines, "List<Guideline> cannot be null.");
         assertNotNull(inputDataInstances, "List<DataInstance> cannot be null.");
 
         Map<String, DataInstance> allResults = new HashMap<>();
         List<DataInstance> input = new ArrayList<>(inputDataInstances);
         List<DataInstance> totalResult = new ArrayList<>();
+        Map<String, Set<String>> firedRules = new LinkedHashMap<>();
         for (Guideline guide : guidelines) {
-            List<DataInstance> resultPerExecution = executeSingleGuidelineWithCards(guide, input, cards);
-            for (DataInstance dataInstance : resultPerExecution) {
+            ExecutionOutput resultPerExecution = executeSingleGuidelineWithCards(guide, input, cards);
+            for (DataInstance dataInstance : resultPerExecution.getResult()) {
                 DataInstance existing = allResults.get(dataInstance.modelId());
                 if (existing == null || isInputData(dataInstance, guide) || isOutputTemplateData(dataInstance, guide)) {
                     allResults.put(dataInstance.modelId(), dataInstance);
@@ -155,9 +167,10 @@ public class Interpreter {
             }
             input = new ArrayList<>(inputDataInstances);
             input.addAll(allResults.values());
-            totalResult.addAll(resultPerExecution);
+            totalResult.addAll(resultPerExecution.result);
+            firedRules.putAll(resultPerExecution.getFiredRules());
         }
-        return totalResult;
+        return new ExecutionOutput(firedRules, totalResult);
     }
 
     private boolean isOutputTemplateData(DataInstance dataInstance, Guideline guideline) {
@@ -176,13 +189,14 @@ public class Interpreter {
     }
 
     public List<DataInstance> executeSingleGuideline(Guideline guide, List<DataInstance> dataInstances) {
-        return executeSingleGuidelineWithCards(guide, dataInstances, null);
+        return executeSingleGuidelineWithCards(guide, dataInstances, null).getResult();
     }
 
-    private List<DataInstance> executeSingleGuidelineWithCards(Guideline guide, List<DataInstance> dataInstances,
-                                                               List<Card> cards) {
-        Map<String, List<Object>> resultMap = execute(guide, dataInstances, cards);
-        return collectDataInstancesFromValueListMap(resultMap, guide.getDefinition());
+    private ExecutionOutput executeSingleGuidelineWithCards(Guideline guide, List<DataInstance> dataInstances,
+                                                            List<Card> cards) {
+        InternalOutput internalOutput = execute(guide, dataInstances, cards);
+        List<DataInstance> resultDataInstances = collectDataInstancesFromValueListMap(internalOutput.getResult(), guide.getDefinition());
+        return new ExecutionOutput(internalOutput.firedRules, resultDataInstances);
     }
 
     private Set<String> getCodesForAssignableVariables(GuideDefinition guideDefinition) {
@@ -210,16 +224,17 @@ public class Interpreter {
         return codesFromAssignments;
     }
 
-    Map<String, List<Object>> execute(Guideline guideline, List<DataInstance> dataInstances) {
+    /*Only used in testing*/
+    InternalOutput execute(Guideline guideline, List<DataInstance> dataInstances) {
         return execute(guideline, dataInstances, null);
     }
 
-    Map<String, List<Object>> execute(Guideline guideline, List<DataInstance> dataInstances, List<Card> cards) {
+    InternalOutput execute(Guideline guideline, List<DataInstance> dataInstances, List<Card> cards) {
         assertNotNull(guideline, "Guideline cannot not be null.");
         assertNotNull(dataInstances, "List<DataInstance> cannot be null.");
-
         Map<String, List<Object>> selectedInput = selectDataInstancesUsingPredicatesAndSortWithElementBindingCode(
                 dataInstances, guideline);
+        Map<String, Set<String>> guidelineFiredRules = new HashMap<>();
         Map<String, Object> resultDefaultRuleExecution = new HashMap<>();
         Map<String, Class> typeMap = new HashMap<>();
         Set<String> firedRules = new HashSet<>();
@@ -229,7 +244,8 @@ public class Interpreter {
                     .allMatch(expressionItem -> evaluateBooleanExpression(expressionItem, selectedInput, guideline, null));
         }
         if (!allPreconditionsAreTrue) {
-            return selectedInput;
+            guidelineFiredRules.put(guideline.getId(), firedRules);
+            return new InternalOutput(guidelineFiredRules, selectedInput);
         }
         if (guideline.getDefinition().getDefaultActions() != null) {
             for (ExpressionItem assignmentExpression : guideline.getDefinition().getDefaultActions()) {
@@ -245,7 +261,8 @@ public class Interpreter {
             Map<String, Object> resultPerRuleExecution = evaluateRule(rule, inputAndResult, guideline, firedRules, cards);
             mergeValueMapIntoListValueMap(resultPerRuleExecution, inputAndResult);
         }
-        return inputAndResult;
+        guidelineFiredRules.put(guideline.getId(), firedRules);
+        return new InternalOutput(guidelineFiredRules, inputAndResult);
     }
 
     private void mergeValueMapIntoListValueMap(Map<String, Object> valueMap, Map<String, List<Object>> valueListMap) {
@@ -1411,5 +1428,43 @@ public class Interpreter {
             }
         }
         throw new IllegalArgumentException("Unsupported operator in predicateStatement: " + predicateStatement);
+    }
+
+    public static class ExecutionOutput {
+        private Map<String, Set<String>> firedRules;
+
+        private List<DataInstance> result;
+
+        ExecutionOutput(Map<String, Set<String>> firedRules, List<DataInstance> result) {
+            this.firedRules = firedRules;
+            this.result = result;
+        }
+
+        public Map<String, Set<String>> getFiredRules() {
+            return firedRules;
+        }
+
+        public List<DataInstance> getResult() {
+            return result;
+        }
+    }
+
+    static class InternalOutput {
+        private Map<String, Set<String>> firedRules;
+
+        private Map<String, List<Object>> result;
+
+        InternalOutput(Map<String, Set<String>> firedRules, Map<String, List<Object>> result) {
+            this.firedRules = firedRules;
+            this.result = result;
+        }
+
+        public Map<String, Set<String>> getFiredRules() {
+            return firedRules;
+        }
+
+        public Map<String, List<Object>> getResult() {
+            return result;
+        }
     }
 }
