@@ -234,10 +234,10 @@ public class Interpreter {
         assertNotNull(dataInstances, "List<DataInstance> cannot be null.");
         Map<String, List<Object>> selectedInput = selectDataInstancesUsingPredicatesAndSortWithElementBindingCode(
                 dataInstances, guideline);
-        Map<String, Set<String>> guidelineFiredRules = new HashMap<>();
+        Map<String, Set<String>> guidelineFiredRules = new LinkedHashMap<>();
         Map<String, Object> resultDefaultRuleExecution = new HashMap<>();
         Map<String, Class> typeMap = new HashMap<>();
-        Set<String> firedRules = new HashSet<>();
+        Set<String> firedRules = new LinkedHashSet<>();
         boolean allPreconditionsAreTrue = true;
         if (guideline.getDefinition().getPreConditions() != null) {
             allPreconditionsAreTrue = guideline.getDefinition().getPreConditions().stream()
