@@ -7,13 +7,11 @@ import org.testng.annotations.Test;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.testng.Assert.assertEquals;
 
 public class TemplateFillerTest extends TestCommon {
@@ -120,5 +118,28 @@ public class TemplateFillerTest extends TestCommon {
         templateFiller.traverseMapAndReplaceAllVariablesWithValues(map, localValues, globalValues);
         Map expected = new Gson().fromJson(loadJson("appointment_test_expected"), Map.class);
         assertEquals(map, expected);
+    }
+
+    @Test
+    public void can_fill_array_of_complex_types() {
+        source = "{$gt1000.all}";
+        List<Object> list = new ArrayList<>();
+        list.add(new TestDomainObject("one", 1));
+        list.add(new TestDomainObject("two", 2));
+        globalValues.put("gt1000", list);
+        Object object = templateFiller.replaceVariablesWithValues(source, localValues, globalValues);
+        assertThat(object, is(instanceOf(java.util.ArrayList.class)));
+        List returnedList = (List) object;
+        assertThat(returnedList.size(), is(2));
+    }
+
+    private static class TestDomainObject {
+        TestDomainObject(String name, int quantity) {
+            this.name = name;
+            this.quantity = quantity;
+        }
+
+        String name;
+        int quantity;
     }
 }

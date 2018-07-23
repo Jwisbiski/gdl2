@@ -36,9 +36,15 @@ class TemplateFiller {
 
     private Object fetchValue(String variable, Map<String, Object> localValues, Map<String, List<Object>> globalValues) {
         String key = variable.substring(2, variable.length() - 1);
-        Object value = localValues.get(key);
-        if (value == null && globalValues.containsKey(key)) {
-            value = globalValues.get(key).get(0);
+        Object value;
+        if (key.endsWith(".all")) {
+            key = key.substring(0, key.length() - 4);
+            value = globalValues.get(key);
+        } else {
+            value = localValues.get(key);
+            if (value == null && globalValues.containsKey(key)) {
+                value = globalValues.get(key).get(0);
+            }
         }
         if (value != null) {
             if (value instanceof Date) {
