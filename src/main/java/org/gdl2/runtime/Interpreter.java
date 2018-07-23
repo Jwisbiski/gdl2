@@ -401,10 +401,10 @@ public class Interpreter {
             for (ExpressionItem thenStatement : rule.getThen()) {
                 if (thenStatement instanceof AssignmentExpression) {
                     performAssignmentStatements((AssignmentExpression) thenStatement, input, typeMap, result, guideline);
-                } else if (thenStatement instanceof UseTemplateExpression) {
+                }
+                if (thenStatement instanceof UseTemplateExpression) {
                     performUseTemplateStatement((UseTemplateExpression) thenStatement, templateMap, input, result, guideline);
                 }
-                //
                 if (hasContinuousAssignments(rule) || hasCards(rule)) {
                     mergeValueMapIntoListValueMap(result, input);
                 }
@@ -748,6 +748,7 @@ public class Interpreter {
             Object value = evaluateExpressionItem(assignmentExpression.getAssignment(), input, guideline, null);
             useTemplateLocalResult.put(assignmentExpression.getVariable().getCode(), value);
         }
+        useTemplateLocalResult.putAll(result);
         Map<String, Object> localMapCopy = deepCopy(template.getObject());
         this.templateFiller.traverseMapAndReplaceAllVariablesWithValues(localMapCopy, useTemplateLocalResult, input);
         try {

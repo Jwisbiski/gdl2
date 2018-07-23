@@ -68,8 +68,20 @@ public class UseTemplateExpressionTest extends TestCommon {
     }
 
     @Test
-    public void can_use_template_create_linked_hash_map_value_set_by_previous_rule() throws Exception {
+    public void can_use_template_create_linked_hash_map_value_set_by_the_previous_rule() throws Exception {
         guideline = loadGuideline("use_template_with_linked_hash_map_test3.v0.1.gdl2");
+        List<Guideline> guidelines = Collections.singletonList(guideline);
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.get(0).getRoot(), instanceOf(LinkedHashMap.class));
+        LinkedHashMap linkedHashMap = (LinkedHashMap) output.get(0).getRoot();
+        assertThat(linkedHashMap.get("unit"), is("mg"));
+        assertThat(linkedHashMap.get("precision"), is(1.0));
+        assertThat(linkedHashMap.get("magnitude"), is(0.5));
+    }
+
+    @Test
+    public void can_use_template_create_linked_hash_map_value_set_by_the_same_rule() throws Exception {
+        guideline = loadGuideline("use_template_with_linked_hash_map_test5.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
         output = interpreter.executeGuidelines(guidelines, input);
         assertThat(output.get(0).getRoot(), instanceOf(LinkedHashMap.class));
