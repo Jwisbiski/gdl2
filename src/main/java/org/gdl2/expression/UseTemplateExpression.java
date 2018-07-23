@@ -8,4 +8,5 @@ import java.util.List;
 public class UseTemplateExpression extends ExpressionItem {
     private Variable variable;
     private List<AssignmentExpression> assignmentExpressions;
+    private List<Variable> inputVariables;
 }

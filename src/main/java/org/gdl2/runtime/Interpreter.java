@@ -52,6 +52,7 @@ public class Interpreter {
     private static final String LOG1P = "log1p";
     private static final String ROUND = "round";
     private static final String SQRT = "sqrt";
+    public static final String JAVA_UTIL_LINKED_HASH_MAP = "java.util.LinkedHashMap";
 
     private RuntimeConfiguration runtimeConfiguration;
     private static final TemplateFiller templateFiller = new TemplateFiller();
@@ -313,10 +314,11 @@ public class Interpreter {
                 Template template = entry.getValue();
                 if (valueListMap.containsKey(template.getId())) {
                     List<Object> list = valueListMap.get(template.getId());
+                    String modelId = template.getModelId() == null ? JAVA_UTIL_LINKED_HASH_MAP : template.getModelId();
                     for (Object object : list) {
                         dataInstances.add(new DataInstance.Builder()
                                 .id(template.getId())
-                                .modelId(template.getModelId())
+                                .modelId(modelId)
                                 .addValue("/", object)
                                 .build());
                     }
@@ -738,6 +740,7 @@ public class Interpreter {
     private void performUseTemplateStatement(UseTemplateExpression useTemplateExpression, Map<String, Template> templateMap,
                                              Map<String, List<Object>> input, Map<String, Object> result, Guideline guideline) {
         Variable variable = useTemplateExpression.getVariable();
+        //List<Variable> inputVariables = useTemplateExpression.getInputVariables();
         String attribute = variable.getCode();
         Template template = templateMap.get(attribute);
         if (template == null) {
@@ -751,8 +754,9 @@ public class Interpreter {
         useTemplateLocalResult.putAll(result);
         Map<String, Object> localMapCopy = deepCopy(template.getObject());
         this.templateFiller.traverseMapAndReplaceAllVariablesWithValues(localMapCopy, useTemplateLocalResult, input);
+        String modelId = template.getModelId() == null ? JAVA_UTIL_LINKED_HASH_MAP : template.getModelId();
         try {
-            Object object = this.runtimeConfiguration.getObjectCreatorPlugin().create(template.getModelId(), localMapCopy);
+            Object object = this.runtimeConfiguration.getObjectCreatorPlugin().create(modelId, localMapCopy);
             result.put(variable.getCode(), object);
         } catch (ClassNotFoundException cnf) {
             System.out.println("failed to create object using template(" + template.getModelId() + "), class not found..");

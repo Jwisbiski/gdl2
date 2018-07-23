@@ -444,6 +444,7 @@ ExpressionItem expression_node() :
   ExpressionItem item2 = null;
   OperatorKind op = null;
   List<AssignmentExpression> assignmentExpressions = java.util.Collections.EMPTY_LIST;
+  List<Variable> inputVariables = java.util.Collections.EMPTY_LIST;
   Token t = null;
   String attrId = null;
   int position = 1;
@@ -482,9 +483,14 @@ ExpressionItem expression_node() :
       }
     | t = < SYM_USE_TEMPLATE > < SYM_L_PARENTHESIS > variable = variable()
                 [ assignmentExpressions = assignmentExpressions() ]
+                [
+                  < SYM_L_BRACKET >
+                    inputVariables = variables()
+                  < SYM_R_BRACKET >
+                ]
           < SYM_R_PARENTHESIS >
       {
-        return new UseTemplateExpression(variable, assignmentExpressions);
+        return new UseTemplateExpression(variable, assignmentExpressions, inputVariables);
       }
     |
       LOOKAHEAD(2)
@@ -658,6 +664,30 @@ List < AssignmentExpression > assignmentExpressions() :
      < SYM_R_PARENTHESIS >
     )
 
+    {
+        return items;
+    }
+}
+
+List < Variable > variables() :
+{
+    List < Variable > items = new ArrayList < Variable > ();
+    Variable item = null;
+}
+{
+    (
+     item = variable()
+     {
+        items.add(item);
+     }
+     (
+      LOOKAHEAD(2)
+      < SYM_COMMA > item = variable()
+      {
+        items.add(item);
+      }
+     )*
+    )
     {
         return items;
     }
