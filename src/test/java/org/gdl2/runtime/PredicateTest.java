@@ -7,6 +7,7 @@ import org.hamcrest.Matchers;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -269,53 +270,5 @@ public class PredicateTest extends TestCommon {
         List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances), predicate, null);
         assertThat(result.size(), Matchers.is(1));
         assertThat(result.get(0).modelId(), is("weight"));
-    }
-
-    @Test
-    public void can_evaluate_partial_path_match_on_all_levels_expect_one() {
-        DataInstance[] dataInstances = new DataInstance[2];
-        dataInstances[0] = new DataInstance.Builder()
-                .modelId("Anything")
-                .addValue("/item[0]/linkId.value", DvText.valueOf("1.1"))
-                .build();
-        dataInstances[1] = new DataInstance.Builder()
-                .modelId("Anything")
-                .addValue("/item[1]/linkId.value", DvText.valueOf("1.2"))
-                .build();
-        BinaryExpression predicate = (BinaryExpression) parseExpression("//linkId.value=='1.2'");
-        List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances), predicate, null);
-        assertThat(result.size(), Matchers.is(1));
-    }
-
-    @Test
-    public void can_evaluate_partial_path_match_on_all_levels_expect_two() {
-        DataInstance[] dataInstances = new DataInstance[2];
-        dataInstances[0] = new DataInstance.Builder()
-                .modelId("Anything")
-                .addValue("/item[0]/linkId.value", DvText.valueOf("1.2"))
-                .build();
-        dataInstances[1] = new DataInstance.Builder()
-                .modelId("Anything")
-                .addValue("/item[1]/linkId.value", DvText.valueOf("1.2"))
-                .build();
-        BinaryExpression predicate = (BinaryExpression) parseExpression("//linkId.value=='1.2'");
-        List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances), predicate, null);
-        assertThat(result.size(), Matchers.is(2));
-    }
-
-    @Test
-    public void can_evaluate_partial_path_match_on_all_levels_expect_0() {
-        DataInstance[] dataInstances = new DataInstance[2];
-        dataInstances[0] = new DataInstance.Builder()
-                .modelId("Anything")
-                .addValue("/item[0]/linkId.value", DvText.valueOf("1.3"))
-                .build();
-        dataInstances[1] = new DataInstance.Builder()
-                .modelId("Anything")
-                .addValue("/item[1]/linkId.value", DvText.valueOf("1.1"))
-                .build();
-        BinaryExpression predicate = (BinaryExpression) parseExpression("//linkId.value=='1.2'");
-        List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances), predicate, null);
-        assertThat(result.size(), Matchers.is(0));
     }
 }

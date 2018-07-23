@@ -1294,7 +1294,7 @@ public class Interpreter {
         } else if (CURRENT_DATE.equals(variable.getCode())) {
             dataValue = systemCurrentDateTime().date();
         } else {
-            List<Object> valueList = retrieveObjectValueByPath(key, variable, valueMap);
+            List<Object> valueList = valueMap.get(key);
             if (valueList == null) {
                 return TypeBinding.MAGNITUDE.equals(variable.getAttribute()) ? 0.0 : null; // backwards compatibility
             }
@@ -1331,23 +1331,6 @@ public class Interpreter {
         } catch (ReflectiveOperationException exception) {
             throw new IllegalArgumentException("Failed to retrieve attribute [" + attribute + "] value for variable: " + variable);
         }
-    }
-
-    private List<Object> retrieveObjectValueByPath(String key, Variable variable, Map<String, List<Object>> valueMap) {
-        if (!key.startsWith("//")) {
-            return valueMap.get(key);
-        }
-        String partialPath = variable.getPath().substring(2);
-        if (variable.getAttribute() != null) {
-            partialPath += "." + variable.getAttribute();
-        }
-        List<Object> list = new ArrayList<>();
-        for (Map.Entry<String, List<Object>> entry : valueMap.entrySet()) {
-            if (entry.getKey().endsWith(partialPath)) {
-                list.addAll(entry.getValue());
-            }
-        }
-        return list;
     }
 
     private String formatDateTime(DvDateTime dvDateTime) {
