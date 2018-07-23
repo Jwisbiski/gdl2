@@ -26,7 +26,7 @@ public class PredicateTest extends TestCommon {
     }
 
     @Test
-    public void can_evaluate_predicate_with_max_function_expected_one_result() throws Exception {
+    public void can_evaluate_predicate_with_max_function_expected_one_result() {
         // predicates = <"max(/data[at0001]/items[at0004])",...>
         String path = "/data[at0001]/items[at0004]";
         ExpressionItem predicate = new UnaryExpression(
@@ -59,7 +59,7 @@ public class PredicateTest extends TestCommon {
     }
 
     @Test
-    public void can_evaluate_predicate_with_min_function_expected_one_result() throws Exception {
+    public void can_evaluate_predicate_with_min_function_expected_one_result() {
         // predicates = <"max(/data[at0001]/items[at0004])",...>
         String path = "/data[at0001]/items[at0004]";
         ExpressionItem predicate = new UnaryExpression(
@@ -206,7 +206,7 @@ public class PredicateTest extends TestCommon {
     }
 
     @Test
-    public void can_run_empty_list_without_right_input_on_max_predicate() throws Exception {
+    public void can_run_empty_list_without_right_input_on_max_predicate() {
         DataInstance[] dataInstances = new DataInstance[1];
         dataInstances[0] = new DataInstance.Builder()
                 .modelId("archetype")
@@ -220,7 +220,7 @@ public class PredicateTest extends TestCommon {
     }
 
     @Test
-    public void can_run_empty_list_without_right_input_on_min_predicate() throws Exception {
+    public void can_run_empty_list_without_right_input_on_min_predicate() {
         DataInstance[] dataInstances = new DataInstance[1];
         dataInstances[0] = new DataInstance.Builder()
                 .modelId("archetype")
@@ -234,7 +234,7 @@ public class PredicateTest extends TestCommon {
     }
 
     @Test
-    public void can_evaluate_observation_datetime_against_current_datetime_minus_12_month() throws Exception {
+    public void can_evaluate_observation_datetime_against_current_datetime_minus_12_month() {
         // /data/events/time/value/value>=($currentDateTime.value-12,mo)
         DataInstance[] dataInstances = new DataInstance[1];
         dataInstances[0] = new DataInstance.Builder()
@@ -253,7 +253,7 @@ public class PredicateTest extends TestCommon {
     }
 
     @Test
-    public void can_evaluate_pathed_datetime_against_current_datetime_minus_12_month() throws Exception {
+    public void can_evaluate_pathed_datetime_against_current_datetime_minus_12_month() {
         // /data[at0001]/items[at0003]/value/value>=($currentDateTime.value-12,mo)
         DataInstance[] dataInstances = new DataInstance[1];
         dataInstances[0] = new DataInstance.Builder()
@@ -269,5 +269,53 @@ public class PredicateTest extends TestCommon {
         List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances), predicate, null);
         assertThat(result.size(), Matchers.is(1));
         assertThat(result.get(0).modelId(), is("weight"));
+    }
+
+    @Test
+    public void can_evaluate_partial_path_match_on_all_levels_expect_one() {
+        DataInstance[] dataInstances = new DataInstance[2];
+        dataInstances[0] = new DataInstance.Builder()
+                .modelId("Anything")
+                .addValue("/item[0]/linkId.value", DvText.valueOf("1.1"))
+                .build();
+        dataInstances[1] = new DataInstance.Builder()
+                .modelId("Anything")
+                .addValue("/item[1]/linkId.value", DvText.valueOf("1.2"))
+                .build();
+        BinaryExpression predicate = (BinaryExpression) parseExpression("//linkId.value=='1.2'");
+        List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances), predicate, null);
+        assertThat(result.size(), Matchers.is(1));
+    }
+
+    @Test
+    public void can_evaluate_partial_path_match_on_all_levels_expect_two() {
+        DataInstance[] dataInstances = new DataInstance[2];
+        dataInstances[0] = new DataInstance.Builder()
+                .modelId("Anything")
+                .addValue("/item[0]/linkId.value", DvText.valueOf("1.2"))
+                .build();
+        dataInstances[1] = new DataInstance.Builder()
+                .modelId("Anything")
+                .addValue("/item[1]/linkId.value", DvText.valueOf("1.2"))
+                .build();
+        BinaryExpression predicate = (BinaryExpression) parseExpression("//linkId.value=='1.2'");
+        List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances), predicate, null);
+        assertThat(result.size(), Matchers.is(2));
+    }
+
+    @Test
+    public void can_evaluate_partial_path_match_on_all_levels_expect_0() {
+        DataInstance[] dataInstances = new DataInstance[2];
+        dataInstances[0] = new DataInstance.Builder()
+                .modelId("Anything")
+                .addValue("/item[0]/linkId.value", DvText.valueOf("1.3"))
+                .build();
+        dataInstances[1] = new DataInstance.Builder()
+                .modelId("Anything")
+                .addValue("/item[1]/linkId.value", DvText.valueOf("1.1"))
+                .build();
+        BinaryExpression predicate = (BinaryExpression) parseExpression("//linkId.value=='1.2'");
+        List<DataInstance> result = interpreter.evaluateDataInstancesWithPredicate(Arrays.asList(dataInstances), predicate, null);
+        assertThat(result.size(), Matchers.is(0));
     }
 }

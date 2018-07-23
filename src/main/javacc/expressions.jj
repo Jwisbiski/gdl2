@@ -350,6 +350,7 @@ TOKEN : /* LOCAL TOKENS */
   | ")" >
 | < #V_LOCAL_TERM_CODE_REF : "[" < LET_DIG > (< LET_DIG_DD >)* "]" >
 | < #PATH_SEGMENT : < V_ATTRIBUTE_IDENTIFIER > (< V_LOCAL_TERM_CODE_REF >)? >
+| < V_RELATIVE_PATH : < SYM_SLASH > < SYM_SLASH > < PATH_SEGMENT > (< SYM_SLASH > < PATH_SEGMENT >)* >
 | < V_ABSOLUTE_PATH : < SYM_SLASH > < PATH_SEGMENT > (< SYM_SLASH > < PATH_SEGMENT >)* >
 }
 
@@ -762,6 +763,10 @@ Variable variable() :
       definingCode = t.image;
     }
     [ label = label() ]
+  | t = < V_RELATIVE_PATH>
+    {
+      path = t.image;
+    }
   | t = < V_ABSOLUTE_PATH >
     {
       path = t.image;
