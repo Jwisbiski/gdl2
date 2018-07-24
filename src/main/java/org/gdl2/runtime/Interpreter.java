@@ -771,6 +771,9 @@ public class Interpreter {
         } else {
             for (Variable inputVariable : inputVariables) {
                 Object value = retrieveValueFromValueMap(inputVariable, input);
+                if (value == null) {
+                    continue;
+                }
                 createObjectUsingOutPutTemplate(variable, template, useTemplateLocalResult, input, result, value);
             }
         }
@@ -1334,7 +1337,7 @@ public class Interpreter {
         } else {
             List<Object> valueList = valueMap.get(key);
             if (valueList == null) {
-                return TypeBinding.MAGNITUDE.equals(variable.getAttribute()) ? 0.0 : null; // backwards compatibility
+                return null;
             }
             dataValue = valueList.get(valueList.size() - 1);
         }

@@ -111,7 +111,7 @@ public class ExpressionEvaluationTest extends TestCommon {
     public void can_evaluate_variable_of_uninitialized_value() {
         Variable variable = new Variable("name", "gt0006", "path", "magnitude");
         value = interpreter.evaluateExpressionItem(variable, inputMap);
-        assertThat(value, notNullValue());
+        assertThat(value, nullValue());
     }
 
     @Test

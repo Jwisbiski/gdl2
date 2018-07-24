@@ -240,7 +240,7 @@
                     "resource_template": {
                       "template_id": "gt1002",
                       "assignments": [
-                        "$gt2001=($gt0016.magnitude*0.6)"
+                        "$gt2001=100"
                       ]
                     }
                   }
