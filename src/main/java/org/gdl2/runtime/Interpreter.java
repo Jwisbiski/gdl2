@@ -259,8 +259,8 @@ public class Interpreter {
 
         Map<String, List<Object>> inputAndResult = new HashMap<>(selectedInput);
         for (Rule rule : sortedRules) {
-            Map<String, Object> resultPerRuleExecution = evaluateRule(rule, inputAndResult, guideline, firedRules, cards);
-            mergeValueMapIntoListValueMap(resultPerRuleExecution, inputAndResult);
+            Map<String, List<Object>> resultPerRuleExecution = evaluateRule(rule, inputAndResult, guideline, firedRules, cards);
+            mergeListValueMaps(resultPerRuleExecution, inputAndResult);
         }
         guidelineFiredRules.put(guideline.getId(), firedRules);
         return new InternalOutput(guidelineFiredRules, inputAndResult);
@@ -269,6 +269,17 @@ public class Interpreter {
     private void mergeValueMapIntoListValueMap(Map<String, Object> valueMap, Map<String, List<Object>> valueListMap) {
         for (Map.Entry<String, Object> entry : valueMap.entrySet()) {
             valueListMap.computeIfAbsent(entry.getKey(), s -> new ArrayList<>()).add(entry.getValue());
+        }
+    }
+
+    private void mergeListValueMaps(Map<String, List<Object>> valueMap, Map<String, List<Object>> valueListMap) {
+        for (Map.Entry<String, List<Object>> entry : valueMap.entrySet()) {
+            List<Object> values = valueListMap.get(entry.getKey());
+            if (values == null) {
+                values = new ArrayList<>();
+                valueListMap.put(entry.getKey(), values);
+            }
+            values.addAll(entry.getValue());
         }
     }
 
@@ -389,9 +400,10 @@ public class Interpreter {
         return rules.stream().sorted(new RuleComparator()).collect(Collectors.toList());
     }
 
-    private Map<String, Object> evaluateRule(Rule rule, Map<String, List<Object>> input, Guideline guideline,
-                                             Set<String> firedRules, List<Card> cards) {
-        Map<String, Object> result = new HashMap<>();
+    private Map<String, List<Object>> evaluateRule(Rule rule, Map<String, List<Object>> input, Guideline guideline,
+                                                   Set<String> firedRules, List<Card> cards) {
+        Map<String, List<Object>> result = new HashMap<>();
+        Map<String, Object> singleResult = new HashMap<>();
         boolean allWhenStatementsAreTrue = rule.getWhen() == null || rule.getWhen().stream()
                 .allMatch(whenStatement -> evaluateBooleanExpression(whenStatement, input, guideline, firedRules));
         if (!allWhenStatementsAreTrue) {
@@ -402,13 +414,14 @@ public class Interpreter {
             Map<String, Template> templateMap = guideline.getDefinition().getTemplates();
             for (ExpressionItem thenStatement : rule.getThen()) {
                 if (thenStatement instanceof AssignmentExpression) {
-                    performAssignmentStatements((AssignmentExpression) thenStatement, input, typeMap, result, guideline);
+                    performAssignmentStatements((AssignmentExpression) thenStatement, input, typeMap, singleResult, guideline);
                 }
                 if (thenStatement instanceof UseTemplateExpression) {
+                    mergeValueMapIntoListValueMap(singleResult, result);
                     performUseTemplateStatement((UseTemplateExpression) thenStatement, templateMap, input, result, guideline);
                 }
                 if (hasContinuousAssignments(rule) || hasCards(rule)) {
-                    mergeValueMapIntoListValueMap(result, input);
+                    mergeValueMapIntoListValueMap(singleResult, input);
                 }
             }
         }
@@ -418,6 +431,7 @@ public class Interpreter {
             }
         }
         firedRules.add(rule.getId());
+        mergeValueMapIntoListValueMap(singleResult, result);
         return result;
     }
 
@@ -738,9 +752,8 @@ public class Interpreter {
     }
 
     private void performUseTemplateStatement(UseTemplateExpression useTemplateExpression, Map<String, Template> templateMap,
-                                             Map<String, List<Object>> input, Map<String, Object> result, Guideline guideline) {
+                                             Map<String, List<Object>> input, Map<String, List<Object>> result, Guideline guideline) {
         Variable variable = useTemplateExpression.getVariable();
-        //List<Variable> inputVariables = useTemplateExpression.getInputVariables();
         String attribute = variable.getCode();
         Template template = templateMap.get(attribute);
         if (template == null) {
@@ -752,12 +765,32 @@ public class Interpreter {
             useTemplateLocalResult.put(assignmentExpression.getVariable().getCode(), value);
         }
         useTemplateLocalResult.putAll(result);
+        List<Variable> inputVariables = useTemplateExpression.getInputVariables();
+        if (inputVariables == null || inputVariables.size() == 0) {
+            createObjectUsingOutPutTemplate(variable, template, useTemplateLocalResult, input, result, null);
+        } else {
+            for (Variable inputVariable : inputVariables) {
+                Object value = retrieveValueFromValueMap(inputVariable, input);
+                createObjectUsingOutPutTemplate(variable, template, useTemplateLocalResult, input, result, value);
+            }
+        }
+    }
+
+    private void createObjectUsingOutPutTemplate(Variable variable, Template template, Map<String, Object> useTemplateLocalResult,
+                                                 Map<String, List<Object>> input, Map<String, List<Object>> result,
+                                                 Object additionalInputValue) {
         Map<String, Object> localMapCopy = deepCopy(template.getObject());
-        this.templateFiller.traverseMapAndReplaceAllVariablesWithValues(localMapCopy, useTemplateLocalResult, input);
+        this.templateFiller.traverseMapAndReplaceAllVariablesWithValues(localMapCopy, useTemplateLocalResult, input, additionalInputValue);
+
         String modelId = template.getModelId() == null ? JAVA_UTIL_LINKED_HASH_MAP : template.getModelId();
         try {
             Object object = this.runtimeConfiguration.getObjectCreatorPlugin().create(modelId, localMapCopy);
-            result.put(variable.getCode(), object);
+            List<Object> valueList = result.get(variable.getCode());
+            if (valueList == null) {
+                valueList = new ArrayList<>();
+                result.put(variable.getCode(), valueList);
+            }
+            valueList.add(object);
         } catch (ClassNotFoundException cnf) {
             System.out.println("failed to create object using template(" + template.getModelId() + "), class not found..");
             cnf.printStackTrace();

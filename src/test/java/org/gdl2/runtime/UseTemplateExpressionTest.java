@@ -28,7 +28,7 @@ public class UseTemplateExpressionTest extends TestCommon {
 
 
     @BeforeMethod
-    public void setUp() throws Exception {
+    public void setUp() {
         input = new ArrayList<>();
         interpreter = new Interpreter();
     }
@@ -100,7 +100,7 @@ public class UseTemplateExpressionTest extends TestCommon {
         assertThat(linkedHashMap.get("magnitude"), is(0.5));
     }
 
-    @Test (enabled =  false)
+    @Test
     public void can_use_template_create_with_multiple_input_variables() throws Exception {
         guideline = loadGuideline("use_template_with_linked_hash_map_test6.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
@@ -114,9 +114,9 @@ public class UseTemplateExpressionTest extends TestCommon {
         assertThat(output.size(), is(2));
         assertThat(output.get(0).getRoot(), instanceOf(LinkedHashMap.class));
         LinkedHashMap linkedHashMap = (LinkedHashMap) output.get(0).getRoot();
-        assertThat(linkedHashMap.get("magnitude"), is(3));
+        assertThat(linkedHashMap.get("magnitude"), is(3.0));
         linkedHashMap = (LinkedHashMap) output.get(1).getRoot();
-        assertThat(linkedHashMap.get("magnitude"), is(5));
+        assertThat(linkedHashMap.get("magnitude"), is(5.0));
     }
 
     @Test
@@ -165,9 +165,12 @@ public class UseTemplateExpressionTest extends TestCommon {
         guideline = loadGuideline("use_template_with_quantity_twice_set_value_test.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
         output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(2));
         assertThat(output.get(0).getRoot(), instanceOf(DvQuantity.class));
         DvQuantity dvQuantity = (DvQuantity) output.get(0).getRoot();
-        assertThat(dvQuantity.toString(), is("3.5,mg")); // only the last set value counts
+        assertThat(dvQuantity.toString(), is("8.5,mg"));
+        dvQuantity = (DvQuantity) output.get(1).getRoot();
+        assertThat(dvQuantity.toString(), is("3.5,mg"));
     }
 
     @Test
