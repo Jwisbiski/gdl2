@@ -8,12 +8,15 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 class TemplateFiller {
     private static final Pattern VARIABLE_REGEX = Pattern.compile("\\{\\$gt([0-9.])+[0-9]?}");
+    private static final String ALL = ".all";
+    private static final String ALL_ENDING = ALL + "}";
     private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     Object replaceVariablesWithValues(String source, Map<String, Object> localValues,
@@ -44,7 +47,7 @@ class TemplateFiller {
                               Object additionalInputValue) {
         String key = variable.substring(2, variable.length() - 1);
         Object value;
-        if (key.endsWith(".all")) {
+        if (key.endsWith(ALL)) {
             key = key.substring(0, key.length() - 4);
             value = globalValues.get(key);
         } else {
@@ -92,7 +95,8 @@ class TemplateFiller {
             } else if (object instanceof Map) {
                 traverseMapAndReplaceAllVariablesWithValues((Map) object, localValues, globalValues, additionalInputValue);
             } else if (object instanceof List) {
-                traverseListAndReplaceAllVariablesWithValues((List) object, localValues, globalValues, additionalInputValue);
+                List list = (List) object;
+                traverseListAndReplaceAllVariablesWithValues(list, localValues, globalValues, additionalInputValue);
             }
         }
     }
@@ -100,11 +104,20 @@ class TemplateFiller {
     private void traverseListAndReplaceAllVariablesWithValues(List list, Map<String, Object> localValues,
                                                               Map<String, List<Object>> globalValues,
                                                               Object additionalInputValue) {
-        for (int i = 0, j = list.size(); i < j; i++) {
-            Object object = list.get(i);
+        for (ListIterator iterator = list.listIterator(); iterator.hasNext(); ) {
+            Object object = iterator.next();
             if (object instanceof String) {
-                Object value = replaceVariablesWithValues((String) object, localValues, globalValues, additionalInputValue);
-                list.set(i, value);
+                String source = (String) object;
+                Object value = replaceVariablesWithValues(source, localValues, globalValues, additionalInputValue);
+                if (source.endsWith(ALL_ENDING) && (value instanceof List)) {
+                    iterator.remove();
+                    List sublist = (List) value;
+                    for (Object sublistValue : sublist) {
+                        iterator.add(sublistValue);
+                    }
+                } else {
+                    iterator.set(value);
+                }
             } else if (object instanceof Map) {
                 traverseMapAndReplaceAllVariablesWithValues((Map) object, localValues, globalValues, additionalInputValue);
             } else if (object instanceof List) {

@@ -45,6 +45,46 @@ public class UseTemplateExpressionTest extends TestCommon {
     }
 
     @Test
+    public void can_use_template_create_ordinal_with_element_bindings() throws Exception {
+        List<Guideline> guidelines = loadSingleGuideline("use_template_with_ordinal_test2.v0.1.gdl2");
+        output = interpreter.executeGuidelines(guidelines, input);
+        DataInstance dataInstance = output.get(0);
+        DvOrdinal dvOrdinal = gson.fromJson(gson.toJson(dataInstance.getRoot()), DvOrdinal.class);
+        assertThat(dvOrdinal.toString(), is("3|ATC::C10AA05|atorvastatin|"));
+        assertThat(dataInstance.getDvCodedText("/symbol").getDefiningCode().getTerminology(), is("ATC"));
+        assertThat(dataInstance.getDvCodedText("/symbol").getDefiningCode().getCode(), is("C10AA05"));
+        assertThat(dataInstance.getDvCodedText("/symbol").getValue(), is("atorvastatin"));
+        assertThat(dataInstance.getDvText("/symbol/value").getValue(), is("atorvastatin"));
+    }
+
+    @Test
+    public void can_use_template_and_select_output_with_element_bindings() throws Exception {
+        List<Guideline> guidelines = new ArrayList<>();
+        guidelines.add(loadGuideline("use_template_with_ordinal_test2.v0.1.gdl2"));
+        guidelines.add(loadGuideline("use_template_with_ordinal_select_output.v0.1.gdl2"));
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(2));
+        DataInstance dataInstance = output.get(1);
+        DvOrdinal dvOrdinal = gson.fromJson(gson.toJson(dataInstance.getRoot()), DvOrdinal.class);
+        assertThat(dvOrdinal.toString(), is("3|test::test|success|"));
+    }
+
+    @Test
+    public void can_use_template_and_select_output_with_element_bindings_and_use_in_another_template() throws Exception {
+        List<Guideline> guidelines = new ArrayList<>();
+        guidelines.add(loadGuideline("use_template_with_ordinal_test2.v0.1.gdl2"));
+        guidelines.add(loadGuideline("use_template_with_ordinal_test2.v0.1.gdl2"));
+        guidelines.add(loadGuideline("use_template_with_ordinal_select_and_use_again.v0.1.gdl2"));
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(3));
+        DataInstance dataInstance = output.get(2);
+        String json = gson.toJson(dataInstance.getRoot());
+        assertThat(JsonPath.read(json, "$.list_value.length()"), is(2));
+        assertThat(JsonPath.read(json, "$.list_value[0].symbol.value"), is("atorvastatin"));
+        assertThat(JsonPath.read(json, "$.list_value[1].symbol.value"), is("atorvastatin"));
+    }
+
+    @Test
     public void can_use_template_create_quantity() throws Exception {
         guideline = loadGuideline("use_template_with_quantity_test.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
@@ -215,15 +255,13 @@ public class UseTemplateExpressionTest extends TestCommon {
 
     @Test
     public void can_use_template_set_multiple_values_of_diff_types() throws Exception {
-        interpreter = buildInterpreterWithFhirPluginAndCurrentDateTime("2013-04-20T14:00:00");
+        interpreter = new Interpreter(DvDateTime.valueOf("2013-04-20T14:00:00"));
         guideline = loadGuideline("use_template_set_multiple_values_of_diff_types.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
         output = interpreter.executeGuidelines(guidelines, input);
-        assertThat(output.get(0).getRoot(), instanceOf(Appointment.class));
-        Appointment appointment = (Appointment) output.get(0).getRoot();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        assertThat(appointment.getRequestedPeriod().get(0).getStart(), is(dateFormat.parse("2013-04-20")));
-        assertThat(appointment.getStatus().toCode(), is("proposed"));
+        String json = gson.toJson(output.get(0).getRoot());
+        assertThat(JsonPath.read(json, "$.requestedPeriod[0].start"), is("2013-04-20"));
+        assertThat(JsonPath.read(json, "$.status"), is("proposed"));
     }
 
     @Test

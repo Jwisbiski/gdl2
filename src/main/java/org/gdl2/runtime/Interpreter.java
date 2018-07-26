@@ -1,6 +1,7 @@
 package org.gdl2.runtime;
 
 import com.google.gson.Gson;
+import com.jayway.jsonpath.JsonPath;
 import lombok.NonNull;
 import org.gdl2.cdshooks.*;
 import org.gdl2.datatypes.*;
@@ -54,6 +55,7 @@ public class Interpreter {
     private static final String LOG1P = "log1p";
     private static final String ROUND = "round";
     private static final String SQRT = "sqrt";
+    public static final String ROOT = "/";
 
     private RuntimeConfiguration runtimeConfiguration;
     private static final TemplateFiller templateFiller = new TemplateFiller();
@@ -159,15 +161,17 @@ public class Interpreter {
         Map<String, Set<String>> firedRules = new LinkedHashMap<>();
         for (Guideline guide : guidelines) {
             ExecutionOutput resultPerExecution = executeSingleGuidelineWithCards(guide, input, cards);
+            input = new ArrayList<>(inputDataInstances);
             for (DataInstance dataInstance : resultPerExecution.getResult()) {
                 DataInstance existing = allResults.get(dataInstance.modelId());
-                if (existing == null || isInputData(dataInstance, guide) || isOutputTemplateData(dataInstance, guide)) {
+                if (existing == null || isInputData(dataInstance, guide)) {
                     allResults.put(dataInstance.modelId(), dataInstance);
+                } else if (isOutputTemplateData(dataInstance, guide)) {
+                    input.add(dataInstance);
                 } else {
                     existing.merge(dataInstance);
                 }
             }
-            input = new ArrayList<>(inputDataInstances);
             input.addAll(allResults.values());
             totalResult.addAll(resultPerExecution.result);
             firedRules.putAll(resultPerExecution.getFiredRules());
@@ -326,18 +330,44 @@ public class Interpreter {
                 Template template = entry.getValue();
                 if (valueListMap.containsKey(template.getId())) {
                     List<Object> list = valueListMap.get(template.getId());
-                    String modelId = template.getModelId();
                     for (Object object : list) {
-                        dataInstances.add(new DataInstance.Builder()
-                                .id(template.getId())
-                                .modelId(modelId)
-                                .addValue("/", object)
-                                .build());
+                        dataInstances.add(fromOutputTemplateObject(template, object));
                     }
                 }
             }
         }
         return dataInstances;
+    }
+
+    private DataInstance fromOutputTemplateObject(Template template, Object object) {
+        DataInstance dataInstance = new DataInstance.Builder()
+                .id(template.getId())
+                .modelId(template.getModelId())
+                .addValue(ROOT, object)
+                .build();
+        if (template.getElementBindings() != null) {
+            Gson gson = new Gson();
+            String json = gson.toJson(object);
+            for (ElementBinding elementBinding : template.getElementBindings()) {
+                String path = elementBinding.getPath();
+                String jsonPath = "$" + path.replaceAll("/", ".");
+                String type = elementBinding.getType();
+                Object jsonPathValue = JsonPath.read(json, jsonPath);
+                String value;
+                Object objectValue = null;
+                if ("DV_CODED_TEXT".equals(type)) {
+                    value = gson.toJson(jsonPathValue);
+                    objectValue = gson.fromJson(value, DvCodedText.class);
+                } else if ("DV_TEXT".equals(type)) {
+                    objectValue = DvText.valueOf(jsonPathValue.toString());
+                }
+                if (objectValue != null) {
+                    dataInstance.setValue(path, objectValue);
+                }
+            }
+        }
+        return dataInstance;
+
     }
 
     private List<DataInstance> createFromValueListsUsingSingleDataBinding(String bindingId,
@@ -389,6 +419,16 @@ public class Interpreter {
                 .forEach(s -> valueListMap
                         .computeIfAbsent(pathToCode.get(s.getKey()), key -> new ArrayList<>())
                         .add(s.getValue()));
+        for (DataInstance dataInstance : dataInstances) {
+            if (dataInstance.getRoot() != null) {
+                List<Object> valueList = valueListMap.get(dataBinding.getId());
+                if (valueList == null) {
+                    valueList = new ArrayList<>();
+                    valueListMap.put(dataBinding.getId(), valueList);
+                }
+                valueList.add(dataInstance.getRoot());
+            }
+        }
     }
 
     private Map<String, String> pathToCode(DataBinding dataBinding) {
