@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.singletonList;
 import static org.gdl2.cdshooks.Link.LinkType.ABSOLUTE;
 import static org.gdl2.expression.OperatorKind.*;
 import static org.gdl2.model.DataBinding.Type.INPUT;
@@ -312,7 +313,7 @@ public class Interpreter {
                             pathValueListMap.put(elementPath, objects);
                         } else if (assignableCodes.contains(valueKey)) {
                             total = 1; // only take last element for output type
-                            pathValueListMap.put(elementPath, Collections.singletonList(objects.get(objects.size() - 1)));
+                            pathValueListMap.put(elementPath, singletonList(objects.get(objects.size() - 1)));
                         }
                     }
                 }
@@ -783,6 +784,7 @@ public class Interpreter {
                                                  Map<String, List<Object>> input, Map<String, List<Object>> result,
                                                  Object additionalInputValue) {
         Map<String, Object> localMapCopy = deepCopy(template.getObject());
+        addCurrentDateTimeToGlobalVariableValues(input);
         this.templateFiller.traverseMapAndReplaceAllVariablesWithValues(localMapCopy, useTemplateLocalResult, input, additionalInputValue);
 
         String modelId = template.getModelId() == null ? JAVA_UTIL_LINKED_HASH_MAP : template.getModelId();
@@ -798,6 +800,12 @@ public class Interpreter {
             System.out.println("failed to create object using template(" + template.getModelId() + "), class not found..");
             cnf.printStackTrace();
         }
+    }
+
+    private Map<String, List<Object>> addCurrentDateTimeToGlobalVariableValues(Map<String, List<Object>> valueMap) {
+        valueMap.put(CURRENT_DATETIME, singletonList(systemCurrentDateTime()));
+        valueMap.put(CURRENT_DATE, singletonList(systemCurrentDateTime().date()));
+        return valueMap;
     }
 
     private void performAssignMagnitudeAttribute(Object value, Variable variable, AssignmentExpression assignmentExpression,
@@ -1052,9 +1060,9 @@ public class Interpreter {
                 continue;
             }
             if (valueList.size() <= index) {
-                singletonListValueMap.put(id, Collections.singletonList(valueList.get(valueList.size() - 1)));
+                singletonListValueMap.put(id, singletonList(valueList.get(valueList.size() - 1)));
             } else {
-                singletonListValueMap.put(id, Collections.singletonList(valueList.get(index)));
+                singletonListValueMap.put(id, singletonList(valueList.get(index)));
             }
         }
         return singletonListValueMap;
@@ -1409,7 +1417,7 @@ public class Interpreter {
                 }
             }
         }
-        return found == null ? Collections.emptyList() : Collections.singletonList(found);
+        return found == null ? Collections.emptyList() : singletonList(found);
     }
 
     List<DataInstance> evaluateDataInstancesWithPredicates(List<DataInstance> dataInstances,
