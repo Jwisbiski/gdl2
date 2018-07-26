@@ -41,6 +41,7 @@
     "templates": {
       "gt1002": {
         "id": "gt1002",
+        "model_id": "org.hl7.fhir.dstu3.model.Appointment",
         "object": {
           "resourceType": "Appointment",
           "status": "proposed",

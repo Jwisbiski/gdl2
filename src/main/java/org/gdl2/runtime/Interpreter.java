@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.EMPTY_MAP;
 import static java.util.Collections.singletonList;
 import static org.gdl2.cdshooks.Link.LinkType.ABSOLUTE;
 import static org.gdl2.expression.OperatorKind.*;
@@ -53,7 +54,6 @@ public class Interpreter {
     private static final String LOG1P = "log1p";
     private static final String ROUND = "round";
     private static final String SQRT = "sqrt";
-    public static final String JAVA_UTIL_LINKED_HASH_MAP = "java.util.LinkedHashMap";
 
     private RuntimeConfiguration runtimeConfiguration;
     private static final TemplateFiller templateFiller = new TemplateFiller();
@@ -326,7 +326,7 @@ public class Interpreter {
                 Template template = entry.getValue();
                 if (valueListMap.containsKey(template.getId())) {
                     List<Object> list = valueListMap.get(template.getId());
-                    String modelId = template.getModelId() == null ? JAVA_UTIL_LINKED_HASH_MAP : template.getModelId();
+                    String modelId = template.getModelId();
                     for (Object object : list) {
                         dataInstances.add(new DataInstance.Builder()
                                 .id(template.getId())
@@ -392,6 +392,9 @@ public class Interpreter {
     }
 
     private Map<String, String> pathToCode(DataBinding dataBinding) {
+        if (dataBinding.getElements() == null) {
+            return EMPTY_MAP;
+        }
         return dataBinding.getElements().entrySet().stream()
                 .map(Map.Entry::getValue)
                 .collect(Collectors.toMap(Element::getPath, Element::getId));
@@ -787,7 +790,7 @@ public class Interpreter {
         addCurrentDateTimeToGlobalVariableValues(input);
         this.templateFiller.traverseMapAndReplaceAllVariablesWithValues(localMapCopy, useTemplateLocalResult, input, additionalInputValue);
 
-        String modelId = template.getModelId() == null ? JAVA_UTIL_LINKED_HASH_MAP : template.getModelId();
+        String modelId = template.getModelId();
         try {
             Object object = this.runtimeConfiguration.getObjectCreatorPlugin().create(modelId, localMapCopy);
             List<Object> valueList = result.get(variable.getCode());
