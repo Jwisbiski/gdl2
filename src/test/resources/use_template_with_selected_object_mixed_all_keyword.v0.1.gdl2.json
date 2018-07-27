@@ -1,0 +1,88 @@
+{
+  "gdl_version": "0.1",
+  "id": "use_template_with_ordinal_select_and_use_again.v0.1",
+  "concept": "gt0001",
+  "language": {
+    "original_language": "ISO_639-1::en",
+    "description": {
+      "original_author": {
+        "name": "Author",
+        "organisation": "Cambio Healthcare Systems",
+        "email": ""
+      },
+      "details": {
+        "en": {
+          "id": "en",
+          "purpose": "Sample fhir-based cds-rules for demonstration purpose",
+          "keywords": [
+            "Diabetes"
+          ]
+        }
+      }
+    }
+  },
+  "definition": {
+    "data_bindings": {
+      "gt1027": {
+        "id": "gt1027",
+        "model_id": "org.gdl2.datatypes.DvOrdinal",
+        "type": "INPUT",
+        "predicates": [
+          "/symbol/value.value=='object-1'"
+        ]
+      },
+      "gt1028": {
+        "id": "gt1028",
+        "model_id": "org.gdl2.datatypes.DvOrdinal",
+        "type": "INPUT",
+        "predicates": [
+          "/symbol/value.value=='object-2'"
+        ]
+      },
+      "gt1029": {
+        "id": "gt1029",
+        "model_id": "org.gdl2.datatypes.DvOrdinal",
+        "type": "INPUT",
+        "predicates": [
+          "/symbol/value.value=='object-3'"
+        ]
+      }
+    },
+    "templates": {
+      "gt0022": {
+        "id": "gt0022",
+        "model_id": "java.lang.object",
+        "object": {
+          "list_value": [
+            "{$gt1027}",
+            "{$gt1028.all}",
+            "{$gt1029}"
+          ]
+        }
+      }
+    },
+    "rules": {
+      "gt0034": {
+        "id": "gt0034",
+        "priority": 2,
+        "when": [],
+        "then": [
+          "use_template($gt0022)"
+        ]
+      }
+    }
+  },
+  "ontology": {
+    "term_definitions": {
+      "en": {
+        "id": "en",
+        "terms": {
+          "gt0011": {
+            "id": "gt0011",
+            "text": "test"
+          }
+        }
+      }
+    }
+  }
+}

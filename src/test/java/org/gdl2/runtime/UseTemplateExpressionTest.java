@@ -85,6 +85,207 @@ public class UseTemplateExpressionTest extends TestCommon {
     }
 
     @Test
+    public void can_use_template_and_insert_selected_objects_in_array_with_template_only_first_one_selected() throws Exception {
+        List<Guideline> guidelines = new ArrayList<>();
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-1"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-1|"))
+                .build());
+        guidelines.add(loadGuideline("use_template_with_selected_object.v0.1.gdl2"));
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(1));
+        DataInstance dataInstance = output.get(0);
+        String json = gson.toJson(dataInstance.getRoot());
+        assertThat(JsonPath.read(json, "$.list_value.length()"), is(1));
+        assertThat(JsonPath.read(json, "$.list_value[0].symbol.value"), is("object-1"));
+    }
+
+    @Test
+    public void can_use_template_and_insert_selected_objects_in_array_with_template_only_second_one_selected() throws Exception {
+        List<Guideline> guidelines = new ArrayList<>();
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-2"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-2|"))
+                .build());
+        guidelines.add(loadGuideline("use_template_with_selected_object.v0.1.gdl2"));
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(1));
+        DataInstance dataInstance = output.get(0);
+        String json = gson.toJson(dataInstance.getRoot());
+        assertThat(JsonPath.read(json, "$.list_value.length()"), is(1));
+        assertThat(JsonPath.read(json, "$.list_value[0].symbol.value"), is("object-2"));
+    }
+
+    @Test
+    public void can_use_template_and_insert_selected_objects_in_array_with_template_only_third_one_selected() throws Exception {
+        List<Guideline> guidelines = new ArrayList<>();
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-3"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-3|"))
+                .build());
+        guidelines.add(loadGuideline("use_template_with_selected_object.v0.1.gdl2"));
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(1));
+        DataInstance dataInstance = output.get(0);
+        String json = gson.toJson(dataInstance.getRoot());
+        assertThat(JsonPath.read(json, "$.list_value.length()"), is(1));
+        assertThat(JsonPath.read(json, "$.list_value[0].symbol.value"), is("object-3"));
+    }
+
+    @Test
+    public void can_use_template_and_insert_selected_objects_in_array_with_template_three_one_each_selected() throws Exception {
+        List<Guideline> guidelines = new ArrayList<>();
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-1"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-1|"))
+                .build());
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-2"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-2|"))
+                .build());
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-3"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-3|"))
+                .build());
+        guidelines.add(loadGuideline("use_template_with_selected_object.v0.1.gdl2"));
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(1));
+        DataInstance dataInstance = output.get(0);
+        String json = gson.toJson(dataInstance.getRoot());
+        assertThat(JsonPath.read(json, "$.list_value.length()"), is(3));
+        assertThat(JsonPath.read(json, "$.list_value[0].symbol.value"), is("object-1"));
+        assertThat(JsonPath.read(json, "$.list_value[1].symbol.value"), is("object-2"));
+        assertThat(JsonPath.read(json, "$.list_value[2].symbol.value"), is("object-3"));
+    }
+
+    @Test
+    public void can_use_template_and_insert_selected_objects_in_array_with_template_without_all_keyword() throws Exception {
+        List<Guideline> guidelines = new ArrayList<>();
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-1"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-1|"))
+                .build());
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-2"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-2|"))
+                .build());
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-3"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-3|"))
+                .build());
+        guidelines.add(loadGuideline("use_template_with_selected_object_without_all_keyword.v0.1.gdl2"));
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(1));
+        DataInstance dataInstance = output.get(0);
+        String json = gson.toJson(dataInstance.getRoot());
+        assertThat(JsonPath.read(json, "$.list_value.length()"), is(3));
+        assertThat(JsonPath.read(json, "$.list_value[0].symbol.value"), is("object-1"));
+        assertThat(JsonPath.read(json, "$.list_value[1].symbol.value"), is("object-2"));
+        assertThat(JsonPath.read(json, "$.list_value[2].symbol.value"), is("object-3"));
+    }
+
+    @Test
+    public void can_use_template_and_insert_selected_objects_in_array_with_template_mixed_all_keyword() throws Exception {
+        List<Guideline> guidelines = new ArrayList<>();
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-1"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-1|"))
+                .build());
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-2"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-2|"))
+                .build());
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-3"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-3|"))
+                .build());
+        guidelines.add(loadGuideline("use_template_with_selected_object_mixed_all_keyword.v0.1.gdl2"));
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(1));
+        DataInstance dataInstance = output.get(0);
+        String json = gson.toJson(dataInstance.getRoot());
+        assertThat(JsonPath.read(json, "$.list_value.length()"), is(3));
+        assertThat(JsonPath.read(json, "$.list_value[0].symbol.value"), is("object-1"));
+        assertThat(JsonPath.read(json, "$.list_value[1].symbol.value"), is("object-2"));
+        assertThat(JsonPath.read(json, "$.list_value[2].symbol.value"), is("object-3"));
+    }
+
+    @Test
+    public void can_use_template_and_insert_selected_objects_in_array_with_template_mixed_all_keyword2() throws Exception {
+        List<Guideline> guidelines = new ArrayList<>();
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-1"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-1|"))
+                .build());
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-2"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-2|"))
+                .build());
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-3"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-3|"))
+                .build());
+        guidelines.add(loadGuideline("use_template_with_selected_object_mixed_all_keyword2.v0.1.gdl2"));
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(1));
+        DataInstance dataInstance = output.get(0);
+        String json = gson.toJson(dataInstance.getRoot());
+        assertThat(JsonPath.read(json, "$.list_value.length()"), is(3));
+        assertThat(JsonPath.read(json, "$.list_value[0].symbol.value"), is("object-1"));
+        assertThat(JsonPath.read(json, "$.list_value[1].symbol.value"), is("object-2"));
+        assertThat(JsonPath.read(json, "$.list_value[2].symbol.value"), is("object-3"));
+    }
+
+    @Test
+    public void can_use_template_and_insert_selected_objects_in_array_with_template_first_third_selected() throws Exception {
+        List<Guideline> guidelines = new ArrayList<>();
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-1"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-1|"))
+                .build());
+        input.add(new DataInstance.Builder()
+                .modelId("org.gdl2.datatypes.DvOrdinal")
+                .addValue("/symbol/value", DvText.valueOf("object-3"))
+                .addValue("/", DvOrdinal.valueOf("1|terminology::code|object-3|"))
+                .build());
+        guidelines.add(loadGuideline("use_template_with_selected_object.v0.1.gdl2"));
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(1));
+        DataInstance dataInstance = output.get(0);
+        String json = gson.toJson(dataInstance.getRoot());
+        assertThat(JsonPath.read(json, "$.list_value.length()"), is(2));
+        assertThat(JsonPath.read(json, "$.list_value[0].symbol.value"), is("object-1"));
+        assertThat(JsonPath.read(json, "$.list_value[1].symbol.value"), is("object-3"));
+    }
+
+    @Test
+    public void can_use_template_and_insert_selected_objects_in_array_with_template_none_selected() throws Exception {
+        List<Guideline> guidelines = new ArrayList<>();
+        guidelines.add(loadGuideline("use_template_with_selected_object.v0.1.gdl2"));
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(1));
+        DataInstance dataInstance = output.get(0);
+        String json = gson.toJson(dataInstance.getRoot());
+        assertThat(JsonPath.read(json, "$.list_value.length()"), is(0));
+    }
+
+    @Test
     public void can_use_template_create_quantity() throws Exception {
         guideline = loadGuideline("use_template_with_quantity_test.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);

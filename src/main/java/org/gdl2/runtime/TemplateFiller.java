@@ -109,12 +109,14 @@ class TemplateFiller {
             if (object instanceof String) {
                 String source = (String) object;
                 Object value = replaceVariablesWithValues(source, localValues, globalValues, additionalInputValue);
-                if (source.endsWith(ALL_ENDING) && (value instanceof List)) {
+                if (source.endsWith(ALL_ENDING) && value instanceof List) {
                     iterator.remove();
                     List sublist = (List) value;
                     for (Object sublistValue : sublist) {
                         iterator.add(sublistValue);
                     }
+                } else if (isValueNotInstantiated(value)) {
+                    iterator.remove();
                 } else {
                     iterator.set(value);
                 }
@@ -124,5 +126,12 @@ class TemplateFiller {
                 traverseListAndReplaceAllVariablesWithValues((List) object, localValues, globalValues, additionalInputValue);
             }
         }
+    }
+
+    private boolean isValueNotInstantiated(Object value) {
+        if (!(value instanceof String)) {
+            return false;
+        }
+        return ((String) value).startsWith("{$gt");
     }
 }
