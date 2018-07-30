@@ -232,4 +232,21 @@ public class AssignmentStatementTest extends TestCommon {
         interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
         assertThat(resultMap.get("gt0005"), is("2017-09-20T21:30:15"));
     }
+
+    @Test
+    public void can_assign_simple_number() throws Exception {
+        AssignmentExpression assignment = parseAssignmentExpression("$gt0005=7");
+        interpreter = new Interpreter();
+        interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
+        assertThat(resultMap.get("gt0005"), is(7));
+    }
+
+    @Test
+    public void can_assign_magnitude_of_dv_count() throws Exception {
+        AssignmentExpression assignment = parseAssignmentExpression("$gt0005=$gt0003.magnitude");
+        interpreter = new Interpreter();
+        inputMap.put("gt0003", asList(DvCount.valueOf(7)));
+        interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
+        assertThat(resultMap.get("gt0005"), is(7));
+    }
 }
