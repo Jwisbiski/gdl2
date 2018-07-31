@@ -360,6 +360,8 @@ public class Interpreter {
                     objectValue = gson.fromJson(value, DvCodedText.class);
                 } else if ("DV_TEXT".equals(type)) {
                     objectValue = DvText.valueOf(jsonPathValue.toString());
+                } else {
+                    objectValue = jsonPathValue;
                 }
                 if (objectValue != null) {
                     dataInstance.setValue(path, objectValue);

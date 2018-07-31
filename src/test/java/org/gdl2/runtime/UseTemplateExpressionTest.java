@@ -70,7 +70,7 @@ public class UseTemplateExpressionTest extends TestCommon {
     }
 
     @Test
-    public void can_use_template_and_select_output_with_element_bindings_and_use_in_another_template() throws Exception {
+    public void can_use_template_and_select_output_with_dv_text_element_bindings_and_use_in_another_template() throws Exception {
         List<Guideline> guidelines = new ArrayList<>();
         guidelines.add(loadGuideline("use_template_with_ordinal_test2.v0.1.gdl2"));
         guidelines.add(loadGuideline("use_template_with_ordinal_test2.v0.1.gdl2"));
@@ -82,6 +82,30 @@ public class UseTemplateExpressionTest extends TestCommon {
         assertThat(JsonPath.read(json, "$.list_value.length()"), is(2));
         assertThat(JsonPath.read(json, "$.list_value[0].symbol.value"), is("atorvastatin"));
         assertThat(JsonPath.read(json, "$.list_value[1].symbol.value"), is("atorvastatin"));
+    }
+
+    @Test
+    public void can_use_template_and_select_output_with_dv_coded_text_element_bindings_and_use_in_another_template() throws Exception {
+        List<Guideline> guidelines = new ArrayList<>();
+        guidelines.add(loadGuideline("use_template_with_ordinal_test2.v0.1.gdl2"));
+        guidelines.add(loadGuideline("use_template_with_ordinal_select_and_use_again.v0.1.gdl2"));
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(2));
+        DataInstance dataInstance = output.get(1);
+        String json = gson.toJson(dataInstance.getRoot());
+        assertThat(JsonPath.read(json, "$.symbol.value"), is("atorvastatin"));
+    }
+
+    @Test
+    public void can_use_template_and_select_output_with_quantity_element_bindings_and_use_in_another_template() throws Exception {
+        List<Guideline> guidelines = new ArrayList<>();
+        guidelines.add(loadGuideline("use_template_with_quantity_test2.v0.1.gdl2"));
+        guidelines.add(loadGuideline("use_template_with_ordinal_select_and_use_again2.v0.1.gdl2"));
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(2));
+        DataInstance dataInstance = output.get(1);
+        String json = gson.toJson(dataInstance.getRoot());
+        assertThat(JsonPath.read(json, "$.value"), is(7.5));
     }
 
     @Test

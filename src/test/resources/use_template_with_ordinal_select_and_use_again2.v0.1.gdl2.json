@@ -25,28 +25,22 @@
     "data_bindings": {
       "gt1027": {
         "id": "gt1027",
-        "model_id": "org.gdl2.datatypes.DvOrdinal",
+        "model_id": "a_model_with_quantity_value",
         "type": "INPUT",
         "elements": {
           "gt0007": {
             "id": "gt0007",
-            "path": "/symbol"
+            "path": "/valueQuantity/value"
           }
-        },
-        "predicates": [
-          "/symbol/value.value=='atorvastatin'"
-        ]
+        }
       }
     },
     "templates": {
       "gt0022": {
         "id": "gt0022",
-        "model_id": "java.lang.object",
+        "model_id": "a_model",
         "object": {
-          "list_value": [
-            "{$gt1027.all}"
-          ],
-          "symbol": "{$gt0007}"
+          "value": "{$gt0007}"
         }
       }
     },
