@@ -457,10 +457,6 @@ ExpressionItem expression_node() :
       {
         op = OperatorKind.FOR_ALL;
       }
-    | < SYM_ANY > item = expression_leaf()
-      {
-        op = OperatorKind.ANY;
-      }
     | < SYM_NOT > item = expression_leaf()
       {
         op = OperatorKind.NOT;
@@ -482,15 +478,21 @@ ExpressionItem expression_node() :
         return FunctionalExpression.create(new Function(t.image), item);
       }
     | t = < SYM_USE_TEMPLATE > < SYM_L_PARENTHESIS > variable = variable()
-                [ assignmentExpressions = assignmentExpressions() ]
-                [
-                  < SYM_L_BRACKET >
-                    inputVariables = variables()
-                  < SYM_R_BRACKET >
-                ]
-          < SYM_R_PARENTHESIS >
+                      [ assignmentExpressions = assignmentExpressions() ]
+                      [
+                        < SYM_L_BRACKET >
+                          inputVariables = variables()
+                        < SYM_R_BRACKET >
+                      ]
+                < SYM_R_PARENTHESIS >
+            {
+              return new UseTemplateExpression(variable, assignmentExpressions, inputVariables);
+            }
+    |t = < SYM_ANY >
+            [ < SYM_L_BRACKET > inputVariables = variables() < SYM_R_BRACKET > ]
+         item = expression_leaf()
       {
-        return new UseTemplateExpression(variable, assignmentExpressions, inputVariables);
+        return new AnyExpression(inputVariables, item);
       }
     |
       LOOKAHEAD(2)

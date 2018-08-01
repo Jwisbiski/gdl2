@@ -158,8 +158,7 @@ public class Interpreter {
     private Card fetchCardFromDataInstance(DataInstance dataInstance) {
         Gson gson = new Gson();
         String json = new Gson().toJson(dataInstance.getRoot());
-        Card card = gson.fromJson(json, Card.class);
-        return card;
+        return gson.fromJson(json, Card.class);
     }
 
     private boolean useCardsInRules(List<Guideline> guidelines) {
@@ -271,7 +270,7 @@ public class Interpreter {
         return execute(guideline, dataInstances, null);
     }
 
-    InternalOutput execute(Guideline guideline, List<DataInstance> dataInstances, List<Card> cards) {
+    private InternalOutput execute(Guideline guideline, List<DataInstance> dataInstances, List<Card> cards) {
         assertNotNull(guideline, "Guideline cannot not be null.");
         assertNotNull(dataInstances, "List<DataInstance> cannot be null.");
         Map<String, List<Object>> selectedInput = selectDataInstancesUsingPredicatesAndSortWithElementBindingCode(
@@ -315,11 +314,7 @@ public class Interpreter {
 
     private void mergeListValueMaps(Map<String, List<Object>> valueMap, Map<String, List<Object>> valueListMap) {
         for (Map.Entry<String, List<Object>> entry : valueMap.entrySet()) {
-            List<Object> values = valueListMap.get(entry.getKey());
-            if (values == null) {
-                values = new ArrayList<>();
-                valueListMap.put(entry.getKey(), values);
-            }
+            List<Object> values = valueListMap.computeIfAbsent(entry.getKey(), k -> new ArrayList<>());
             values.addAll(entry.getValue());
         }
     }
@@ -390,7 +385,7 @@ public class Interpreter {
                 String type = elementBinding.getType();
                 Object jsonPathValue = JsonPath.read(json, jsonPath);
                 String value;
-                Object objectValue = null;
+                Object objectValue;
                 if ("DV_CODED_TEXT".equals(type)) {
                     value = gson.toJson(jsonPathValue);
                     objectValue = gson.fromJson(value, DvCodedText.class);
@@ -459,11 +454,7 @@ public class Interpreter {
                         .add(s.getValue()));
         for (DataInstance dataInstance : dataInstances) {
             if (dataInstance.getRoot() != null) {
-                List<Object> valueList = valueListMap.get(dataBinding.getId());
-                if (valueList == null) {
-                    valueList = new ArrayList<>();
-                    valueListMap.put(dataBinding.getId(), valueList);
-                }
+                List<Object> valueList = valueListMap.computeIfAbsent(dataBinding.getId(), k -> new ArrayList<>());
                 valueList.add(dataInstance.getRoot());
             }
         }
@@ -871,11 +862,7 @@ public class Interpreter {
         String modelId = template.getModelId();
         try {
             Object object = this.runtimeConfiguration.getObjectCreatorPlugin().create(modelId, localMapCopy);
-            List<Object> valueList = result.get(variable.getCode());
-            if (valueList == null) {
-                valueList = new ArrayList<>();
-                result.put(variable.getCode(), valueList);
-            }
+            List<Object> valueList = result.computeIfAbsent(variable.getCode(), k -> new ArrayList<>());
             valueList.add(object);
         } catch (ClassNotFoundException cnf) {
             System.out.println("failed to create object using template(" + template.getModelId() + "), class not found..");
@@ -883,10 +870,9 @@ public class Interpreter {
         }
     }
 
-    private Map<String, List<Object>> addCurrentDateTimeToGlobalVariableValues(Map<String, List<Object>> valueMap) {
+    private void addCurrentDateTimeToGlobalVariableValues(Map<String, List<Object>> valueMap) {
         valueMap.put(CURRENT_DATETIME, singletonList(systemCurrentDateTime()));
         valueMap.put(CURRENT_DATE, singletonList(systemCurrentDateTime().date()));
-        return valueMap;
     }
 
     private void performAssignMagnitudeAttribute(Object value, Variable variable, AssignmentExpression assignmentExpression,
@@ -974,6 +960,8 @@ public class Interpreter {
             return processBinaryExpression(expressionItem, input, guideline, firedRules);
         } else if (expressionItem instanceof UnaryExpression) {
             return processUnaryExpression((UnaryExpression) expressionItem, input, guideline, firedRules);
+        } else if (expressionItem instanceof AnyExpression) {
+            return processAnyExpression((AnyExpression) expressionItem, input, guideline, firedRules);
         } else if (expressionItem instanceof FunctionalExpression) {
             return processFunctionalExpression((FunctionalExpression) expressionItem, input, guideline, firedRules);
         } else {
@@ -1092,28 +1080,39 @@ public class Interpreter {
             return !firedRules.contains(((Variable) unaryExpression.getOperand()).getCode());
         } else if (OperatorKind.NOT.equals(unaryExpression.getOperator())) {
             return !Boolean.valueOf(evaluateExpressionItem(unaryExpression.getOperand(), input, guideline, firedRules).toString());
-        } else if (OperatorKind.ANY.equals(unaryExpression.getOperator())) {
-            return processAnyFunction(unaryExpression.getOperand(), input, guideline, firedRules);
         } else {
             throw new UnsupportedOperationException("Unsupported unary operation: " + unaryExpression);
         }
     }
 
-    private Object processAnyFunction(ExpressionItem expressionItem, Map<String, List<Object>> input,
-                                      Guideline guideline, Set<String> firedRules) {
-        List<String> idList = getVariableIds(expressionItem, new ArrayList<>());
-        if (idList.isEmpty()) {
-            throw new IllegalArgumentException("Missing variable id in any function");
+    private Object processAnyExpression(AnyExpression anyExpression, Map<String, List<Object>> input,
+                                        Guideline guideline, Set<String> firedRules) {
+        List<String> idList = new ArrayList<>();
+        for (Variable variable : anyExpression.getInputVariables()) {
+            idList.add(variable.getCode());
         }
         int maxListSize = maxValueListSize(input, idList);
+        List currentIndex;
+        Map<String, Integer> indexMap;
+        if (input.containsKey(CURRENT_INDEX)) {
+            currentIndex = input.get(CURRENT_INDEX);
+            indexMap = (Map) currentIndex.get(0);
+        } else {
+            indexMap = new HashMap<>();
+            currentIndex = singletonList(indexMap);
+            input.put(CURRENT_INDEX, currentIndex);
+        }
         for (int i = 0; i < maxListSize; i++) {
             if (Boolean.valueOf(
                     evaluateExpressionItem(
-                            expressionItem,
+                            anyExpression.getOperand(),
                             createSingletonListByIndex(idList, input, i),
                             guideline,
                             firedRules).toString())) {
-                input.put(CURRENT_INDEX, singletonList(i));
+
+                for (Variable variable : anyExpression.getInputVariables()) {
+                    indexMap.put(variable.getCode(), i);
+                }
                 return true;
             }
         }
@@ -1134,7 +1133,7 @@ public class Interpreter {
         return max;
     }
 
-    Map<String, List<Object>> createSingletonListByIndex(List<String> idList, Map<String, List<Object>> input, int index) {
+    private Map<String, List<Object>> createSingletonListByIndex(List<String> idList, Map<String, List<Object>> input, int index) {
         Map<String, List<Object>> singletonListValueMap = new HashMap<>(input);
         for (String id : idList) {
             List<Object> valueList = input.get(id);
@@ -1148,26 +1147,6 @@ public class Interpreter {
             }
         }
         return singletonListValueMap;
-    }
-
-    List<String> getVariableIds(ExpressionItem expressionItem, List<String> idList) {
-        if (expressionItem instanceof BinaryExpression) {
-            BinaryExpression binaryExpression = (BinaryExpression) expressionItem;
-            getVariableIds(binaryExpression.getLeft(), idList);
-            getVariableIds(binaryExpression.getRight(), idList);
-        } else if (expressionItem instanceof UnaryExpression) {
-            UnaryExpression unaryExpression = (UnaryExpression) expressionItem;
-            getVariableIds(unaryExpression.getOperand(), idList);
-        } else if (expressionItem instanceof Variable) {
-            String id = ((Variable) expressionItem).getCode();
-            if (!idList.contains(id)) {
-                idList.add(id);
-            }
-            return idList;
-        } else if (expressionItem instanceof ConstantExpression) {
-            return idList;
-        }
-        return idList;
     }
 
     private Object processBinaryExpression(ExpressionItem expressionItem, Map<String, List<Object>> input,
@@ -1419,7 +1398,7 @@ public class Interpreter {
         if (key.endsWith("/value/value")) {
             key = key.substring(0, key.length() - 12);
         }
-        Object dataValue = null;
+        Object dataValue;
         if (CURRENT_DATETIME.equals(variable.getCode())) {
             dataValue = systemCurrentDateTime();
         } else if (CURRENT_DATE.equals(variable.getCode())) {
@@ -1429,14 +1408,7 @@ public class Interpreter {
             if (valueList == null) {
                 return null;
             }
-            if (valueMap.containsKey(CURRENT_INDEX)) {
-                int index = (Integer) valueMap.get(CURRENT_INDEX).get(0);
-                if (index < valueList.size()) {
-                    dataValue = valueList.get(index);
-                }
-            } else {
-                dataValue = valueList.get(valueList.size() - 1);
-            }
+            dataValue = retrieveValueUsingLastIndex(valueMap, key);
         }
         String attribute = variable.getAttribute();
         if (attribute == null) {
@@ -1469,6 +1441,27 @@ public class Interpreter {
         } catch (ReflectiveOperationException exception) {
             throw new IllegalArgumentException("Failed to retrieve attribute [" + attribute + "] value for variable: " + variable);
         }
+    }
+
+    private Object retrieveValueUsingLastIndex(Map<String, List<Object>> valueMap, String key) {
+        List<Object> valueList = valueMap.get(key);
+        Object dataValue;
+        Integer currentIndex = getCurrentIndex(valueMap, key);
+        if (currentIndex != null) {
+            dataValue = valueList.get(currentIndex);
+        } else {
+            dataValue = valueList.get(valueList.size() - 1);
+        }
+        return dataValue;
+    }
+
+    private Integer getCurrentIndex(Map<String, List<Object>> valueMap, String key) {
+        if (!valueMap.containsKey(CURRENT_INDEX)) {
+            return null;
+        }
+        List<Object> list = valueMap.get(CURRENT_INDEX);
+        Map<String, Integer> indexMap = (Map) list.get(0);
+        return indexMap.get(key);
     }
 
     private String formatDateTime(DvDateTime dvDateTime) {

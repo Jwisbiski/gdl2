@@ -1,6 +1,6 @@
 {
   "gdl_version": "2.0",
-  "id": "any_expression_test.v1",
+  "id": "any_expression_test2.v1",
   "concept": "gt0015",
   "language": {
     "original_language": "ISO_639-1::en"
@@ -30,6 +30,21 @@
           }
         }
       },
+      "gt0024": {
+        "id": "gt0024",
+        "model_id": "model_3",
+        "type": "INPUT",
+        "elements": {
+          "gt0020": {
+            "id": "gt0025",
+            "path": "/value_1"
+          },
+          "gt0021": {
+            "id": "gt0026",
+            "path": "/value_2"
+          }
+        }
+      },
       "gt0022": {
         "id": "gt0022",
         "model_id": "model_2",
@@ -49,10 +64,21 @@
     "rules": {
       "gt0009": {
         "id": "gt0009",
-        "priority": 1,
+        "priority": 200,
         "when": [
           "any[$gt0020, $gt0021]($gt0020|1st variable| > $gt0021|2nd variable|)"
-      ],
+        ],
+        "then": [
+          "$gt0022|actual 1st variable|=$gt0020",
+          "$gt0023|actual 2nd variable|=$gt0021"
+        ]
+      },
+      "gt0010": {
+        "id": "gt0010",
+        "priority": 100,
+        "when": [
+          "($gt0025|3rd variable| - $gt0026|4th variable|) > 0"
+        ],
         "then": [
           "$gt0022|actual 1st variable|=$gt0020",
           "$gt0023|actual 2nd variable|=$gt0021"
