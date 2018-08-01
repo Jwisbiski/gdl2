@@ -135,6 +135,20 @@ public class CreateCdsHooksCardsTest extends TestCommon {
     }
 
     @Test
+    public void can_create_cdshooks_card_dynamic_summary_detail_with_classic_mode() throws Exception {
+        interpreter = new Interpreter(DvDateTime.valueOf("2013-04-20T14:00:00"));
+        input.add(new DataInstance.Builder()
+                .modelId("org.hl7.fhir.dstu3.model.MedicationStatement")
+                .addValue("/medicationCodeableConcept/coding[0]", DvCodedText.valueOf("ATC::C10AA05|Statin|"))
+                .build());
+        guidelines = loadSingleGuideline("cdshooks_card_dynamic_summary_detail_classic_mode_test.v0.1.gdl2");
+        List<Card> cardList = interpreter.executeCdsHooksGuidelines(guidelines, input);
+        assertThat(cardList.size(), is(1));
+        Card card = cardList.get(0);
+        assertThat(card.getSummary(), is("card summary: Statin"));
+    }
+
+    @Test
     public void can_create_multiple_cards_by_different_rules() throws Exception {
         guidelines = loadSingleGuideline("cdshooks_multiple_cards_test.v0.1.gdl2");
         List<Card> cardList = interpreter.executeCdsHooksGuidelines(guidelines, input);

@@ -134,8 +134,43 @@ public class Interpreter {
 
     public List<Card> executeCdsHooksGuidelines(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
         List<Card> cardList = new ArrayList<>();
-        executeGuidelinesWithCards(guidelines, inputDataInstances, cardList);
+
+        if (useCardsInRules(guidelines)) {
+            executeGuidelinesWithCards(guidelines, inputDataInstances, cardList);
+        } else {
+            cardList = executeCdsHooksGuidelinesClassicMode(guidelines, inputDataInstances);
+        }
         return cardList;
+    }
+
+    private List<Card> executeCdsHooksGuidelinesClassicMode(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
+        List<Card> cardList = new ArrayList<>();
+        List<DataInstance> dataInstances = executeGuidelines(guidelines, inputDataInstances);
+        for (DataInstance dataInstance : dataInstances) {
+            Card card = fetchCardFromDataInstance(dataInstance);
+            if (card.getSummary() != null) {
+                cardList.add(card);
+            }
+        }
+        return cardList;
+    }
+
+    private Card fetchCardFromDataInstance(DataInstance dataInstance) {
+        Gson gson = new Gson();
+        String json = new Gson().toJson(dataInstance.getRoot());
+        Card card = gson.fromJson(json, Card.class);
+        return card;
+    }
+
+    private boolean useCardsInRules(List<Guideline> guidelines) {
+        for (Guideline guideline : guidelines) {
+            for (Rule rule : guideline.getDefinition().getRules().values()) {
+                if (rule.getCards() != null && !rule.getCards().isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     // xxxxGetFiredRules methods are for gdl2-editor
