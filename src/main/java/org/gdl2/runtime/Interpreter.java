@@ -505,6 +505,7 @@ public class Interpreter {
         }
         firedRules.add(rule.getId());
         mergeValueMapIntoListValueMap(singleResult, result);
+        input.remove(CURRENT_INDEX);
         return result;
     }
 

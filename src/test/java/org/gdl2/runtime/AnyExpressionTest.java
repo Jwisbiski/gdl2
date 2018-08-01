@@ -1,6 +1,9 @@
 package org.gdl2.runtime;
 
+import org.gdl2.datatypes.DvCodedText;
 import org.gdl2.datatypes.DvCount;
+import org.gdl2.datatypes.DvDateTime;
+import org.gdl2.datatypes.DvQuantity;
 import org.gdl2.expression.AnyExpression;
 import org.gdl2.expression.ExpressionItem;
 import org.gdl2.expression.Variable;
@@ -57,6 +60,30 @@ public class AnyExpressionTest extends TestCommon {
         int[] forthValues = {10};
         addToInputDataInstances("model_1", firstValues, secondValues);
         addToInputDataInstances("model_3", thirdValues, forthValues);
+        output = interpreter.executeGuidelines(guidelines, input);
+    }
+
+    @Test
+    public void can_execute_rules_each_with_any_expression() throws Exception {
+        List<Guideline> guidelines = loadSingleGuideline("any_expression_test3.v1.gdl2");
+        input.add(new DataInstance.Builder()
+                .modelId("org.hl7.fhir.dstu3.model.Observation")
+                .addValue("/valueQuantity", DvQuantity.valueOf("140,umol/L"))
+                .addValue("/effectiveDateTime", DvDateTime.valueOf("2016-04-04T14:30:00Z"))
+                .addValue("/code/coding[0]", DvCodedText.valueOf("NPU::NPU18016|label|"))
+                .build());
+        input.add(new DataInstance.Builder()
+                .modelId("org.hl7.fhir.dstu3.model.Observation")
+                .addValue("/valueQuantity", DvQuantity.valueOf("120,umol/L"))
+                .addValue("/effectiveDateTime", DvDateTime.valueOf("2016-04-05T14:30:00Z"))
+                .addValue("/code/coding[0]", DvCodedText.valueOf("NPU::NPU18016|label|"))
+                .build());
+        input.add(new DataInstance.Builder()
+                .modelId("org.hl7.fhir.dstu3.model.Observation")
+                .addValue("/valueQuantity", DvQuantity.valueOf("150,umol/L"))
+                .addValue("/effectiveDateTime", DvDateTime.valueOf("2016-04-06T13:30:00Z"))
+                .addValue("/code/coding[0]", DvCodedText.valueOf("NPU::NPU18016|label|"))
+                .build());
         output = interpreter.executeGuidelines(guidelines, input);
     }
 
