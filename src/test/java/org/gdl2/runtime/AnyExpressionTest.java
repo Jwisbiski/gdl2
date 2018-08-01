@@ -1,7 +1,11 @@
 package org.gdl2.runtime;
 
+import com.google.gson.Gson;
 import org.gdl2.datatypes.DvCount;
+import org.gdl2.datatypes.DvOrdinal;
+import org.gdl2.datatypes.DvText;
 import org.gdl2.expression.ExpressionItem;
+import org.gdl2.model.Guideline;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -13,20 +17,47 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 /**
- * Group of test cases related to evaluation of expressions in rules
+ * Group of test cases related to evaluation of any expressions in rules
  */
 public class AnyExpressionTest extends TestCommon {
     private Interpreter interpreter;
+    private List<DataInstance> input;
+    private List<DataInstance> output;
     private ExpressionItem expressionItem;
     private HashMap<String, List<Object>> inputMap;
     private Object value;
+    private Gson gson = new Gson();
 
 
     @BeforeMethod
     public void setUp() {
         interpreter = new Interpreter();
+        input = new ArrayList<>();
         inputMap = new HashMap<>();
         value = null;
+    }
+
+    @Test
+    public void can_retrieve_actual_matching_value_with_any_expression() throws Exception {
+        List<Guideline> guidelines = loadSingleGuideline("any_expression_test.v1.gdl2");
+        int[] firstValues = {10, 20, 33, 40, 50};
+        int[] secondValues = {10, 20, 30, 40, 50};
+        addToInputDataInstances(firstValues, secondValues);
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(1));
+        DataInstance dataInstance = output.get(0);
+        assertThat(dataInstance.get("/value_1"), is(33));
+        assertThat(dataInstance.get("/value_2"), is(30));
+    }
+
+    private void addToInputDataInstances(int[] firstValues, int[] secondValues) {
+        for (int i = 0; i < firstValues.length; i++) {
+            input.add(new DataInstance.Builder()
+                    .modelId("model_1")
+                    .addValue("/value_1", firstValues[i])
+                    .addValue("/value_2", secondValues[i])
+                    .build());
+        }
     }
 
     @Test

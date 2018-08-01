@@ -55,7 +55,8 @@ public class Interpreter {
     private static final String LOG1P = "log1p";
     private static final String ROUND = "round";
     private static final String SQRT = "sqrt";
-    public static final String ROOT = "/";
+    private static final String ROOT = "/";
+    private static final String CURRENT_INDEX = "current-index";
 
     private RuntimeConfiguration runtimeConfiguration;
     private static final TemplateFiller templateFiller = new TemplateFiller();
@@ -1077,6 +1078,7 @@ public class Interpreter {
                             createSingletonListByIndex(idList, input, i),
                             guideline,
                             firedRules).toString())) {
+                input.put(CURRENT_INDEX, singletonList(i));
                 return true;
             }
         }
@@ -1382,7 +1384,7 @@ public class Interpreter {
         if (key.endsWith("/value/value")) {
             key = key.substring(0, key.length() - 12);
         }
-        Object dataValue;
+        Object dataValue = null;
         if (CURRENT_DATETIME.equals(variable.getCode())) {
             dataValue = systemCurrentDateTime();
         } else if (CURRENT_DATE.equals(variable.getCode())) {
@@ -1392,7 +1394,14 @@ public class Interpreter {
             if (valueList == null) {
                 return null;
             }
-            dataValue = valueList.get(valueList.size() - 1);
+            if (valueMap.containsKey(CURRENT_INDEX)) {
+                int index = (Integer) valueMap.get(CURRENT_INDEX).get(0);
+                if (index < valueList.size()) {
+                    dataValue = valueList.get(index);
+                }
+            } else {
+                dataValue = valueList.get(valueList.size() - 1);
+            }
         }
         String attribute = variable.getAttribute();
         if (attribute == null) {
