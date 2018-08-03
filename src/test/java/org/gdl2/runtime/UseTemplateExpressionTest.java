@@ -45,6 +45,14 @@ public class UseTemplateExpressionTest extends TestCommon {
     }
 
     @Test
+    public void can_use_template_without_data_bindings() throws Exception {
+        List<Guideline> guidelines = loadSingleGuideline("use_template_without_data_bindings.v0.1.gdl2");
+        output = interpreter.executeGuidelines(guidelines, input);
+        DvOrdinal dvOrdinal = gson.fromJson(gson.toJson(output.get(0).getRoot()), DvOrdinal.class);
+        assertThat(dvOrdinal.toString(), is("3|ATC::C10AA05|atorvastatin|"));
+    }
+
+    @Test
     public void can_use_template_create_ordinal_with_element_bindings() throws Exception {
         List<Guideline> guidelines = loadSingleGuideline("use_template_with_ordinal_test2.v0.1.gdl2");
         output = interpreter.executeGuidelines(guidelines, input);

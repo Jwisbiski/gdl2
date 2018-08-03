@@ -25,8 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.EMPTY_MAP;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 import static org.gdl2.cdshooks.Link.LinkType.ABSOLUTE;
 import static org.gdl2.expression.OperatorKind.*;
 import static org.gdl2.model.DataBinding.Type.INPUT;
@@ -323,6 +322,20 @@ public class Interpreter {
                                                                     GuideDefinition guideDefinition) {
         List<DataInstance> dataInstances = new ArrayList<>();
         Set<String> assignableCodes = getCodesForAssignableVariables(guideDefinition);
+        if (guideDefinition.getTemplates() != null) {
+            for (Map.Entry<String, Template> entry : guideDefinition.getTemplates().entrySet()) {
+                Template template = entry.getValue();
+                if (valueListMap.containsKey(template.getId())) {
+                    List<Object> list = valueListMap.get(template.getId());
+                    for (Object object : list) {
+                        dataInstances.add(fromOutputTemplateObject(template, object));
+                    }
+                }
+            }
+        }
+        if (guideDefinition.getDataBindings() == null) {
+            return dataInstances;
+        }
         for (DataBinding dataBinding : guideDefinition.getDataBindings().values()) {
             if (INPUT.equals(dataBinding.getType())) {
                 if (!this.runtimeConfiguration.isIncludingInputWithPredicate()
@@ -355,17 +368,6 @@ public class Interpreter {
             }
             dataInstances.addAll(
                     createFromValueListsUsingSingleDataBinding(dataBinding.getId(), dataBinding.getModelId(), pathValueListMap, total));
-        }
-        if (guideDefinition.getTemplates() != null) {
-            for (Map.Entry<String, Template> entry : guideDefinition.getTemplates().entrySet()) {
-                Template template = entry.getValue();
-                if (valueListMap.containsKey(template.getId())) {
-                    List<Object> list = valueListMap.get(template.getId());
-                    for (Object object : list) {
-                        dataInstances.add(fromOutputTemplateObject(template, object));
-                    }
-                }
-            }
         }
         return dataInstances;
     }
@@ -429,6 +431,9 @@ public class Interpreter {
 
     private Map<String, List<Object>> selectDataInstancesUsingPredicatesAndSortWithElementBindingCode(
             List<DataInstance> dataInstances, Guideline guideline) {
+        if (guideline.getDefinition().getDataBindings() == null) {
+            return emptyMap();
+        }
         Map<String, List<Object>> valueListMap = new HashMap<>();
         for (Map.Entry<String, DataBinding> entry : guideline.getDefinition().getDataBindings().entrySet()) {
             DataBinding dataBinding = entry.getValue();
