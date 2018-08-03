@@ -9,6 +9,7 @@ import java.util.*;
  * and output of GDL guideline executions.
  */
 public class DataInstance {
+    public static final String ROOT = "/";
     private String id; // set by engine with data_binding gt_code after execution
     private String modelId;
     private Map<String, Object> values; // values indexed by path
@@ -143,7 +144,12 @@ public class DataInstance {
      * @return the object or null if not found
      */
     public Object getRoot() {
-        return get("/");
+        return get(ROOT);
+    }
+
+    public void setRoot(Object object) {
+        assertNotNull(object, "Null object");
+        setValue(ROOT, object);
     }
 
     public static class Builder {

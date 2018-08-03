@@ -8,6 +8,7 @@ import org.gdl2.expression.Variable;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import javax.xml.bind.DatatypeConverter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,19 @@ public class EvaluateTimeQuantityExpressionTest extends TestCommon {
                         .build());
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
         assertThat(value, is("2018-05-29 17:12"));
+    }
+
+    @Test
+    public void can_evaluate_java_date_using_given_formatter_pattern() {
+        expressionItem = parseExpression("$gt0100.string");
+        inputMap.put("gt0100", asList(
+                DatatypeConverter.parseDateTime("1952-01-10T00:00:00").getTime()));
+        interpreter = new Interpreter(
+                RuntimeConfiguration.builder()
+                        .dateTimeFormatPattern("yyyy-MM-dd'T'HH:mm:ss")
+                        .build());
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is("1952-01-10T00:00:00"));
     }
 
     @Test

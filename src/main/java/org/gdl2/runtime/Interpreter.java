@@ -14,6 +14,8 @@ import org.gdl2.terminology.*;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.Period;
@@ -1436,7 +1438,9 @@ public class Interpreter {
         } else if (TypeBinding.STRING.equals(attribute)) {
             if (dataValue instanceof DvDateTime) {
                 return formatDateTime((DvDateTime) dataValue);
-            } else {
+            } else if (dataValue instanceof Date) {
+                return formatJavaDate((Date) dataValue);
+            }  else {
                 return dataValue.toString();
             }
         }
@@ -1476,6 +1480,15 @@ public class Interpreter {
         }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(this.runtimeConfiguration.getDateTimeFormatPattern());
         return dvDateTime.getDateTime().format(formatter);
+    }
+
+    private String formatJavaDate(Date date) {
+        if (this.runtimeConfiguration.getDateTimeFormatPattern() == null) {
+            return date.toString();
+        }
+        DateFormat dateFormat = new SimpleDateFormat(
+                this.runtimeConfiguration.getDateTimeFormatPattern());
+        return dateFormat.format(date);
     }
 
     private List<DataInstance> filterDataInstancesWithModelId(List<DataInstance> dataInstances, String modelId) {
