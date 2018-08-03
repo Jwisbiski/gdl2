@@ -59,7 +59,10 @@ class TemplateFiller {
                 }
             }
             if (value == null && globalValues.containsKey(key)) {
-                value = globalValues.get(key).get(0);
+                List<Object> valueList = globalValues.get(key);
+                if (!valueList.isEmpty()) {
+                    value = valueList.get(valueList.size() - 1);
+                }
             }
         }
         if (value != null) {

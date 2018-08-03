@@ -45,6 +45,14 @@ public class UseTemplateExpressionTest extends TestCommon {
     }
 
     @Test
+    public void can_use_template_with_last_value_of_variable() throws Exception {
+        List<Guideline> guidelines = loadSingleGuideline("use_template_with_last_value_test.v0.1.gdl2");
+        output = interpreter.executeGuidelines(guidelines, input);
+        DvOrdinal dvOrdinal = gson.fromJson(gson.toJson(output.get(0).getRoot()), DvOrdinal.class);
+        assertThat(dvOrdinal.getValue(), is(2));
+    }
+
+    @Test
     public void can_use_template_without_data_bindings() throws Exception {
         List<Guideline> guidelines = loadSingleGuideline("use_template_without_data_bindings.v0.1.gdl2");
         output = interpreter.executeGuidelines(guidelines, input);
