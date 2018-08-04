@@ -190,7 +190,7 @@ public class AssignmentStatementTest extends TestCommon {
                 new StringConstant("true"));
         interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
         dataValue = resultMap.get(code);
-        assertThat(dataValue, instanceOf(DvBoolean.class));
+        assertThat(dataValue, instanceOf(boolean.class));
     }
 
     @Test

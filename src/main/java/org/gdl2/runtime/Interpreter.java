@@ -800,7 +800,7 @@ public class Interpreter {
         } else if (TypeBinding.VALUE.equals(attribute) && value instanceof String) {
             result.put(variable.getCode(), DvText.valueOf((String) value));
         } else if ("true".equalsIgnoreCase(value.toString()) || "false".equalsIgnoreCase(value.toString())) {
-            result.put(variable.getCode(), DvBoolean.valueOf(value.toString()));
+            result.put(variable.getCode(), Boolean.valueOf(value.toString()));
         } else if (value instanceof DvCodedText && guideline != null) {
             DvCodedText dvCodedText = findTermOfDesignatedLanguage((DvCodedText) value,
                     guideline.getOntology().getTermDefinitions());

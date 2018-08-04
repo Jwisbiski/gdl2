@@ -45,6 +45,14 @@ public class UseTemplateExpressionTest extends TestCommon {
     }
 
     @Test
+    public void can_use_template_create_boolean_value() throws Exception {
+        List<Guideline> guidelines = loadSingleGuideline("use_template_with_boolean_test.v0.1.gdl2");
+        output = interpreter.executeGuidelines(guidelines, input);
+        String json = gson.toJson(output.get(0).getRoot());
+        assertThat(JsonPath.read(json, "$.value"), is(true));
+    }
+
+    @Test
     public void can_use_template_with_last_value_of_variable() throws Exception {
         List<Guideline> guidelines = loadSingleGuideline("use_template_with_last_value_test.v0.1.gdl2");
         output = interpreter.executeGuidelines(guidelines, input);
