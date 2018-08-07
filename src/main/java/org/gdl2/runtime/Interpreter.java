@@ -1249,9 +1249,15 @@ public class Interpreter {
                 } else if (rightValue instanceof Integer) {
                     return ((DvCount) leftValue).getMagnitude() == (Integer) rightValue;
                 }
-            } else if ((leftValue instanceof DvBoolean && rightValue != null)) {
+            } else if ((leftValue instanceof DvBoolean && rightValue != null)) { // backwards compatibility
                 boolean rightValueBoolean = Boolean.valueOf(rightValue.toString());
                 return ((DvBoolean) leftValue).getValue() == rightValueBoolean;
+            } else if ((leftValue instanceof Boolean && rightValue != null)) {
+                boolean rightValueBoolean = Boolean.valueOf(rightValue.toString());
+                return leftValue.equals(rightValueBoolean);
+            } else if (rightValue instanceof Boolean) {
+                boolean leftValueBoolean = Boolean.valueOf(leftValue.toString());
+                return rightValue.equals(leftValueBoolean);
             } else if (leftValue instanceof DvQuantity) {
                 leftValue = evaluateQuantityValue((DvQuantity) leftValue);
             } else if (rightValue instanceof Double) {
@@ -1440,7 +1446,7 @@ public class Interpreter {
                 return formatDateTime((DvDateTime) dataValue);
             } else if (dataValue instanceof Date) {
                 return formatJavaDate((Date) dataValue);
-            }  else {
+            } else {
                 return dataValue.toString();
             }
         }

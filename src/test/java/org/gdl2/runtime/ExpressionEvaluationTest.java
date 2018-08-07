@@ -33,7 +33,25 @@ public class ExpressionEvaluationTest extends TestCommon {
     }
 
     @Test
-    public void can_evaluate_complex_arithmetic_expression() throws Exception {
+    public void can_evaluate_native_boolean_as_right() {
+        String expression = "$gt0001==true";
+        expressionItem = parseExpression(expression);
+        inputMap.put("gt0001", asList(true));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
+    }
+
+    @Test
+    public void can_evaluate_native_boolean_as_left() {
+        String expression = "true==$gt0001";
+        expressionItem = parseExpression(expression);
+        inputMap.put("gt0001", asList(true));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
+    }
+
+    @Test
+    public void can_evaluate_complex_arithmetic_expression() {
         String expression = "(($gt0005.magnitude*$gt0006.magnitude)/3600)^0.5";
         expressionItem = parseExpression(expression);
         inputMap.put("gt0005", asList(new DvQuantity("kg", 72.0, 1)));
