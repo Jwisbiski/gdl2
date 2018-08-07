@@ -1,10 +1,9 @@
 package org.gdl2.runtime;
 
-import org.gdl2.datatypes.DvDateTime;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
@@ -70,7 +69,7 @@ class TemplateFiller {
                 value = dateFormat.format(value);
             } else if (value instanceof LocalDateTime) {
                 value = ((LocalDateTime) value).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-            } else if (value instanceof DvDateTime) {
+            } else if (value instanceof ZonedDateTime) {
                 value = value.toString();
             }
         } else if (additionalInputValue != null) {

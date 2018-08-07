@@ -16,10 +16,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -72,7 +72,7 @@ public class Interpreter {
         this.runtimeConfiguration = setDefaultRuntimeConfigurationIfMissing(runtimeConfiguration);
     }
 
-    public Interpreter(DvDateTime currentDateTime) {
+    public Interpreter(ZonedDateTime currentDateTime) {
         assertNotNull(currentDateTime, "currentDateTime can not be null");
         this.runtimeConfiguration = RuntimeConfiguration.builder()
                 .currentDateTime(currentDateTime)
@@ -82,7 +82,7 @@ public class Interpreter {
                 .build();
     }
 
-    public Interpreter(DvDateTime currentDateTime, String language) {
+    public Interpreter(ZonedDateTime currentDateTime, String language) {
         assertNotNull(currentDateTime, "currentDateTime can not be null");
         assertNotNull(language, "language can not be null");
         this.runtimeConfiguration = RuntimeConfiguration.builder()
@@ -880,7 +880,7 @@ public class Interpreter {
 
     private void addCurrentDateTimeToGlobalVariableValues(Map<String, List<Object>> valueMap) {
         valueMap.put(CURRENT_DATETIME, singletonList(systemCurrentDateTime()));
-        valueMap.put(CURRENT_DATE, singletonList(systemCurrentDateTime().date()));
+        valueMap.put(CURRENT_DATE, singletonList(systemCurrentDateTime()));
     }
 
     private void performAssignMagnitudeAttribute(Object value, Variable variable, AssignmentExpression assignmentExpression,
@@ -1189,50 +1189,47 @@ public class Interpreter {
         }
     }
 
-    private DvDateTime systemCurrentDateTime() {
-        return this.runtimeConfiguration.getCurrentDateTime() == null ? new DvDateTime() : this.runtimeConfiguration.getCurrentDateTime();
+    private ZonedDateTime systemCurrentDateTime() {
+        return this.runtimeConfiguration.getCurrentDateTime() == null ? ZonedDateTime.now() : this.runtimeConfiguration.getCurrentDateTime();
     }
 
     private Object evaluateDateTimeExpression(OperatorKind operator, Object leftValue, Object rightValue) {
         if (leftValue instanceof Period && rightValue instanceof Period) {
             Period periodLeft = (Period) leftValue;
             Period periodRight = (Period) rightValue;
-            LocalDateTime localDateTime = systemCurrentDateTime().getDateTime();
-            LocalDateTime localDateTimeLeft = localDateTime.plus(periodLeft);
-            LocalDateTime localDateTimeRight = localDateTime.plus(periodRight);
+            ZonedDateTime dateTime = systemCurrentDateTime();
+            ZonedDateTime dateTimeLeft = dateTime.plus(periodLeft);
+            ZonedDateTime dateTimeRight = dateTime.plus(periodRight);
             if (operator == GREATER_THAN) {
-                return localDateTimeLeft.isAfter(localDateTimeRight);
+                return dateTimeLeft.isAfter(dateTimeRight);
             } else if (operator == GREATER_THAN_OR_EQUAL) {
-                return localDateTimeLeft.isAfter(localDateTimeRight) || localDateTimeLeft.equals(localDateTimeRight);
+                return dateTimeLeft.isAfter(dateTimeRight) || dateTimeLeft.equals(dateTimeRight);
             } else if (operator == LESS_THAN) {
-                return localDateTimeLeft.isBefore(localDateTimeRight);
+                return dateTimeLeft.isBefore(dateTimeRight);
             } else if (operator == LESS_THAN_OR_EQUAL) {
-                return localDateTimeLeft.isBefore(localDateTimeRight) || localDateTimeLeft.equals(localDateTimeRight);
+                return dateTimeLeft.isBefore(dateTimeRight) || dateTimeLeft.equals(dateTimeRight);
             } else if (operator == EQUALITY) {
-                return localDateTimeLeft.equals(localDateTimeRight);
+                return dateTimeLeft.equals(dateTimeRight);
             } else {
                 throw new UnsupportedOperationException("Unsupported combination of operator for two periods: " + operator);
             }
         } else if ((operator == ADDITION || operator == SUBTRACTION)
-                && (rightValue instanceof Period || leftValue instanceof Period)) {
-            Period period;
-            Long longValue;
-            if (rightValue instanceof Period) {
-                period = (Period) rightValue;
-                longValue = (Long) leftValue;
-            } else {
-                period = (Period) leftValue;
-                longValue = (Long) rightValue;
-            }
-            LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(longValue), ZoneId.systemDefault());
-            return operator == ADDITION ? localDateTime.plus(period) : localDateTime.minus(period);
+                && (rightValue instanceof Period && leftValue instanceof ZonedDateTime)) {
+            ZonedDateTime zonedDateTime = (ZonedDateTime) leftValue;
+            Period period = (Period) rightValue;
+            return operator == ADDITION ? zonedDateTime.plus(period) : zonedDateTime.minus(period);
+        } else if ((operator == ADDITION || operator == SUBTRACTION)
+                && (leftValue instanceof Period && rightValue instanceof ZonedDateTime)) {
+            ZonedDateTime zonedDateTime = (ZonedDateTime) rightValue;
+            Period period = (Period) leftValue;
+            return operator == ADDITION ? zonedDateTime.plus(period) : zonedDateTime.minus(period);
         } else if (rightValue == null) {
             return operator == NOT;
         } else if (operator == DIVISION && rightValue instanceof Period && leftValue instanceof Double) {
             // special case when datetime.value is divided by period (1,a)
-            LocalDateTime localDateTime = systemCurrentDateTime().getDateTime();
-            LocalDateTime localDateTimeWithPeriod = localDateTime.plus((Period) rightValue);
-            double rightValueDouble = Long.valueOf(ChronoUnit.MILLIS.between(localDateTime, localDateTimeWithPeriod)).doubleValue();
+            ZonedDateTime dateTime = systemCurrentDateTime();
+            ZonedDateTime dateTimeWithPeriod = dateTime.plus((Period) rightValue);
+            double rightValueDouble = Long.valueOf(ChronoUnit.MILLIS.between(dateTime, dateTimeWithPeriod)).doubleValue();
             return ((Double) leftValue) / rightValueDouble;
         }
         throw new UnsupportedOperationException("Unsupported combination of left: "
@@ -1335,6 +1332,8 @@ public class Interpreter {
             return Double.valueOf(evaluateQuantityValue((DvQuantity) dataValue).toString());
         } else if (dataValue instanceof DvDateTime) {
             return ((DvDateTime) dataValue).getDateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        } else if (dataValue instanceof ZonedDateTime) {
+            return ((ZonedDateTime) dataValue).toInstant().toEpochMilli();
         } else if (dataValue instanceof LocalDateTime) {
             return ((LocalDateTime) dataValue).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
         } else if (dataValue.toString().startsWith("(-") && dataValue.toString().endsWith(")")) {
@@ -1416,7 +1415,7 @@ public class Interpreter {
         if (CURRENT_DATETIME.equals(variable.getCode())) {
             dataValue = systemCurrentDateTime();
         } else if (CURRENT_DATE.equals(variable.getCode())) {
-            dataValue = systemCurrentDateTime().date();
+            dataValue = systemCurrentDateTime();
         } else {
             List<Object> valueList = valueMap.get(key);
             if (valueList == null) {
@@ -1446,6 +1445,8 @@ public class Interpreter {
                 return formatDateTime((DvDateTime) dataValue);
             } else if (dataValue instanceof Date) {
                 return formatJavaDate((Date) dataValue);
+            } else if (dataValue instanceof ZonedDateTime) {
+                return formatZonedJavaDate((ZonedDateTime) dataValue, CURRENT_DATE.equals(key));
             } else {
                 return dataValue.toString();
             }
@@ -1497,6 +1498,16 @@ public class Interpreter {
         return dateFormat.format(date);
     }
 
+    private String formatZonedJavaDate(ZonedDateTime date, boolean onlyDate) {
+        if (this.runtimeConfiguration.getDateTimeFormatPattern() == null) {
+            if(onlyDate) {
+                return  DateTimeFormatter.ofPattern("yyyy-MM-dd").format(date);
+            }
+            return date.toString();
+        }
+        return DateTimeFormatter.ofPattern(this.runtimeConfiguration.getDateTimeFormatPattern()).format(date);
+    }
+
     private List<DataInstance> filterDataInstancesWithModelId(List<DataInstance> dataInstances, String modelId) {
         return dataInstances.stream()
                 .filter(s -> modelId.equals(s.modelId()))
@@ -1508,9 +1519,9 @@ public class Interpreter {
         long milliseconds = 0;
         for (DataInstance dataInstance : dataInstances) {
             Object value = evaluateExpressionItem(unaryExpression.getOperand(), dataInstance.valueListMap());
-            if (value instanceof DvDateTime) {
-                DvDateTime dvDateTime = (DvDateTime) value;
-                long convertedDateTime = dvDateTime.getDateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            if (value instanceof ZonedDateTime) {
+                ZonedDateTime zonedDateTime = (ZonedDateTime) value;
+                long convertedDateTime = zonedDateTime.toInstant().toEpochMilli();
                 if (minFunction) {
                     if (found == null || convertedDateTime < milliseconds) {
                         found = dataInstance;

@@ -7,6 +7,7 @@ import org.hamcrest.Matchers;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -159,7 +160,7 @@ public class AssignmentStatementTest extends TestCommon {
                 new Variable("currentDateTime"));
         interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
         dataValue = resultMap.get(code);
-        assertThat(dataValue, instanceOf(DvDateTime.class));
+        assertThat(dataValue, instanceOf(ZonedDateTime.class));
     }
 
     @Test
@@ -170,7 +171,7 @@ public class AssignmentStatementTest extends TestCommon {
                 new Variable("currentDate"));
         interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
         dataValue = resultMap.get(code);
-        assertThat(dataValue, instanceOf(DvDate.class));
+        assertThat(dataValue, instanceOf(ZonedDateTime.class));
     }
 
     @Test
@@ -195,9 +196,9 @@ public class AssignmentStatementTest extends TestCommon {
 
     @Test
     public void can_calculate_years_using_datetime_value() throws Exception {
-        AssignmentExpression assignment = parseAssignmentExpression("$gt0005.magnitude=(($currentDateTime.value-$gt0003.value)/1,a)");
-        interpreter = new Interpreter(RuntimeConfiguration.builder().currentDateTime(DvDateTime.valueOf("2017-03-17T10:52:10")).build());
-        inputMap.put("gt0003", asList(DvDateTime.valueOf("1972-10-20T00:00:00")));
+        AssignmentExpression assignment = parseAssignmentExpression("$gt0005.magnitude=(($currentDateTime-$gt0003)/1,a)");
+        interpreter = new Interpreter(RuntimeConfiguration.builder().currentDateTime(ZonedDateTime.parse("2017-03-17T10:52:10Z")).build());
+        inputMap.put("gt0003", asList(ZonedDateTime.parse("1972-10-20T00:00:00Z")));
         interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
         dataValue = resultMap.get("gt0005");
         DvCount dvQuantity = (DvCount) dataValue;
@@ -208,18 +209,18 @@ public class AssignmentStatementTest extends TestCommon {
     public void can_assign_current_datetime_to_variable() throws Exception {
         AssignmentExpression assignment = parseAssignmentExpression("$gt0005=$currentDateTime");
         interpreter = new Interpreter(RuntimeConfiguration.builder()
-                .currentDateTime(DvDateTime.valueOf("2017-03-17T10:52:10")).build());
+                .currentDateTime(ZonedDateTime.parse("2017-03-17T10:52:10Z")).build());
         interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
         dataValue = resultMap.get("gt0005");
-        DvDateTime dvDateTime = (DvDateTime) dataValue;
-        assertThat(dvDateTime.toString(), is("2017-03-17T10:52:10"));
+        ZonedDateTime zonedDateTime = (ZonedDateTime) dataValue;
+        assertThat(zonedDateTime.toString(), is("2017-03-17T10:52:10Z"));
     }
 
     @Test
     public void can_assign_current_date_as_string_to_variable() throws Exception {
         AssignmentExpression assignment = parseAssignmentExpression("$gt0005=$currentDate.string");
         interpreter = new Interpreter(RuntimeConfiguration.builder()
-                .currentDateTime(DvDateTime.valueOf("2017-09-20T21:30:15")).build());
+                .currentDateTime(ZonedDateTime.parse("2017-09-20T21:30:15Z")).build());
         interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
         assertThat(resultMap.get("gt0005"), is("2017-09-20"));
     }
@@ -228,9 +229,9 @@ public class AssignmentStatementTest extends TestCommon {
     public void can_assign_current_datetime_as_string_to_variable() throws Exception {
         AssignmentExpression assignment = parseAssignmentExpression("$gt0005=$currentDateTime.string");
         interpreter = new Interpreter(RuntimeConfiguration.builder()
-                .currentDateTime(DvDateTime.valueOf("2017-09-20T21:30:15")).build());
+                .currentDateTime(ZonedDateTime.parse("2017-09-20T21:30:15Z")).build());
         interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
-        assertThat(resultMap.get("gt0005"), is("2017-09-20T21:30:15"));
+        assertThat(resultMap.get("gt0005"), is("2017-09-20T21:30:15Z"));
     }
 
     @Test

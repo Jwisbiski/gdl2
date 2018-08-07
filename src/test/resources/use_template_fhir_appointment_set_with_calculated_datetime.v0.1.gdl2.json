@@ -95,7 +95,7 @@
           "$gt0011==null"
         ],
         "then": [
-          "use_template($gt1002($gt2000=$currentDateTime;$gt2001=($currentDateTime.value+3,mo)))"
+          "use_template($gt1002($gt2000=$currentDateTime;$gt2001=($currentDateTime+3,mo)))"
         ]
       }
     }

@@ -50,7 +50,7 @@
         "id": "gt0017",
         "priority": 300,
         "when": [
-          "any[$gt1004, $gt1005]((($gt1007|last|-$gt1004|any|)>26,umol/L)&&($gt1008|last|.value<($gt1005|any|.value+48,h)))"
+          "any[$gt1004, $gt1005]((($gt1007|last|-$gt1004|any|)>26,umol/L)&&($gt1008|last|<($gt1005|any|+48,h)))"
         ],
         "then": [
           "$gt5000|previous test value|=$gt1004",
@@ -61,7 +61,7 @@
         "id": "gt0018",
         "priority": 200,
         "when": [
-          "any[$gt1004, $gt1005]((($gt1007-$gt1004)>($gt1004*0.5))&&($gt1008.value<($gt1005.value+7,d)))"
+          "any[$gt1004, $gt1005]((($gt1007-$gt1004)>($gt1004*0.5))&&($gt1008<($gt1005+7,d)))"
         ],
         "then": [
           "$gt5000|previous test value|=$gt1004",

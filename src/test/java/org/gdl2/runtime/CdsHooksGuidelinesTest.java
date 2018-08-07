@@ -9,6 +9,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -67,7 +68,7 @@ public class CdsHooksGuidelinesTest extends TestCommon {
 
     private Interpreter buildInterpreterWithFhirPluginAndCurrentDateTime() {
         return new Interpreter(RuntimeConfiguration.builder()
-                .currentDateTime(new DvDateTime())
+                .currentDateTime(ZonedDateTime.now())
                 .objectCreatorPlugin(new FhirDstu3ResourceCreator())
                 .build());
     }

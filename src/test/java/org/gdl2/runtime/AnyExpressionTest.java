@@ -11,6 +11,7 @@ import org.gdl2.model.Guideline;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,19 +70,19 @@ public class AnyExpressionTest extends TestCommon {
         input.add(new DataInstance.Builder()
                 .modelId("org.hl7.fhir.dstu3.model.Observation")
                 .addValue("/valueQuantity", DvQuantity.valueOf("140,umol/L"))
-                .addValue("/effectiveDateTime", DvDateTime.valueOf("2016-04-04T14:30:00Z"))
+                .addValue("/effectiveDateTime", ZonedDateTime.parse("2016-04-04T14:30:00Z"))
                 .addValue("/code/coding[0]", DvCodedText.valueOf("NPU::NPU18016|label|"))
                 .build());
         input.add(new DataInstance.Builder()
                 .modelId("org.hl7.fhir.dstu3.model.Observation")
                 .addValue("/valueQuantity", DvQuantity.valueOf("120,umol/L"))
-                .addValue("/effectiveDateTime", DvDateTime.valueOf("2016-04-05T14:30:00Z"))
+                .addValue("/effectiveDateTime", ZonedDateTime.parse("2016-04-05T14:30:00Z"))
                 .addValue("/code/coding[0]", DvCodedText.valueOf("NPU::NPU18016|label|"))
                 .build());
         input.add(new DataInstance.Builder()
                 .modelId("org.hl7.fhir.dstu3.model.Observation")
                 .addValue("/valueQuantity", DvQuantity.valueOf("150,umol/L"))
-                .addValue("/effectiveDateTime", DvDateTime.valueOf("2016-04-06T13:30:00Z"))
+                .addValue("/effectiveDateTime", ZonedDateTime.parse("2016-04-06T13:30:00Z"))
                 .addValue("/code/coding[0]", DvCodedText.valueOf("NPU::NPU18016|label|"))
                 .build());
         output = interpreter.executeGuidelines(guidelines, input);

@@ -7,6 +7,7 @@ import org.testng.annotations.Test;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -43,8 +44,8 @@ public class TemplateFillerTest extends TestCommon {
     @Test
     public void can_fill_single_datetime_value_whole_string() {
         source = "{$gt2000}";
-        localValues.put("gt2000", DvDateTime.valueOf("2017-04-14T13:55:55"));
-        assertThat(templateFiller.replaceVariablesWithValues(source, localValues, globalValues), is("2017-04-14T13:55:55"));
+        localValues.put("gt2000", ZonedDateTime.parse("2017-04-14T13:55:55Z"));
+        assertThat(templateFiller.replaceVariablesWithValues(source, localValues, globalValues), is("2017-04-14T13:55:55Z"));
     }
 
     @Test

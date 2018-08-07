@@ -15,6 +15,7 @@ import org.testng.annotations.Test;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -29,9 +30,9 @@ public class CreateCdsHooksCardsTest extends TestCommon {
     private List<Guideline> guidelines;
 
     @BeforeMethod
-    public void setUp() throws Exception {
+    public void setUp() {
         input = new ArrayList<>();
-        interpreter = buildInterpreterWithFhirPluginAndCurrentDateTime("2013-04-20T14:00:00");
+        interpreter = buildInterpreterWithFhirPluginAndCurrentDateTime("2013-04-20T14:00:00Z");
     }
 
     @Test
@@ -136,7 +137,7 @@ public class CreateCdsHooksCardsTest extends TestCommon {
 
     @Test
     public void can_create_cdshooks_card_dynamic_summary_detail_with_classic_mode() throws Exception {
-        interpreter = new Interpreter(DvDateTime.valueOf("2013-04-20T14:00:00"));
+        interpreter = new Interpreter(ZonedDateTime.parse("2013-04-20T14:00:00Z"));
         input.add(new DataInstance.Builder()
                 .modelId("org.hl7.fhir.dstu3.model.MedicationStatement")
                 .addValue("/medicationCodeableConcept/coding[0]", DvCodedText.valueOf("ATC::C10AA05|Statin|"))
@@ -194,7 +195,7 @@ public class CreateCdsHooksCardsTest extends TestCommon {
     private Interpreter buildInterpreterWithFhirPluginAndCurrentDateTime(String datetime) {
         return new Interpreter(
                 RuntimeConfiguration.builder()
-                        .currentDateTime(datetime == null ? new DvDateTime() : DvDateTime.valueOf(datetime))
+                        .currentDateTime(datetime == null ? ZonedDateTime.now() : ZonedDateTime.parse(datetime))
                         .objectCreatorPlugin(new FhirDstu3ResourceCreator())
                         .build());
     }

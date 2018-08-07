@@ -256,8 +256,8 @@
                       "template_id": "gt1003",
                       "assignments": [
                         "$gt2002='Follow up to check the results of Statin Treatment'",
-                        "$gt2003=($currentDateTime.value+3,mo)",
-                        "$gt2004=($currentDateTime.value+3,mo)"
+                        "$gt2003=($currentDateTime+3,mo)",
+                        "$gt2004=($currentDateTime+3,mo)"
                       ]
                     }
                   }
