@@ -1500,8 +1500,8 @@ public class Interpreter {
 
     private String formatZonedJavaDate(ZonedDateTime date, boolean onlyDate) {
         if (this.runtimeConfiguration.getDateTimeFormatPattern() == null) {
-            if(onlyDate) {
-                return  DateTimeFormatter.ofPattern("yyyy-MM-dd").format(date);
+            if (onlyDate) {
+                return DateTimeFormatter.ofPattern("yyyy-MM-dd").format(date);
             }
             return date.toString();
         }
