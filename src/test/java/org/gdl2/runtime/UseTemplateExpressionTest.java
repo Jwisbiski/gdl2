@@ -29,7 +29,7 @@ public class UseTemplateExpressionTest extends TestCommon {
     private List<DataInstance> input;
     private List<DataInstance> output;
     private Gson gson = new Gson();
-
+    private String json;
 
     @BeforeMethod
     public void setUp() {
@@ -516,26 +516,20 @@ public class UseTemplateExpressionTest extends TestCommon {
 
     @Test
     public void can_use_template_create_fhir_appointment_with_current_datetime_variable() throws Exception {
-        interpreter = buildInterpreterWithFhirPluginAndCurrentDateTime("2013-04-20T14:00:00Z");
+        interpreter = new Interpreter(ZonedDateTime.parse("2013-04-20T14:00:00Z"));
         guideline = loadGuideline("use_template_fhir_appointment_set_with_current_datetime.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
         output = interpreter.executeGuidelines(guidelines, input);
-        assertThat(output.get(0).getRoot(), instanceOf(Appointment.class));
-        Appointment appointment = (Appointment) output.get(0).getRoot();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        assertThat(dateFormat.format(appointment.getRequestedPeriod().get(0).getStart()), is("2013-04-20T16:00:00"));
+        assertZonedDateTime("$.requestedPeriod[0].start", "2013-04-20T14:00:00Z");
     }
 
     @Test
     public void can_use_template_create_fhir_appointment_with_current_datetime_variable_directly_in_template() throws Exception {
-        interpreter = buildInterpreterWithFhirPluginAndCurrentDateTime("2013-04-20T14:00:00Z");
+        interpreter = new Interpreter(ZonedDateTime.parse("2013-04-20T14:00:00Z"));
         guideline = loadGuideline("use_template_fhir_appointment_set_with_current_datetime2.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
         output = interpreter.executeGuidelines(guidelines, input);
-        assertThat(output.get(0).getRoot(), instanceOf(Appointment.class));
-        Appointment appointment = (Appointment) output.get(0).getRoot();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        assertThat(dateFormat.format(appointment.getRequestedPeriod().get(0).getStart()), is("2013-04-20T16:00:00"));
+        assertZonedDateTime("$.requestedPeriod[0].start", "2013-04-20T14:00:00Z");
     }
 
     @Test
@@ -544,21 +538,17 @@ public class UseTemplateExpressionTest extends TestCommon {
         guideline = loadGuideline("use_template_fhir_appointment_set_with_current_datetime3.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
         output = interpreter.executeGuidelines(guidelines, input);
-        String json = new Gson().toJson(output.get(0).get("/"));
-        assertThat(JsonPath.read(json, "$.requestedPeriod[0].start"), is("2013-04-20T14:00Z"));
+        assertZonedDateTime("$.requestedPeriod[0].start", "2013-04-20T14:00Z");
     }
 
     @Test
     public void can_use_template_create_fhir_appointment_with_calculated_datetime_variable() throws Exception {
-        interpreter = buildInterpreterWithFhirPluginAndCurrentDateTime("2013-04-20T14:00:00Z");
+        interpreter = new Interpreter(ZonedDateTime.parse("2013-04-20T14:00:00+01:00"));
         guideline = loadGuideline("use_template_fhir_appointment_set_with_calculated_datetime.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
         output = interpreter.executeGuidelines(guidelines, input);
-        assertThat(output.get(0).getRoot(), instanceOf(Appointment.class));
-        Appointment appointment = (Appointment) output.get(0).getRoot();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        assertThat(dateFormat.format(appointment.getRequestedPeriod().get(0).getStart()), is("2013-04-20T16:00:00"));
-        assertThat(dateFormat.format(appointment.getRequestedPeriod().get(0).getEnd()), is("2013-07-20T16:00:00"));
+        assertZonedDateTime("$.requestedPeriod[0].start", "2013-04-20T14:00:00+01:00");
+        assertZonedDateTime("$.requestedPeriod[0].end", "2013-07-20T14:00:00+01:00");
     }
 
     private Interpreter buildInterpreterWithFhirPluginAndCurrentDateTime(String datetime) {
@@ -566,6 +556,11 @@ public class UseTemplateExpressionTest extends TestCommon {
                 .currentDateTime(datetime == null ? ZonedDateTime.now() : ZonedDateTime.parse(datetime))
                 .objectCreatorPlugin(new FhirDstu3ResourceCreator())
                 .build());
+    }
+
+    private void assertZonedDateTime(String path, String expected) {
+        json = gson.toJson(output.get(0).getRoot());
+        assertThat(ZonedDateTime.parse(JsonPath.read(json, path)), is(ZonedDateTime.parse(expected)));
     }
 
     private Interpreter buildInterpreterWithFhirPluginAndCurrentDateTime() {

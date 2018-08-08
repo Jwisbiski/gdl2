@@ -247,6 +247,6 @@ public class EvaluateTimeExpressionTest extends TestCommon {
         expressionItem = parseExpression("(floor((($currentDateTime-$gt0001)/1,a)))");
         inputMap.put("gt0001", asList(LocalDate.parse("1972-10-30")));
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
-        assertThat(value, is(46));
+        assertThat(value, is(45.0));
     }
 }

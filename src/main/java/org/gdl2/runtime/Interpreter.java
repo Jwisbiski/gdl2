@@ -16,10 +16,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.Period;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -1336,6 +1333,8 @@ public class Interpreter {
             return ((ZonedDateTime) dataValue).toInstant().toEpochMilli();
         } else if (dataValue instanceof LocalDateTime) {
             return ((LocalDateTime) dataValue).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        } else if (dataValue instanceof LocalDate) {
+            return ((LocalDate) dataValue).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
         } else if (dataValue.toString().startsWith("(-") && dataValue.toString().endsWith(")")) {
             int length = dataValue.toString().length();
             return Double.valueOf(dataValue.toString().substring(1, length - 1));
