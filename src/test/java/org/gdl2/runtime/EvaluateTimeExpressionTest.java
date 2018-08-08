@@ -6,13 +6,13 @@ import org.gdl2.expression.Variable;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static javax.xml.bind.DatatypeConverter.parseDateTime;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -41,10 +41,10 @@ public class EvaluateTimeExpressionTest extends TestCommon {
     }
 
     @Test
-    public void can_evaluate_java_date_using_given_formatter_pattern() throws ParseException {
+    public void can_evaluate_java_date_using_given_formatter_pattern() {
         expressionItem = parseExpression("$gt0100.string");
-        SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-DD'T'HH:mm:ss");
-        inputMap.put("gt0100", asList(sdf.parse("1952-01-10T00:00:00")));
+        inputMap.put("gt0100", asList(
+                parseDateTime("1952-01-10T00:00:00").getTime()));
         interpreter = new Interpreter(
                 RuntimeConfiguration.builder()
                         .dateTimeFormatPattern("yyyy-MM-dd'T'HH:mm:ss")
@@ -239,5 +239,14 @@ public class EvaluateTimeExpressionTest extends TestCommon {
         inputMap.put("gt0005", asList(new DvQuantity("a", 12, 0)));
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
         assertThat(value, is(false));
+    }
+
+    @Test
+    public void can_evaluate_expression_with_zoned_datetime_and_local_date_in_age_calculation() {
+        interpreter = new Interpreter(ZonedDateTime.parse("2018-08-08T10:40:30+01:00"));
+        expressionItem = parseExpression("(floor((($currentDateTime-$gt0001)/1,a)))");
+        inputMap.put("gt0001", asList(LocalDate.parse("1972-10-30")));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(45.0));
     }
 }
