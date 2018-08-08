@@ -6,6 +6,7 @@ import org.gdl2.expression.Variable;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -238,5 +239,14 @@ public class EvaluateTimeExpressionTest extends TestCommon {
         inputMap.put("gt0005", asList(new DvQuantity("a", 12, 0)));
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
         assertThat(value, is(false));
+    }
+
+    @Test
+    public void can_evaluate_expression_with_zoned_datetime_and_local_date_in_age_calculation() {
+        interpreter = new Interpreter(ZonedDateTime.parse("2018-08-08T10:40:30+01:00"));
+        expressionItem = parseExpression("(floor((($currentDateTime-$gt0001)/1,a)))");
+        inputMap.put("gt0001", asList(LocalDate.parse("1972-10-30")));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(46));
     }
 }
