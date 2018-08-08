@@ -6,12 +6,13 @@ import org.gdl2.expression.Variable;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static javax.xml.bind.DatatypeConverter.parseDateTime;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -40,10 +41,10 @@ public class EvaluateTimeExpressionTest extends TestCommon {
     }
 
     @Test
-    public void can_evaluate_java_date_using_given_formatter_pattern() {
+    public void can_evaluate_java_date_using_given_formatter_pattern() throws ParseException {
         expressionItem = parseExpression("$gt0100.string");
-        inputMap.put("gt0100", asList(
-                parseDateTime("1952-01-10T00:00:00").getTime()));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-DD'T'HH:mm:ss");
+        inputMap.put("gt0100", asList(sdf.parse("1952-01-10T00:00:00")));
         interpreter = new Interpreter(
                 RuntimeConfiguration.builder()
                         .dateTimeFormatPattern("yyyy-MM-dd'T'HH:mm:ss")
