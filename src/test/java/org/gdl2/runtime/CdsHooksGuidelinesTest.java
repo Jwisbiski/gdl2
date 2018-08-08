@@ -1,7 +1,6 @@
 package org.gdl2.runtime;
 
 import org.gdl2.cdshooks.Card;
-import org.gdl2.datatypes.DvDateTime;
 import org.gdl2.datatypes.DvQuantity;
 import org.gdl2.model.Guideline;
 import org.hl7.fhir.dstu3.model.MedicationRequest;
@@ -15,9 +14,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.closeTo;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 public class CdsHooksGuidelinesTest extends TestCommon {
     private Interpreter interpreter;

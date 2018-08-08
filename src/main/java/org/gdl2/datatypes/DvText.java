@@ -2,6 +2,7 @@ package org.gdl2.datatypes;
 
 import lombok.Value;
 
+@Deprecated
 @Value
 public final class DvText {
     private String value;

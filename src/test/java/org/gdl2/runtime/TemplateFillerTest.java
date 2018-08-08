@@ -1,7 +1,6 @@
 package org.gdl2.runtime;
 
 import com.google.gson.Gson;
-import org.gdl2.datatypes.DvDateTime;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 

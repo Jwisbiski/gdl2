@@ -522,8 +522,8 @@ public class UseTemplateExpressionTest extends TestCommon {
         output = interpreter.executeGuidelines(guidelines, input);
         assertThat(output.get(0).getRoot(), instanceOf(Appointment.class));
         Appointment appointment = (Appointment) output.get(0).getRoot();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-        assertThat(dateFormat.format(appointment.getRequestedPeriod().get(0).getStart()), is("2013-04-20T16:00:00+0200"));
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        assertThat(dateFormat.format(appointment.getRequestedPeriod().get(0).getStart()), is("2013-04-20T16:00:00"));
     }
 
     @Test
@@ -534,8 +534,8 @@ public class UseTemplateExpressionTest extends TestCommon {
         output = interpreter.executeGuidelines(guidelines, input);
         assertThat(output.get(0).getRoot(), instanceOf(Appointment.class));
         Appointment appointment = (Appointment) output.get(0).getRoot();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-        assertThat(dateFormat.format(appointment.getRequestedPeriod().get(0).getStart()), is("2013-04-20T16:00:00+0200"));
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        assertThat(dateFormat.format(appointment.getRequestedPeriod().get(0).getStart()), is("2013-04-20T16:00:00"));
     }
 
     @Test
@@ -556,9 +556,9 @@ public class UseTemplateExpressionTest extends TestCommon {
         output = interpreter.executeGuidelines(guidelines, input);
         assertThat(output.get(0).getRoot(), instanceOf(Appointment.class));
         Appointment appointment = (Appointment) output.get(0).getRoot();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-        assertThat(dateFormat.format(appointment.getRequestedPeriod().get(0).getStart()), is("2013-04-20T16:00:00+0200"));
-        assertThat(dateFormat.format(appointment.getRequestedPeriod().get(0).getEnd()), is("2013-07-20T16:00:00+0200"));
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+        assertThat(dateFormat.format(appointment.getRequestedPeriod().get(0).getStart()), is("2013-04-20T16:00:00"));
+        assertThat(dateFormat.format(appointment.getRequestedPeriod().get(0).getEnd()), is("2013-07-20T16:00:00"));
     }
 
     private Interpreter buildInterpreterWithFhirPluginAndCurrentDateTime(String datetime) {

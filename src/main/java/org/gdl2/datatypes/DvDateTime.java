@@ -5,6 +5,7 @@ import lombok.Value;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+@Deprecated
 @Value
 public final class DvDateTime {
     private LocalDateTime dateTime;
