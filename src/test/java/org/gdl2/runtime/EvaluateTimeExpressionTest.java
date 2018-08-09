@@ -97,6 +97,60 @@ public class EvaluateTimeExpressionTest extends TestCommon {
     }
 
     @Test
+    public void can_evaluate_expression_with_zoned_datetime_and_local_date_plus_period_expect_true() {
+        expressionItem = parseExpression("$gt1014<($gt1009+60,a)");
+        inputMap.put("gt1009", asList(LocalDate.parse("1957-01-01")));
+        inputMap.put("gt1014", asList(ZonedDateTime.parse("2016-01-01T00:00:00+01:00")));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
+    }
+
+    @Test
+    public void can_evaluate_expression_with_zoned_datetime_and_local_date_plus_period_expect_true_local_date_on_right() {
+        expressionItem = parseExpression("$gt1014<(60,a+$gt1009)");
+        inputMap.put("gt1009", asList(LocalDate.parse("1957-01-01")));
+        inputMap.put("gt1014", asList(ZonedDateTime.parse("2016-01-01T00:00:00+01:00")));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
+    }
+
+    @Test
+    public void can_evaluate_expression_with_zoned_datetime_and_local_date_plus_period_expect_false() {
+        expressionItem = parseExpression("$gt1014<($gt1009+60,a)");
+        inputMap.put("gt1009", asList(LocalDate.parse("1957-01-01")));
+        inputMap.put("gt1014", asList(ZonedDateTime.parse("2017-01-02T00:00:00+01:00")));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(false));
+    }
+
+    @Test
+    public void can_evaluate_expression_with_zoned_datetime_and_local_date_plus_period_expect_false_local_date_on_right() {
+        expressionItem = parseExpression("$gt1014<(60,a + $gt1009)");
+        inputMap.put("gt1009", asList(LocalDate.parse("1957-01-01")));
+        inputMap.put("gt1014", asList(ZonedDateTime.parse("2017-01-02T00:00:00+01:00")));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(false));
+    }
+
+    @Test
+    public void can_evaluate_expression_local_date_with_zoned_datetime_expect_true() {
+        expressionItem = parseExpression("$gt1014 > $gt1009");
+        inputMap.put("gt1014", asList(LocalDate.parse("2017-01-02")));
+        inputMap.put("gt1009", asList(ZonedDateTime.parse("2017-01-01T00:00:00+01:00")));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
+    }
+
+    @Test
+    public void can_evaluate_expression_local_date_with_zoned_datetime_expect_false() {
+        expressionItem = parseExpression("$gt1014 > $gt1009");
+        inputMap.put("gt1014", asList(LocalDate.parse("2017-01-01")));
+        inputMap.put("gt1009", asList(ZonedDateTime.parse("2017-01-02T00:00:00+01:00")));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(false));
+    }
+
+    @Test
     public void can_compute_datetime_variables_with_years() {
         expressionItem = parseExpression("$currentDateTime.year-$gt0008.year");
         inputMap.put("gt0008", asList(ZonedDateTime.parse("1960-01-10T00:00:00Z")));

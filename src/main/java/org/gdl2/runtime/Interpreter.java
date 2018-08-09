@@ -1217,6 +1217,16 @@ public class Interpreter {
             TemporalAmount temporalAmount = (TemporalAmount) rightValue;
             return operator == ADDITION ? zonedDateTime.plus(temporalAmount) : zonedDateTime.minus(temporalAmount);
         } else if ((operator == ADDITION || operator == SUBTRACTION)
+                && (rightValue instanceof TemporalAmount && leftValue instanceof LocalDate)) {
+            LocalDate localDate = (LocalDate) leftValue;
+            TemporalAmount temporalAmount = (TemporalAmount) rightValue;
+            return operator == ADDITION ? localDate.plus(temporalAmount) : localDate.minus(temporalAmount);
+        } else if ((operator == ADDITION || operator == SUBTRACTION)
+                && (leftValue instanceof TemporalAmount && rightValue instanceof LocalDate)) {
+            LocalDate localDate = (LocalDate) rightValue;
+            TemporalAmount temporalAmount = (TemporalAmount) leftValue;
+            return operator == ADDITION ? localDate.plus(temporalAmount) : localDate.minus(temporalAmount);
+        } else if ((operator == ADDITION || operator == SUBTRACTION)
                 && (leftValue instanceof TemporalAmount && rightValue instanceof ZonedDateTime)) {
             ZonedDateTime zonedDateTime = (ZonedDateTime) rightValue;
             TemporalAmount temporalAmount = (TemporalAmount) leftValue;
