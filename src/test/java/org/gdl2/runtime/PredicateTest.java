@@ -11,7 +11,6 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import static javax.xml.bind.DatatypeConverter.parseDateTime;
 import static org.gdl2.runtime.Interpreter.CURRENT_DATETIME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
