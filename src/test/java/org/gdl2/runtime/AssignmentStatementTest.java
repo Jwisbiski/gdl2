@@ -217,6 +217,28 @@ public class AssignmentStatementTest extends TestCommon {
     }
 
     @Test
+    public void can_assign_current_datetime_added_with_duration() throws Exception {
+        AssignmentExpression assignment = parseAssignmentExpression("$gt0005=($currentDateTime + 24,h)");
+        interpreter = new Interpreter(RuntimeConfiguration.builder()
+                .currentDateTime(ZonedDateTime.parse("2017-03-17T10:00:00Z")).build());
+        interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
+        dataValue = resultMap.get("gt0005");
+        ZonedDateTime zonedDateTime = (ZonedDateTime) dataValue;
+        assertThat(zonedDateTime, is(ZonedDateTime.parse("2017-03-18T10:00:00Z")));
+    }
+
+    @Test
+    public void can_assign_duration_added_with_current_datetime() throws Exception {
+        AssignmentExpression assignment = parseAssignmentExpression("$gt0005=(24,h + $currentDateTime)");
+        interpreter = new Interpreter(RuntimeConfiguration.builder()
+                .currentDateTime(ZonedDateTime.parse("2017-03-17T10:00:00Z")).build());
+        interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
+        dataValue = resultMap.get("gt0005");
+        ZonedDateTime zonedDateTime = (ZonedDateTime) dataValue;
+        assertThat(zonedDateTime, is(ZonedDateTime.parse("2017-03-18T10:00:00Z")));
+    }
+
+    @Test
     public void can_assign_current_date_as_string_to_variable() throws Exception {
         AssignmentExpression assignment = parseAssignmentExpression("$gt0005=$currentDate.string");
         interpreter = new Interpreter(RuntimeConfiguration.builder()
