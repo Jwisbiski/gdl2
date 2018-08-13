@@ -1,0 +1,98 @@
+{
+  "gdl_version": "2.0",
+  "id": "any_expression_test3.v1",
+  "concept": "gt0001",
+  "language": {
+    "original_language": "ISO_639-1::en"
+  },
+  "definition": {
+    "data_bindings": {
+      "gt1003": {
+        "id": "gt1003",
+        "model_id": "org.hl7.fhir.dstu3.model.Observation",
+        "type": "INPUT",
+        "elements": {
+          "gt1004": {
+            "id": "gt1004",
+            "path": "/valueQuantity"
+          },
+          "gt1005": {
+            "id": "gt1005",
+            "path": "/effectiveDateTime"
+          }
+        },
+        "predicates": [
+          "/code/coding[0] is_a local::gt2001|P—Kreatinin|"
+        ]
+      },
+      "gt1006": {
+        "id": "gt1006",
+        "model_id": "org.hl7.fhir.dstu3.model.Observation",
+        "type": "INPUT",
+        "elements": {
+          "gt1007": {
+            "id": "gt1007",
+            "path": "/valueQuantity"
+          },
+          "gt1008": {
+            "id": "gt1008",
+            "path": "/effectiveDateTime"
+          }
+        },
+        "predicates": [
+          "/code/coding[0] is_a local::gt2001|P—Kreatinin|",
+          "max(/effectiveDateTime)"
+        ]
+      }
+    },
+    "rules": {
+      "gt0017": {
+        "id": "gt0017",
+        "priority": 300,
+        "when": [
+          "any[$gt1004, $gt1005]((($gt1007|last|-$gt1004|any|)>26,umol/L)&&($gt1008|last|<($gt1005|any|+48,h)))"
+        ],
+        "then": [
+          "$gt5000|previous test value|=$gt1004",
+          "$gt5001|previous test date|=$gt1005"
+        ]
+      },
+      "gt0018": {
+        "id": "gt0018",
+        "priority": 200,
+        "when": [
+          "any[$gt1004, $gt1005]((($gt1007-$gt1004)>($gt1004*0.5))&&($gt1008<($gt1005+7,d)))"
+        ],
+        "then": [
+          "$gt5000|previous test value|=$gt1004",
+          "$gt5001|previous test date|=$gt1005"
+        ]
+      }
+    }
+  },
+  "ontology": {
+    "term_definitions": {
+      "en": {
+        "id": "en",
+        "terms": {
+          "gt1006": {
+            "id": "gt1006",
+            "text": "Last value"
+          }
+        }
+      }
+    },
+    "term_bindings": {
+      "NPU": {
+        "id": "NPU",
+        "bindings": {
+          "gt2001": {
+            "codes": [
+              "NPU::NPU18016"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

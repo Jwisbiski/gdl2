@@ -1,0 +1,65 @@
+{
+  "gdl_version": "0.1",
+  "id": "use_template_without_data_bindings.v0.1",
+  "concept": "gt0001",
+  "language": {
+    "original_language": "ISO_639-1::en",
+    "description": {
+      "original_author": {
+        "name": "Author",
+        "organisation": "Cambio Healthcare Systems",
+        "email": ""
+      },
+      "details": {
+        "en": {
+          "id": "en",
+          "purpose": "Sample fhir-based cds-rules for demonstration purpose",
+          "keywords": [
+            "Diabetes"
+          ]
+        }
+      }
+    }
+  },
+  "definition": {
+    "templates": {
+      "gt0022": {
+        "id": "gt0022",
+        "model_id": "org.gdl2.datatypes.DvOrdinal",
+        "object": {
+          "value": "3",
+          "symbol": {
+            "value": "atorvastatin",
+            "definingCode": {
+              "terminology": "ATC",
+              "code": "C10AA05"
+            }
+          }
+        }
+      }
+    },
+    "rules": {
+      "gt0034": {
+        "id": "gt0034",
+        "priority": 2,
+        "then": [
+          "use_template($gt0022)"
+        ]
+      }
+    }
+  },
+  "ontology": {
+    "term_definitions": {
+      "en": {
+        "id": "en",
+        "terms": {
+          "gt0011": {
+            "id": "gt0011",
+            "text": "Statin treatment",
+            "description": "The generic name of the drug which is an alternative name to the name of medication"
+          }
+        }
+      }
+    }
+  }
+}

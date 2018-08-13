@@ -52,7 +52,7 @@
           "$gt0003!=null"
         ],
         "then": [
-          "$gt0005.magnitude=(floor((($currentDateTime.value-$gt0003.value)/1,a)))",
+          "$gt0005.magnitude=(floor((($currentDateTime-$gt0003)/1,a)))",
           "$gt0005.precision=0",
           "$gt0005.unit='a'"
         ]

@@ -1,7 +1,35 @@
 {
   "gdl_version": "0.1",
-  "id": "create_json_block.v0.1",
+  "id": "cdshooks_card_single_suggestion_test.v0.1",
   "concept": "gt0001",
+  "description": {
+    "original_author": {
+      "date": "2014-02-13",
+      "name": "author",
+      "organisation": "org",
+      "email": "email"
+    },
+    "lifecycle_state": "Author draft",
+    "details": {
+      "en": {
+        "id": "en",
+        "purpose": "purpose",
+        "keywords": [
+          "keyword"
+        ],
+        "use": "Use",
+        "misuse": "",
+        "copyright": "copyright"
+      }
+    },
+    "references": [
+      {
+        "id": "1",
+        "label": "NICE guideline",
+        "url": "https://www.nice.org.uk/guidance/CG181"
+      }
+    ]
+  },
   "language": {
     "original_language": "ISO_639-1::en",
     "description": {
@@ -13,7 +41,7 @@
       "details": {
         "en": {
           "id": "en",
-          "purpose": "Sample fhir-based cds-rules for demonstration purpose",
+          "purpose": "Sample cds-hooks cds-rules for demonstration purpose",
           "keywords": [
             "Diabetes"
           ]
@@ -85,17 +113,55 @@
             }
           ]
         }
+      },
+      "gt2026": {
+        "id": "gt2026",
+        "model_id": "org.cds-hooks.Card",
+        "object": {
+          "summary": "card summary: {$gt0011}",
+          "detail": "card detail",
+          "indicator": "info",
+          "source": {
+            "label_reference": "$ref[1].label",
+            "url_reference": "$ref[1].url"
+          },
+          "suggestions": [
+            {
+              "label": "suggestion label",
+              "actions": [
+                {
+                  "type": "create",
+                  "description": "create resource test",
+                  "resource": "{$gt1002}"
+                }
+              ]
+            }
+          ]
+        }
       }
     },
     "rules": {
       "gt0034": {
         "id": "gt0034",
-        "priority": 2,
+        "priority": 200,
         "when": [
-          "$gt0011==null"
+          "$gt0011!=null"
         ],
         "then": [
-          "use_template($gt1002($gt2000=$currentDateTime;$gt2001=($currentDateTime+3,mo)))"
+          "$gt2000=(2013-04-20)",
+          "$gt2001=(2013-04-25)",
+          "use_template($gt1002)"
+        ]
+      },
+      "gt0035": {
+        "id": "gt0035",
+        "priority": 100,
+        "when": [
+          "$gt0011!=null"
+        ],
+        "then": [
+          "$gt0011='Statin'",
+          "use_template($gt2026)"
         ]
       }
     }

@@ -2,7 +2,6 @@ package org.gdl2.runtime;
 
 import org.apache.commons.io.IOUtils;
 import org.gdl2.Gdl2;
-import org.gdl2.datatypes.DvDateTime;
 import org.gdl2.datatypes.DvQuantity;
 import org.gdl2.expression.AssignmentExpression;
 import org.gdl2.expression.ExpressionItem;
@@ -10,6 +9,7 @@ import org.gdl2.expression.parser.ExpressionParser;
 import org.gdl2.model.Guideline;
 
 import java.io.StringReader;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,14 +30,14 @@ public class TestCommon {
     DataInstance toWeight(String value) {
         return new DataInstance.Builder().modelId(WEIGHT_ARCHETYPE)
                 .addValue(WEIGHT_VALUE, DvQuantity.valueOf(value))
-                .addValue(WEIGHT_EVENT_TIME, DvDateTime.valueOf("2012-01-01T00:00:00"))
+                .addValue(WEIGHT_EVENT_TIME, ZonedDateTime.parse("2012-01-01T00:00:00Z"))
                 .build();
     }
 
     DataInstance toHeight(String value) {
         return new DataInstance.Builder().modelId(HEIGHT_ARCHETYPE)
                 .addValue(HEIGHT_VALUE, DvQuantity.valueOf(value))
-                .addValue(HEIGHT_EVENT_TIME, DvDateTime.valueOf("2012-01-01T00:00:00"))
+                .addValue(HEIGHT_EVENT_TIME, ZonedDateTime.parse("2012-01-01T00:00:00Z"))
                 .build();
     }
 

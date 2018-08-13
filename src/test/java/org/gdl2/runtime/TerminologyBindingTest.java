@@ -1,7 +1,6 @@
 package org.gdl2.runtime;
 
 import org.gdl2.datatypes.DvCodedText;
-import org.gdl2.datatypes.DvDateTime;
 import org.gdl2.expression.ExpressionItem;
 import org.gdl2.model.Guideline;
 import org.gdl2.terminology.ReadV2SubsumptionEvaluator;
@@ -9,6 +8,7 @@ import org.gdl2.terminology.SubsumptionEvaluator;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +25,11 @@ public class TerminologyBindingTest extends TestCommon {
     private Object value;
 
     @BeforeMethod
-    public void setUp() throws Exception {
+    public void setUp() {
         Map<String, SubsumptionEvaluator> subsumptionEvaluatorMap = new HashMap<>();
         subsumptionEvaluatorMap.put(UKTC_READ_V2, new ReadV2SubsumptionEvaluator());
         RuntimeConfiguration runtimeConfiguration = RuntimeConfiguration.builder()
-                .currentDateTime(new DvDateTime())
+                .currentDateTime(ZonedDateTime.now())
                 .language("en")
                 .objectCreatorPlugin(new DefaultObjectCreator())
                 .terminologySubsumptionEvaluators(subsumptionEvaluatorMap)

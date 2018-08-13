@@ -1,0 +1,77 @@
+{
+  "gdl_version": "0.1",
+  "id": "use_template_with_ordinal_select_output.v0.1",
+  "concept": "gt0001",
+  "language": {
+    "original_language": "ISO_639-1::en",
+    "description": {
+      "original_author": {
+        "name": "Author",
+        "organisation": "Cambio Healthcare Systems",
+        "email": ""
+      },
+      "details": {
+        "en": {
+          "id": "en",
+          "purpose": "Sample fhir-based cds-rules for demonstration purpose",
+          "keywords": [
+            "Diabetes"
+          ]
+        }
+      }
+    }
+  },
+  "definition": {
+    "data_bindings": {
+      "gt1027": {
+        "id": "gt1027",
+        "model_id": "org.gdl2.datatypes.DvOrdinal",
+        "type": "INPUT",
+        "predicates": [
+          "/symbol/value.value=='atorvastatin'"
+        ]
+      }
+    },
+    "templates": {
+      "gt0022": {
+        "id": "gt0022",
+        "model_id": "org.gdl2.datatypes.DvOrdinal",
+        "object": {
+          "value": "3",
+          "symbol": {
+            "value": "success",
+            "definingCode": {
+              "terminology": "test",
+              "code": "test"
+            }
+          }
+        }
+      }
+    },
+    "rules": {
+      "gt0034": {
+        "id": "gt0034",
+        "priority": 2,
+        "when": [
+          "$gt1027!=null"
+        ],
+        "then": [
+          "use_template($gt0022)"
+        ]
+      }
+    }
+  },
+  "ontology": {
+    "term_definitions": {
+      "en": {
+        "id": "en",
+        "terms": {
+          "gt0011": {
+            "id": "gt0011",
+            "text": "test"
+          }
+        }
+      }
+    }
+  }
+}

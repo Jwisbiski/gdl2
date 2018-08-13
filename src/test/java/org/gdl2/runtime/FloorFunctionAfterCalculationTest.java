@@ -1,11 +1,11 @@
 package org.gdl2.runtime;
 
-import org.gdl2.datatypes.DvDateTime;
 import org.gdl2.datatypes.DvQuantity;
 import org.gdl2.model.Guideline;
 import org.hamcrest.Matchers;
 import org.testng.annotations.Test;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,10 +22,11 @@ public class FloorFunctionAfterCalculationTest extends TestCommon {
         List<DataInstance> dataInstances = new ArrayList<>();
         dataInstances.add(new DataInstance.Builder()
                 .modelId("openEHR-EHR-OBSERVATION.basic_demographic.v1")
-                .addValue("/data[at0001]/events[at0002]/data[at0003]/items[at0008]", DvDateTime.valueOf("1953-12-05T00:00:00"))
+                .addValue("/data[at0001]/events[at0002]/data[at0003]/items[at0008]",
+                        ZonedDateTime.parse("1953-12-05T00:00:00Z"))
                 .build());
 
-        Map<String, List<Object>> result = new Interpreter(DvDateTime.valueOf("2017-10-04T11:38:00"))
+        Map<String, List<Object>> result = new Interpreter(ZonedDateTime.parse("2017-10-04T11:38:00Z"))
                 .execute(guideline, dataInstances).getResult();
         Object dataValue = result.get("gt0005").get(0);
         assertThat(dataValue, Matchers.instanceOf(DvQuantity.class));

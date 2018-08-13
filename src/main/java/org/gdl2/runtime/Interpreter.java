@@ -1,6 +1,7 @@
 package org.gdl2.runtime;
 
 import com.google.gson.Gson;
+import com.jayway.jsonpath.JsonPath;
 import lombok.NonNull;
 import org.gdl2.cdshooks.*;
 import org.gdl2.datatypes.*;
@@ -13,17 +14,18 @@ import org.gdl2.terminology.*;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.Period;
-import java.time.ZoneId;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.*;
 import static org.gdl2.cdshooks.Link.LinkType.ABSOLUTE;
 import static org.gdl2.expression.OperatorKind.*;
 import static org.gdl2.model.DataBinding.Type.INPUT;
@@ -52,6 +54,8 @@ public class Interpreter {
     private static final String LOG1P = "log1p";
     private static final String ROUND = "round";
     private static final String SQRT = "sqrt";
+    private static final String ROOT = "/";
+    private static final String CURRENT_INDEX = "current-index";
 
     private RuntimeConfiguration runtimeConfiguration;
     private static final TemplateFiller templateFiller = new TemplateFiller();
@@ -66,7 +70,7 @@ public class Interpreter {
         this.runtimeConfiguration = setDefaultRuntimeConfigurationIfMissing(runtimeConfiguration);
     }
 
-    public Interpreter(DvDateTime currentDateTime) {
+    public Interpreter(ZonedDateTime currentDateTime) {
         assertNotNull(currentDateTime, "currentDateTime can not be null");
         this.runtimeConfiguration = RuntimeConfiguration.builder()
                 .currentDateTime(currentDateTime)
@@ -76,7 +80,7 @@ public class Interpreter {
                 .build();
     }
 
-    public Interpreter(DvDateTime currentDateTime, String language) {
+    public Interpreter(ZonedDateTime currentDateTime, String language) {
         assertNotNull(currentDateTime, "currentDateTime can not be null");
         assertNotNull(language, "language can not be null");
         this.runtimeConfiguration = RuntimeConfiguration.builder()
@@ -129,8 +133,42 @@ public class Interpreter {
 
     public List<Card> executeCdsHooksGuidelines(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
         List<Card> cardList = new ArrayList<>();
-        executeGuidelinesWithCards(guidelines, inputDataInstances, cardList);
+
+        if (useCardsInRules(guidelines)) {
+            executeGuidelinesWithCards(guidelines, inputDataInstances, cardList);
+        } else {
+            cardList = executeCdsHooksGuidelinesClassicMode(guidelines, inputDataInstances);
+        }
         return cardList;
+    }
+
+    private List<Card> executeCdsHooksGuidelinesClassicMode(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
+        List<Card> cardList = new ArrayList<>();
+        List<DataInstance> dataInstances = executeGuidelines(guidelines, inputDataInstances);
+        for (DataInstance dataInstance : dataInstances) {
+            Card card = fetchCardFromDataInstance(dataInstance);
+            if (card.getSummary() != null) {
+                cardList.add(card);
+            }
+        }
+        return cardList;
+    }
+
+    private Card fetchCardFromDataInstance(DataInstance dataInstance) {
+        Gson gson = new Gson();
+        String json = new Gson().toJson(dataInstance.getRoot());
+        return gson.fromJson(json, Card.class);
+    }
+
+    private boolean useCardsInRules(List<Guideline> guidelines) {
+        for (Guideline guideline : guidelines) {
+            for (Rule rule : guideline.getDefinition().getRules().values()) {
+                if (rule.getCards() != null && !rule.getCards().isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     // xxxxGetFiredRules methods are for gdl2-editor
@@ -157,15 +195,17 @@ public class Interpreter {
         Map<String, Set<String>> firedRules = new LinkedHashMap<>();
         for (Guideline guide : guidelines) {
             ExecutionOutput resultPerExecution = executeSingleGuidelineWithCards(guide, input, cards);
+            input = new ArrayList<>(inputDataInstances);
             for (DataInstance dataInstance : resultPerExecution.getResult()) {
                 DataInstance existing = allResults.get(dataInstance.modelId());
-                if (existing == null || isInputData(dataInstance, guide) || isOutputTemplateData(dataInstance, guide)) {
+                if (existing == null || isInputData(dataInstance, guide)) {
                     allResults.put(dataInstance.modelId(), dataInstance);
+                } else if (isOutputTemplateData(dataInstance, guide)) {
+                    input.add(dataInstance);
                 } else {
                     existing.merge(dataInstance);
                 }
             }
-            input = new ArrayList<>(inputDataInstances);
             input.addAll(allResults.values());
             totalResult.addAll(resultPerExecution.result);
             firedRules.putAll(resultPerExecution.getFiredRules());
@@ -229,7 +269,7 @@ public class Interpreter {
         return execute(guideline, dataInstances, null);
     }
 
-    InternalOutput execute(Guideline guideline, List<DataInstance> dataInstances, List<Card> cards) {
+    private InternalOutput execute(Guideline guideline, List<DataInstance> dataInstances, List<Card> cards) {
         assertNotNull(guideline, "Guideline cannot not be null.");
         assertNotNull(dataInstances, "List<DataInstance> cannot be null.");
         Map<String, List<Object>> selectedInput = selectDataInstancesUsingPredicatesAndSortWithElementBindingCode(
@@ -258,8 +298,8 @@ public class Interpreter {
 
         Map<String, List<Object>> inputAndResult = new HashMap<>(selectedInput);
         for (Rule rule : sortedRules) {
-            Map<String, Object> resultPerRuleExecution = evaluateRule(rule, inputAndResult, guideline, firedRules, cards);
-            mergeValueMapIntoListValueMap(resultPerRuleExecution, inputAndResult);
+            Map<String, List<Object>> resultPerRuleExecution = evaluateRule(rule, inputAndResult, guideline, firedRules, cards);
+            mergeListValueMaps(resultPerRuleExecution, inputAndResult);
         }
         guidelineFiredRules.put(guideline.getId(), firedRules);
         return new InternalOutput(guidelineFiredRules, inputAndResult);
@@ -271,10 +311,31 @@ public class Interpreter {
         }
     }
 
+    private void mergeListValueMaps(Map<String, List<Object>> valueMap, Map<String, List<Object>> valueListMap) {
+        for (Map.Entry<String, List<Object>> entry : valueMap.entrySet()) {
+            List<Object> values = valueListMap.computeIfAbsent(entry.getKey(), k -> new ArrayList<>());
+            values.addAll(entry.getValue());
+        }
+    }
+
     private List<DataInstance> collectDataInstancesFromValueListMap(Map<String, List<Object>> valueListMap,
                                                                     GuideDefinition guideDefinition) {
         List<DataInstance> dataInstances = new ArrayList<>();
         Set<String> assignableCodes = getCodesForAssignableVariables(guideDefinition);
+        if (guideDefinition.getTemplates() != null) {
+            for (Map.Entry<String, Template> entry : guideDefinition.getTemplates().entrySet()) {
+                Template template = entry.getValue();
+                if (valueListMap.containsKey(template.getId())) {
+                    List<Object> list = valueListMap.get(template.getId());
+                    for (Object object : list) {
+                        dataInstances.add(fromOutputTemplateObject(template, object));
+                    }
+                }
+            }
+        }
+        if (guideDefinition.getDataBindings() == null) {
+            return dataInstances;
+        }
         for (DataBinding dataBinding : guideDefinition.getDataBindings().values()) {
             if (INPUT.equals(dataBinding.getType())) {
                 if (!this.runtimeConfiguration.isIncludingInputWithPredicate()
@@ -300,7 +361,7 @@ public class Interpreter {
                             pathValueListMap.put(elementPath, objects);
                         } else if (assignableCodes.contains(valueKey)) {
                             total = 1; // only take last element for output type
-                            pathValueListMap.put(elementPath, Collections.singletonList(objects.get(objects.size() - 1)));
+                            pathValueListMap.put(elementPath, singletonList(objects.get(objects.size() - 1)));
                         }
                     }
                 }
@@ -308,22 +369,40 @@ public class Interpreter {
             dataInstances.addAll(
                     createFromValueListsUsingSingleDataBinding(dataBinding.getId(), dataBinding.getModelId(), pathValueListMap, total));
         }
-        if (guideDefinition.getTemplates() != null) {
-            for (Map.Entry<String, Template> entry : guideDefinition.getTemplates().entrySet()) {
-                Template template = entry.getValue();
-                if (valueListMap.containsKey(template.getId())) {
-                    List<Object> list = valueListMap.get(template.getId());
-                    for (Object object : list) {
-                        dataInstances.add(new DataInstance.Builder()
-                                .id(template.getId())
-                                .modelId(template.getModelId())
-                                .addValue("/", object)
-                                .build());
-                    }
+        return dataInstances;
+    }
+
+    private DataInstance fromOutputTemplateObject(Template template, Object object) {
+        DataInstance dataInstance = new DataInstance.Builder()
+                .id(template.getId())
+                .modelId(template.getModelId())
+                .addValue(ROOT, object)
+                .build();
+        if (template.getElementBindings() != null) {
+            Gson gson = new Gson();
+            String json = gson.toJson(object);
+            for (ElementBinding elementBinding : template.getElementBindings()) {
+                String path = elementBinding.getPath();
+                String jsonPath = "$" + path.replaceAll("/", ".");
+                String type = elementBinding.getType();
+                Object jsonPathValue = JsonPath.read(json, jsonPath);
+                String value;
+                Object objectValue;
+                if ("DV_CODED_TEXT".equals(type)) {
+                    value = gson.toJson(jsonPathValue);
+                    objectValue = gson.fromJson(value, DvCodedText.class);
+                } else if ("DV_TEXT".equals(type)) {
+                    objectValue = DvText.valueOf(jsonPathValue.toString());
+                } else {
+                    objectValue = jsonPathValue;
+                }
+                if (objectValue != null) {
+                    dataInstance.setValue(path, objectValue);
                 }
             }
         }
-        return dataInstances;
+        return dataInstance;
+
     }
 
     private List<DataInstance> createFromValueListsUsingSingleDataBinding(String bindingId,
@@ -352,6 +431,9 @@ public class Interpreter {
 
     private Map<String, List<Object>> selectDataInstancesUsingPredicatesAndSortWithElementBindingCode(
             List<DataInstance> dataInstances, Guideline guideline) {
+        if (guideline.getDefinition().getDataBindings() == null) {
+            return emptyMap();
+        }
         Map<String, List<Object>> valueListMap = new HashMap<>();
         for (Map.Entry<String, DataBinding> entry : guideline.getDefinition().getDataBindings().entrySet()) {
             DataBinding dataBinding = entry.getValue();
@@ -375,9 +457,18 @@ public class Interpreter {
                 .forEach(s -> valueListMap
                         .computeIfAbsent(pathToCode.get(s.getKey()), key -> new ArrayList<>())
                         .add(s.getValue()));
+        for (DataInstance dataInstance : dataInstances) {
+            if (dataInstance.getRoot() != null) {
+                List<Object> valueList = valueListMap.computeIfAbsent(dataBinding.getId(), k -> new ArrayList<>());
+                valueList.add(dataInstance.getRoot());
+            }
+        }
     }
 
     private Map<String, String> pathToCode(DataBinding dataBinding) {
+        if (dataBinding.getElements() == null) {
+            return EMPTY_MAP;
+        }
         return dataBinding.getElements().entrySet().stream()
                 .map(Map.Entry::getValue)
                 .collect(Collectors.toMap(Element::getPath, Element::getId));
@@ -387,9 +478,10 @@ public class Interpreter {
         return rules.stream().sorted(new RuleComparator()).collect(Collectors.toList());
     }
 
-    private Map<String, Object> evaluateRule(Rule rule, Map<String, List<Object>> input, Guideline guideline,
-                                             Set<String> firedRules, List<Card> cards) {
-        Map<String, Object> result = new HashMap<>();
+    private Map<String, List<Object>> evaluateRule(Rule rule, Map<String, List<Object>> input, Guideline guideline,
+                                                   Set<String> firedRules, List<Card> cards) {
+        Map<String, List<Object>> result = new HashMap<>();
+        Map<String, Object> singleResult = new HashMap<>();
         boolean allWhenStatementsAreTrue = rule.getWhen() == null || rule.getWhen().stream()
                 .allMatch(whenStatement -> evaluateBooleanExpression(whenStatement, input, guideline, firedRules));
         if (!allWhenStatementsAreTrue) {
@@ -400,13 +492,14 @@ public class Interpreter {
             Map<String, Template> templateMap = guideline.getDefinition().getTemplates();
             for (ExpressionItem thenStatement : rule.getThen()) {
                 if (thenStatement instanceof AssignmentExpression) {
-                    performAssignmentStatements((AssignmentExpression) thenStatement, input, typeMap, result, guideline);
-                } else if (thenStatement instanceof UseTemplateExpression) {
+                    performAssignmentStatements((AssignmentExpression) thenStatement, input, typeMap, singleResult, guideline);
+                }
+                if (thenStatement instanceof UseTemplateExpression) {
+                    mergeValueMapIntoListValueMap(singleResult, result);
                     performUseTemplateStatement((UseTemplateExpression) thenStatement, templateMap, input, result, guideline);
                 }
-                //
                 if (hasContinuousAssignments(rule) || hasCards(rule)) {
-                    mergeValueMapIntoListValueMap(result, input);
+                    mergeValueMapIntoListValueMap(singleResult, input);
                 }
             }
         }
@@ -416,6 +509,8 @@ public class Interpreter {
             }
         }
         firedRules.add(rule.getId());
+        mergeValueMapIntoListValueMap(singleResult, result);
+        input.remove(CURRENT_INDEX);
         return result;
     }
 
@@ -703,7 +798,7 @@ public class Interpreter {
         } else if (TypeBinding.VALUE.equals(attribute) && value instanceof String) {
             result.put(variable.getCode(), DvText.valueOf((String) value));
         } else if ("true".equalsIgnoreCase(value.toString()) || "false".equalsIgnoreCase(value.toString())) {
-            result.put(variable.getCode(), DvBoolean.valueOf(value.toString()));
+            result.put(variable.getCode(), Boolean.valueOf(value.toString()));
         } else if (value instanceof DvCodedText && guideline != null) {
             DvCodedText dvCodedText = findTermOfDesignatedLanguage((DvCodedText) value,
                     guideline.getOntology().getTermDefinitions());
@@ -736,7 +831,7 @@ public class Interpreter {
     }
 
     private void performUseTemplateStatement(UseTemplateExpression useTemplateExpression, Map<String, Template> templateMap,
-                                             Map<String, List<Object>> input, Map<String, Object> result, Guideline guideline) {
+                                             Map<String, List<Object>> input, Map<String, List<Object>> result, Guideline guideline) {
         Variable variable = useTemplateExpression.getVariable();
         String attribute = variable.getCode();
         Template template = templateMap.get(attribute);
@@ -748,15 +843,42 @@ public class Interpreter {
             Object value = evaluateExpressionItem(assignmentExpression.getAssignment(), input, guideline, null);
             useTemplateLocalResult.put(assignmentExpression.getVariable().getCode(), value);
         }
+        useTemplateLocalResult.putAll(result);
+        List<Variable> inputVariables = useTemplateExpression.getInputVariables();
+        if (inputVariables == null || inputVariables.size() == 0) {
+            createObjectUsingOutPutTemplate(variable, template, useTemplateLocalResult, input, result, null);
+        } else {
+            for (Variable inputVariable : inputVariables) {
+                Object value = retrieveValueFromValueMap(inputVariable, input);
+                if (value == null) {
+                    continue;
+                }
+                createObjectUsingOutPutTemplate(variable, template, useTemplateLocalResult, input, result, value);
+            }
+        }
+    }
+
+    private void createObjectUsingOutPutTemplate(Variable variable, Template template, Map<String, Object> useTemplateLocalResult,
+                                                 Map<String, List<Object>> input, Map<String, List<Object>> result,
+                                                 Object additionalInputValue) {
         Map<String, Object> localMapCopy = deepCopy(template.getObject());
-        this.templateFiller.traverseMapAndReplaceAllVariablesWithValues(localMapCopy, useTemplateLocalResult, input);
+        addCurrentDateTimeToGlobalVariableValues(input);
+        this.templateFiller.traverseMapAndReplaceAllVariablesWithValues(localMapCopy, useTemplateLocalResult, input, additionalInputValue);
+
+        String modelId = template.getModelId();
         try {
-            Object object = this.runtimeConfiguration.getObjectCreatorPlugin().create(template.getModelId(), localMapCopy);
-            result.put(variable.getCode(), object);
+            Object object = this.runtimeConfiguration.getObjectCreatorPlugin().create(modelId, localMapCopy);
+            List<Object> valueList = result.computeIfAbsent(variable.getCode(), k -> new ArrayList<>());
+            valueList.add(object);
         } catch (ClassNotFoundException cnf) {
             System.out.println("failed to create object using template(" + template.getModelId() + "), class not found..");
             cnf.printStackTrace();
         }
+    }
+
+    private void addCurrentDateTimeToGlobalVariableValues(Map<String, List<Object>> valueMap) {
+        valueMap.put(CURRENT_DATETIME, singletonList(systemCurrentDateTime()));
+        valueMap.put(CURRENT_DATE, singletonList(systemCurrentDateTime()));
     }
 
     private void performAssignMagnitudeAttribute(Object value, Variable variable, AssignmentExpression assignmentExpression,
@@ -844,6 +966,8 @@ public class Interpreter {
             return processBinaryExpression(expressionItem, input, guideline, firedRules);
         } else if (expressionItem instanceof UnaryExpression) {
             return processUnaryExpression((UnaryExpression) expressionItem, input, guideline, firedRules);
+        } else if (expressionItem instanceof AnyExpression) {
+            return processAnyExpression((AnyExpression) expressionItem, input, guideline, firedRules);
         } else if (expressionItem instanceof FunctionalExpression) {
             return processFunctionalExpression((FunctionalExpression) expressionItem, input, guideline, firedRules);
         } else {
@@ -916,7 +1040,7 @@ public class Interpreter {
         } else if ("d".equals(dvQuantity.getUnit())) {
             return Period.ofDays(magnitude);
         } else if ("h".equals(dvQuantity.getUnit())) {
-            return HOUR_IN_MILLISECONDS * magnitude;
+            return Duration.ofHours((long) dvQuantity.getMagnitude());
         }
         throw new UnsupportedOperationException("Unsupported time period unit: " + dvQuantity.getUnit());
     }
@@ -962,27 +1086,39 @@ public class Interpreter {
             return !firedRules.contains(((Variable) unaryExpression.getOperand()).getCode());
         } else if (OperatorKind.NOT.equals(unaryExpression.getOperator())) {
             return !Boolean.valueOf(evaluateExpressionItem(unaryExpression.getOperand(), input, guideline, firedRules).toString());
-        } else if (OperatorKind.ANY.equals(unaryExpression.getOperator())) {
-            return processAnyFunction(unaryExpression.getOperand(), input, guideline, firedRules);
         } else {
             throw new UnsupportedOperationException("Unsupported unary operation: " + unaryExpression);
         }
     }
 
-    private Object processAnyFunction(ExpressionItem expressionItem, Map<String, List<Object>> input,
-                                      Guideline guideline, Set<String> firedRules) {
-        List<String> idList = getVariableIds(expressionItem, new ArrayList<>());
-        if (idList.isEmpty()) {
-            throw new IllegalArgumentException("Missing variable id in any function");
+    private Object processAnyExpression(AnyExpression anyExpression, Map<String, List<Object>> input,
+                                        Guideline guideline, Set<String> firedRules) {
+        List<String> idList = new ArrayList<>();
+        for (Variable variable : anyExpression.getInputVariables()) {
+            idList.add(variable.getCode());
         }
         int maxListSize = maxValueListSize(input, idList);
+        List currentIndex;
+        Map<String, Integer> indexMap;
+        if (input.containsKey(CURRENT_INDEX)) {
+            currentIndex = input.get(CURRENT_INDEX);
+            indexMap = (Map) currentIndex.get(0);
+        } else {
+            indexMap = new HashMap<>();
+            currentIndex = singletonList(indexMap);
+            input.put(CURRENT_INDEX, currentIndex);
+        }
         for (int i = 0; i < maxListSize; i++) {
             if (Boolean.valueOf(
                     evaluateExpressionItem(
-                            expressionItem,
+                            anyExpression.getOperand(),
                             createSingletonListByIndex(idList, input, i),
                             guideline,
                             firedRules).toString())) {
+
+                for (Variable variable : anyExpression.getInputVariables()) {
+                    indexMap.put(variable.getCode(), i);
+                }
                 return true;
             }
         }
@@ -1003,7 +1139,7 @@ public class Interpreter {
         return max;
     }
 
-    Map<String, List<Object>> createSingletonListByIndex(List<String> idList, Map<String, List<Object>> input, int index) {
+    private Map<String, List<Object>> createSingletonListByIndex(List<String> idList, Map<String, List<Object>> input, int index) {
         Map<String, List<Object>> singletonListValueMap = new HashMap<>(input);
         for (String id : idList) {
             List<Object> valueList = input.get(id);
@@ -1011,32 +1147,12 @@ public class Interpreter {
                 continue;
             }
             if (valueList.size() <= index) {
-                singletonListValueMap.put(id, Collections.singletonList(valueList.get(valueList.size() - 1)));
+                singletonListValueMap.put(id, singletonList(valueList.get(valueList.size() - 1)));
             } else {
-                singletonListValueMap.put(id, Collections.singletonList(valueList.get(index)));
+                singletonListValueMap.put(id, singletonList(valueList.get(index)));
             }
         }
         return singletonListValueMap;
-    }
-
-    List<String> getVariableIds(ExpressionItem expressionItem, List<String> idList) {
-        if (expressionItem instanceof BinaryExpression) {
-            BinaryExpression binaryExpression = (BinaryExpression) expressionItem;
-            getVariableIds(binaryExpression.getLeft(), idList);
-            getVariableIds(binaryExpression.getRight(), idList);
-        } else if (expressionItem instanceof UnaryExpression) {
-            UnaryExpression unaryExpression = (UnaryExpression) expressionItem;
-            getVariableIds(unaryExpression.getOperand(), idList);
-        } else if (expressionItem instanceof Variable) {
-            String id = ((Variable) expressionItem).getCode();
-            if (!idList.contains(id)) {
-                idList.add(id);
-            }
-            return idList;
-        } else if (expressionItem instanceof ConstantExpression) {
-            return idList;
-        }
-        return idList;
     }
 
     private Object processBinaryExpression(ExpressionItem expressionItem, Map<String, List<Object>> input,
@@ -1054,7 +1170,7 @@ public class Interpreter {
         }
         Object leftValue = leftExpression == null ? null : evaluateExpressionItem(leftExpression, input, guideline, firedRules);
         Object rightValue = rightExpression == null ? null : evaluateExpressionItem(rightExpression, input, guideline, firedRules);
-        if (leftValue instanceof Period || rightValue instanceof Period) {
+        if (leftValue instanceof TemporalAmount || rightValue instanceof TemporalAmount) {
             return evaluateDateTimeExpression(operator, leftValue, rightValue);
         } else if (isArithmeticOperator(operator)) {
             return evaluateArithmeticExpression(operator, leftValue, rightValue, expressionItem);
@@ -1071,50 +1187,57 @@ public class Interpreter {
         }
     }
 
-    private DvDateTime systemCurrentDateTime() {
-        return this.runtimeConfiguration.getCurrentDateTime() == null ? new DvDateTime() : this.runtimeConfiguration.getCurrentDateTime();
+    private ZonedDateTime systemCurrentDateTime() {
+        return this.runtimeConfiguration.getCurrentDateTime() == null ? ZonedDateTime.now() : this.runtimeConfiguration.getCurrentDateTime();
     }
 
     private Object evaluateDateTimeExpression(OperatorKind operator, Object leftValue, Object rightValue) {
         if (leftValue instanceof Period && rightValue instanceof Period) {
             Period periodLeft = (Period) leftValue;
             Period periodRight = (Period) rightValue;
-            LocalDateTime localDateTime = systemCurrentDateTime().getDateTime();
-            LocalDateTime localDateTimeLeft = localDateTime.plus(periodLeft);
-            LocalDateTime localDateTimeRight = localDateTime.plus(periodRight);
+            ZonedDateTime dateTime = systemCurrentDateTime();
+            ZonedDateTime dateTimeLeft = dateTime.plus(periodLeft);
+            ZonedDateTime dateTimeRight = dateTime.plus(periodRight);
             if (operator == GREATER_THAN) {
-                return localDateTimeLeft.isAfter(localDateTimeRight);
+                return dateTimeLeft.isAfter(dateTimeRight);
             } else if (operator == GREATER_THAN_OR_EQUAL) {
-                return localDateTimeLeft.isAfter(localDateTimeRight) || localDateTimeLeft.equals(localDateTimeRight);
+                return dateTimeLeft.isAfter(dateTimeRight) || dateTimeLeft.equals(dateTimeRight);
             } else if (operator == LESS_THAN) {
-                return localDateTimeLeft.isBefore(localDateTimeRight);
+                return dateTimeLeft.isBefore(dateTimeRight);
             } else if (operator == LESS_THAN_OR_EQUAL) {
-                return localDateTimeLeft.isBefore(localDateTimeRight) || localDateTimeLeft.equals(localDateTimeRight);
+                return dateTimeLeft.isBefore(dateTimeRight) || dateTimeLeft.equals(dateTimeRight);
             } else if (operator == EQUALITY) {
-                return localDateTimeLeft.equals(localDateTimeRight);
+                return dateTimeLeft.equals(dateTimeRight);
             } else {
                 throw new UnsupportedOperationException("Unsupported combination of operator for two periods: " + operator);
             }
         } else if ((operator == ADDITION || operator == SUBTRACTION)
-                && (rightValue instanceof Period || leftValue instanceof Period)) {
-            Period period;
-            Long longValue;
-            if (rightValue instanceof Period) {
-                period = (Period) rightValue;
-                longValue = (Long) leftValue;
-            } else {
-                period = (Period) leftValue;
-                longValue = (Long) rightValue;
-            }
-            LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(longValue), ZoneId.systemDefault());
-            return operator == ADDITION ? localDateTime.plus(period) : localDateTime.minus(period);
+                && (rightValue instanceof TemporalAmount && leftValue instanceof ZonedDateTime)) {
+            ZonedDateTime zonedDateTime = (ZonedDateTime) leftValue;
+            TemporalAmount temporalAmount = (TemporalAmount) rightValue;
+            return operator == ADDITION ? zonedDateTime.plus(temporalAmount) : zonedDateTime.minus(temporalAmount);
+        } else if ((operator == ADDITION || operator == SUBTRACTION)
+                && (rightValue instanceof TemporalAmount && leftValue instanceof LocalDate)) {
+            LocalDate localDate = (LocalDate) leftValue;
+            TemporalAmount temporalAmount = (TemporalAmount) rightValue;
+            return operator == ADDITION ? localDate.plus(temporalAmount) : localDate.minus(temporalAmount);
+        } else if ((operator == ADDITION || operator == SUBTRACTION)
+                && (leftValue instanceof TemporalAmount && rightValue instanceof LocalDate)) {
+            LocalDate localDate = (LocalDate) rightValue;
+            TemporalAmount temporalAmount = (TemporalAmount) leftValue;
+            return operator == ADDITION ? localDate.plus(temporalAmount) : localDate.minus(temporalAmount);
+        } else if ((operator == ADDITION || operator == SUBTRACTION)
+                && (leftValue instanceof TemporalAmount && rightValue instanceof ZonedDateTime)) {
+            ZonedDateTime zonedDateTime = (ZonedDateTime) rightValue;
+            TemporalAmount temporalAmount = (TemporalAmount) leftValue;
+            return operator == ADDITION ? zonedDateTime.plus(temporalAmount) : zonedDateTime.minus(temporalAmount);
         } else if (rightValue == null) {
             return operator == NOT;
         } else if (operator == DIVISION && rightValue instanceof Period && leftValue instanceof Double) {
             // special case when datetime.value is divided by period (1,a)
-            LocalDateTime localDateTime = systemCurrentDateTime().getDateTime();
-            LocalDateTime localDateTimeWithPeriod = localDateTime.plus((Period) rightValue);
-            double rightValueDouble = Long.valueOf(ChronoUnit.MILLIS.between(localDateTime, localDateTimeWithPeriod)).doubleValue();
+            ZonedDateTime dateTime = systemCurrentDateTime();
+            ZonedDateTime dateTimeWithPeriod = dateTime.plus((Period) rightValue);
+            double rightValueDouble = Long.valueOf(ChronoUnit.MILLIS.between(dateTime, dateTimeWithPeriod)).doubleValue();
             return ((Double) leftValue) / rightValueDouble;
         }
         throw new UnsupportedOperationException("Unsupported combination of left: "
@@ -1131,9 +1254,15 @@ public class Interpreter {
                 } else if (rightValue instanceof Integer) {
                     return ((DvCount) leftValue).getMagnitude() == (Integer) rightValue;
                 }
-            } else if ((leftValue instanceof DvBoolean && rightValue != null)) {
+            } else if ((leftValue instanceof DvBoolean && rightValue != null)) { // backwards compatibility
                 boolean rightValueBoolean = Boolean.valueOf(rightValue.toString());
                 return ((DvBoolean) leftValue).getValue() == rightValueBoolean;
+            } else if ((leftValue instanceof Boolean && rightValue != null)) {
+                boolean rightValueBoolean = Boolean.valueOf(rightValue.toString());
+                return leftValue.equals(rightValueBoolean);
+            } else if (rightValue instanceof Boolean) {
+                boolean leftValueBoolean = Boolean.valueOf(leftValue.toString());
+                return rightValue.equals(leftValueBoolean);
             } else if (leftValue instanceof DvQuantity) {
                 leftValue = evaluateQuantityValue((DvQuantity) leftValue);
             } else if (rightValue instanceof Double) {
@@ -1211,8 +1340,12 @@ public class Interpreter {
             return Double.valueOf(evaluateQuantityValue((DvQuantity) dataValue).toString());
         } else if (dataValue instanceof DvDateTime) {
             return ((DvDateTime) dataValue).getDateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        } else if (dataValue instanceof ZonedDateTime) {
+            return ((ZonedDateTime) dataValue).toInstant().toEpochMilli();
         } else if (dataValue instanceof LocalDateTime) {
             return ((LocalDateTime) dataValue).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        } else if (dataValue instanceof LocalDate) {
+            return ((LocalDate) dataValue).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
         } else if (dataValue.toString().startsWith("(-") && dataValue.toString().endsWith(")")) {
             int length = dataValue.toString().length();
             return Double.valueOf(dataValue.toString().substring(1, length - 1));
@@ -1292,13 +1425,13 @@ public class Interpreter {
         if (CURRENT_DATETIME.equals(variable.getCode())) {
             dataValue = systemCurrentDateTime();
         } else if (CURRENT_DATE.equals(variable.getCode())) {
-            dataValue = systemCurrentDateTime().date();
+            dataValue = systemCurrentDateTime();
         } else {
             List<Object> valueList = valueMap.get(key);
             if (valueList == null) {
-                return TypeBinding.MAGNITUDE.equals(variable.getAttribute()) ? 0.0 : null; // backwards compatibility
+                return null;
             }
-            dataValue = valueList.get(valueList.size() - 1);
+            dataValue = retrieveValueUsingLastIndex(valueMap, key);
         }
         String attribute = variable.getAttribute();
         if (attribute == null) {
@@ -1320,6 +1453,10 @@ public class Interpreter {
         } else if (TypeBinding.STRING.equals(attribute)) {
             if (dataValue instanceof DvDateTime) {
                 return formatDateTime((DvDateTime) dataValue);
+            } else if (dataValue instanceof Date) {
+                return formatJavaDate((Date) dataValue);
+            } else if (dataValue instanceof ZonedDateTime) {
+                return formatZonedJavaDate((ZonedDateTime) dataValue, CURRENT_DATE.equals(key));
             } else {
                 return dataValue.toString();
             }
@@ -1333,12 +1470,52 @@ public class Interpreter {
         }
     }
 
+    private Object retrieveValueUsingLastIndex(Map<String, List<Object>> valueMap, String key) {
+        List<Object> valueList = valueMap.get(key);
+        Object dataValue;
+        Integer currentIndex = getCurrentIndex(valueMap, key);
+        if (currentIndex != null) {
+            dataValue = valueList.get(currentIndex);
+        } else {
+            dataValue = valueList.get(valueList.size() - 1);
+        }
+        return dataValue;
+    }
+
+    private Integer getCurrentIndex(Map<String, List<Object>> valueMap, String key) {
+        if (!valueMap.containsKey(CURRENT_INDEX)) {
+            return null;
+        }
+        List<Object> list = valueMap.get(CURRENT_INDEX);
+        Map<String, Integer> indexMap = (Map) list.get(0);
+        return indexMap.get(key);
+    }
+
     private String formatDateTime(DvDateTime dvDateTime) {
         if (this.runtimeConfiguration.getDateTimeFormatPattern() == null) {
             return dvDateTime.toString();
         }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(this.runtimeConfiguration.getDateTimeFormatPattern());
         return dvDateTime.getDateTime().format(formatter);
+    }
+
+    private String formatJavaDate(Date date) {
+        if (this.runtimeConfiguration.getDateTimeFormatPattern() == null) {
+            return date.toString();
+        }
+        DateFormat dateFormat = new SimpleDateFormat(
+                this.runtimeConfiguration.getDateTimeFormatPattern());
+        return dateFormat.format(date);
+    }
+
+    private String formatZonedJavaDate(ZonedDateTime date, boolean onlyDate) {
+        if (this.runtimeConfiguration.getDateTimeFormatPattern() == null) {
+            if (onlyDate) {
+                return DateTimeFormatter.ofPattern("yyyy-MM-dd").format(date);
+            }
+            return date.toString();
+        }
+        return DateTimeFormatter.ofPattern(this.runtimeConfiguration.getDateTimeFormatPattern()).format(date);
     }
 
     private List<DataInstance> filterDataInstancesWithModelId(List<DataInstance> dataInstances, String modelId) {
@@ -1352,9 +1529,9 @@ public class Interpreter {
         long milliseconds = 0;
         for (DataInstance dataInstance : dataInstances) {
             Object value = evaluateExpressionItem(unaryExpression.getOperand(), dataInstance.valueListMap());
-            if (value instanceof DvDateTime) {
-                DvDateTime dvDateTime = (DvDateTime) value;
-                long convertedDateTime = dvDateTime.getDateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            if (value instanceof ZonedDateTime) {
+                ZonedDateTime zonedDateTime = (ZonedDateTime) value;
+                long convertedDateTime = zonedDateTime.toInstant().toEpochMilli();
                 if (minFunction) {
                     if (found == null || convertedDateTime < milliseconds) {
                         found = dataInstance;
@@ -1368,7 +1545,7 @@ public class Interpreter {
                 }
             }
         }
-        return found == null ? Collections.emptyList() : Collections.singletonList(found);
+        return found == null ? Collections.emptyList() : singletonList(found);
     }
 
     List<DataInstance> evaluateDataInstancesWithPredicates(List<DataInstance> dataInstances,

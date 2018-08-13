@@ -350,6 +350,7 @@ TOKEN : /* LOCAL TOKENS */
   | ")" >
 | < #V_LOCAL_TERM_CODE_REF : "[" < LET_DIG > (< LET_DIG_DD >)* "]" >
 | < #PATH_SEGMENT : < V_ATTRIBUTE_IDENTIFIER > (< V_LOCAL_TERM_CODE_REF >)? >
+| < V_RELATIVE_PATH : < SYM_SLASH > < SYM_SLASH > < PATH_SEGMENT > (< SYM_SLASH > < PATH_SEGMENT >)* >
 | < V_ABSOLUTE_PATH : < SYM_SLASH > < PATH_SEGMENT > (< SYM_SLASH > < PATH_SEGMENT >)* >
 }
 
@@ -443,6 +444,7 @@ ExpressionItem expression_node() :
   ExpressionItem item2 = null;
   OperatorKind op = null;
   List<AssignmentExpression> assignmentExpressions = java.util.Collections.EMPTY_LIST;
+  List<Variable> inputVariables = java.util.Collections.EMPTY_LIST;
   Token t = null;
   String attrId = null;
   int position = 1;
@@ -454,10 +456,6 @@ ExpressionItem expression_node() :
       < SYM_FOR_ALL > item = expression_leaf()
       {
         op = OperatorKind.FOR_ALL;
-      }
-    | < SYM_ANY > item = expression_leaf()
-      {
-        op = OperatorKind.ANY;
       }
     | < SYM_NOT > item = expression_leaf()
       {
@@ -480,10 +478,21 @@ ExpressionItem expression_node() :
         return FunctionalExpression.create(new Function(t.image), item);
       }
     | t = < SYM_USE_TEMPLATE > < SYM_L_PARENTHESIS > variable = variable()
-                [ assignmentExpressions = assignmentExpressions() ]
-          < SYM_R_PARENTHESIS >
+                      [ assignmentExpressions = assignmentExpressions() ]
+                      [
+                        < SYM_L_BRACKET >
+                          inputVariables = variables()
+                        < SYM_R_BRACKET >
+                      ]
+                < SYM_R_PARENTHESIS >
+            {
+              return new UseTemplateExpression(variable, assignmentExpressions, inputVariables);
+            }
+    |t = < SYM_ANY >
+            [ < SYM_L_BRACKET > inputVariables = variables() < SYM_R_BRACKET > ]
+         item = expression_leaf()
       {
-        return new UseTemplateExpression(variable, assignmentExpressions);
+        return new AnyExpression(inputVariables, item);
       }
     |
       LOOKAHEAD(2)
@@ -662,6 +671,30 @@ List < AssignmentExpression > assignmentExpressions() :
     }
 }
 
+List < Variable > variables() :
+{
+    List < Variable > items = new ArrayList < Variable > ();
+    Variable item = null;
+}
+{
+    (
+     item = variable()
+     {
+        items.add(item);
+     }
+     (
+      LOOKAHEAD(2)
+      < SYM_COMMA > item = variable()
+      {
+        items.add(item);
+      }
+     )*
+    )
+    {
+        return items;
+    }
+}
+
 
 ConstantExpression constant_expression() :
 {
@@ -762,6 +795,10 @@ Variable variable() :
       definingCode = t.image;
     }
     [ label = label() ]
+  | t = < V_RELATIVE_PATH>
+    {
+      path = t.image;
+    }
   | t = < V_ABSOLUTE_PATH >
     {
       path = t.image;

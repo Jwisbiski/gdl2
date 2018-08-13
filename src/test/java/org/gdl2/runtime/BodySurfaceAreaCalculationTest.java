@@ -17,7 +17,7 @@ public class BodySurfaceAreaCalculationTest extends TestCommon {
     private Interpreter interpreter;
 
     @BeforeMethod
-    public void setUp() throws Exception {
+    public void setUp() {
         interpreter = new Interpreter();
     }
 

@@ -80,8 +80,8 @@
           ],
           "requestedPeriod": [
             {
-              "start": "{$gt2000}",
-              "end": "{$gt2001}"
+              "start": "{$currentDateTime}",
+              "end": "2017-05-19T09:56:00"
             }
           ]
         }
@@ -91,11 +91,9 @@
       "gt0034": {
         "id": "gt0034",
         "priority": 2,
-        "when": [
-          "$gt0011==null"
-        ],
+        "when": [],
         "then": [
-          "use_template($gt1002($gt2000=$currentDateTime;$gt2001=($currentDateTime+3,mo)))"
+          "use_template($gt1002)"
         ]
       }
     }
