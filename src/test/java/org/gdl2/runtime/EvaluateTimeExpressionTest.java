@@ -303,4 +303,13 @@ public class EvaluateTimeExpressionTest extends TestCommon {
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
         assertThat(value, is(45.0));
     }
+
+    @Test
+    public void can_evaluate_zoned_datetime_as_iso_8601_string() {
+        String isoString = "2016-04-10T01:00:00-04:00";
+        expressionItem = parseExpression("$gt0005.string");
+        inputMap.put("gt0005", asList(ZonedDateTime.parse(isoString)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(isoString));
+    }
 }

@@ -40,7 +40,6 @@ public class Interpreter {
     private static final String COUNT = "count";
     private static final String SUM = "sum";
     private static final String REFERENCE_NOT_FOUND = "Reference not found";
-    private static final long HOUR_IN_MILLISECONDS = 3600 * 1000L;
     private static final String ENGLISH_LANGUAGE = "en";
     private static final String TERM = "term";
     private static final String LOCAL = "local";
@@ -1511,9 +1510,9 @@ public class Interpreter {
     private String formatZonedJavaDate(ZonedDateTime date, boolean onlyDate) {
         if (this.runtimeConfiguration.getDateTimeFormatPattern() == null) {
             if (onlyDate) {
-                return DateTimeFormatter.ofPattern("yyyy-MM-dd").format(date);
+                return DateTimeFormatter.ISO_LOCAL_DATE.format(date);
             }
-            return date.toString();
+            return DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(date);
         }
         return DateTimeFormatter.ofPattern(this.runtimeConfiguration.getDateTimeFormatPattern()).format(date);
     }

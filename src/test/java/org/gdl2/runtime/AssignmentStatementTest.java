@@ -98,7 +98,7 @@ public class AssignmentStatementTest extends TestCommon {
     }
 
     @Test
-    public void can_assign_DvCount_with_quantity_constant_expression() throws Exception {
+    public void can_assign_DvCount_with_quantity_constant_expression() {
         // $gt0006=0,d
         QuantityConstant quantityConstant = new QuantityConstant(new DvQuantity("d", 0, 0));
         Variable variable = Variable.createByCode("gt0006");
@@ -113,7 +113,7 @@ public class AssignmentStatementTest extends TestCommon {
     }
 
     @Test
-    public void can_assign_null_flavor_value() throws Exception {
+    public void can_assign_null_flavor_value() {
         // "$gt0117.null_flavor=openehr::271|no information|"
         String code = "gt0117.null_flavor";
         Variable variable = new Variable("gt0117", null, null, "null_flavor");
@@ -248,6 +248,16 @@ public class AssignmentStatementTest extends TestCommon {
     }
 
     @Test
+    public void can_assign_zoned_datetime_as_iso_string_to_variable() throws Exception {
+        String isoString = "2015-07-20T02:30:43-04:00";
+        AssignmentExpression assignment = parseAssignmentExpression("$gt0005=$gt0003.string");
+        interpreter = new Interpreter();
+        inputMap.put("gt0003", asList(ZonedDateTime.parse(isoString)));
+        interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
+        assertThat(resultMap.get("gt0005"), is(isoString));
+    }
+
+    @Test
     public void can_assign_current_datetime_as_string_to_variable() throws Exception {
         AssignmentExpression assignment = parseAssignmentExpression("$gt0005=$currentDateTime.string");
         interpreter = new Interpreter(RuntimeConfiguration.builder()
@@ -260,15 +270,6 @@ public class AssignmentStatementTest extends TestCommon {
     public void can_assign_simple_number() throws Exception {
         AssignmentExpression assignment = parseAssignmentExpression("$gt0005=7");
         interpreter = new Interpreter();
-        interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
-        assertThat(resultMap.get("gt0005"), is(7));
-    }
-
-    @Test
-    public void can_assign_magnitude_of_dv_count() throws Exception {
-        AssignmentExpression assignment = parseAssignmentExpression("$gt0005=$gt0003.magnitude");
-        interpreter = new Interpreter();
-        inputMap.put("gt0003", asList(DvCount.valueOf(7)));
         interpreter.performAssignmentStatements(assignment, inputMap, new HashMap<>(), resultMap);
         assertThat(resultMap.get("gt0005"), is(7));
     }
