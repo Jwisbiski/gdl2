@@ -15,7 +15,7 @@ cache:
     - .m2/repository
 
 build:
-  image: cdsregistry.azurecr.io/tools/docker-builder
+  image: cdsregistry.azurecr.io/tools/docker-builder-jdk-10
   stage: build
   script:
     - mvn package deploy --update-snapshots -P nexus,nexus-deploy
