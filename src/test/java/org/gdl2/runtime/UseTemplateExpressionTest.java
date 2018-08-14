@@ -551,6 +551,16 @@ public class UseTemplateExpressionTest extends TestCommon {
         assertZonedDateTime("$.requestedPeriod[0].end", "2013-07-20T14:00:00+01:00");
     }
 
+    @Test
+    public void can_use_template_with_calculated_datetime_variable_as_iso_string() throws Exception {
+        interpreter = new Interpreter(ZonedDateTime.parse("2013-04-20T14:00:00+02:00[Europe/Paris]"));
+        guideline = loadGuideline("use_template_fhir_appointment_set_with_calculated_datetime.v0.1.gdl2");
+        List<Guideline> guidelines = Collections.singletonList(guideline);
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertZonedDateTime("$.requestedPeriod[0].start", "2013-04-20T14:00:00+02:00");
+        assertZonedDateTime("$.requestedPeriod[0].end", "2013-07-20T14:00:00+02:00");
+    }
+
     private Interpreter buildInterpreterWithFhirPluginAndCurrentDateTime(String datetime) {
         return new Interpreter(RuntimeConfiguration.builder()
                 .currentDateTime(datetime == null ? ZonedDateTime.now() : ZonedDateTime.parse(datetime))

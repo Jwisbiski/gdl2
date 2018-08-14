@@ -70,7 +70,7 @@ class TemplateFiller {
             } else if (value instanceof LocalDateTime) {
                 value = ((LocalDateTime) value).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             } else if (value instanceof ZonedDateTime) {
-                value = value.toString();
+                value = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format((ZonedDateTime) value);
             }
         } else if (additionalInputValue != null) {
             value = additionalInputValue;
