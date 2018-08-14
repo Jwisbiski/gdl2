@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1039,7 +1040,7 @@ public class Interpreter {
         } else if ("d".equals(dvQuantity.getUnit())) {
             return Period.ofDays(magnitude);
         } else if ("h".equals(dvQuantity.getUnit())) {
-            return HOUR_IN_MILLISECONDS * magnitude;
+            return Duration.ofHours((long) dvQuantity.getMagnitude());
         }
         throw new UnsupportedOperationException("Unsupported time period unit: " + dvQuantity.getUnit());
     }
@@ -1169,7 +1170,7 @@ public class Interpreter {
         }
         Object leftValue = leftExpression == null ? null : evaluateExpressionItem(leftExpression, input, guideline, firedRules);
         Object rightValue = rightExpression == null ? null : evaluateExpressionItem(rightExpression, input, guideline, firedRules);
-        if (leftValue instanceof Period || rightValue instanceof Period) {
+        if (leftValue instanceof TemporalAmount || rightValue instanceof TemporalAmount) {
             return evaluateDateTimeExpression(operator, leftValue, rightValue);
         } else if (isArithmeticOperator(operator)) {
             return evaluateArithmeticExpression(operator, leftValue, rightValue, expressionItem);
@@ -1211,15 +1212,25 @@ public class Interpreter {
                 throw new UnsupportedOperationException("Unsupported combination of operator for two periods: " + operator);
             }
         } else if ((operator == ADDITION || operator == SUBTRACTION)
-                && (rightValue instanceof Period && leftValue instanceof ZonedDateTime)) {
+                && (rightValue instanceof TemporalAmount && leftValue instanceof ZonedDateTime)) {
             ZonedDateTime zonedDateTime = (ZonedDateTime) leftValue;
-            Period period = (Period) rightValue;
-            return operator == ADDITION ? zonedDateTime.plus(period) : zonedDateTime.minus(period);
+            TemporalAmount temporalAmount = (TemporalAmount) rightValue;
+            return operator == ADDITION ? zonedDateTime.plus(temporalAmount) : zonedDateTime.minus(temporalAmount);
         } else if ((operator == ADDITION || operator == SUBTRACTION)
-                && (leftValue instanceof Period && rightValue instanceof ZonedDateTime)) {
+                && (rightValue instanceof TemporalAmount && leftValue instanceof LocalDate)) {
+            LocalDate localDate = (LocalDate) leftValue;
+            TemporalAmount temporalAmount = (TemporalAmount) rightValue;
+            return operator == ADDITION ? localDate.plus(temporalAmount) : localDate.minus(temporalAmount);
+        } else if ((operator == ADDITION || operator == SUBTRACTION)
+                && (leftValue instanceof TemporalAmount && rightValue instanceof LocalDate)) {
+            LocalDate localDate = (LocalDate) rightValue;
+            TemporalAmount temporalAmount = (TemporalAmount) leftValue;
+            return operator == ADDITION ? localDate.plus(temporalAmount) : localDate.minus(temporalAmount);
+        } else if ((operator == ADDITION || operator == SUBTRACTION)
+                && (leftValue instanceof TemporalAmount && rightValue instanceof ZonedDateTime)) {
             ZonedDateTime zonedDateTime = (ZonedDateTime) rightValue;
-            Period period = (Period) leftValue;
-            return operator == ADDITION ? zonedDateTime.plus(period) : zonedDateTime.minus(period);
+            TemporalAmount temporalAmount = (TemporalAmount) leftValue;
+            return operator == ADDITION ? zonedDateTime.plus(temporalAmount) : zonedDateTime.minus(temporalAmount);
         } else if (rightValue == null) {
             return operator == NOT;
         } else if (operator == DIVISION && rightValue instanceof Period && leftValue instanceof Double) {
@@ -1540,7 +1551,7 @@ public class Interpreter {
     List<DataInstance> evaluateDataInstancesWithPredicates(List<DataInstance> dataInstances,
                                                            List<ExpressionItem> predicateStatements,
                                                            Guideline guideline) {
-        if (predicateStatements == null) {
+        if (predicateStatements == null || predicateStatements.isEmpty()) {
             return dataInstances;
         }
         List<ExpressionItem> reorderedPredicates = new ArrayList<>();
