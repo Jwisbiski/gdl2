@@ -1550,7 +1550,7 @@ public class Interpreter {
     List<DataInstance> evaluateDataInstancesWithPredicates(List<DataInstance> dataInstances,
                                                            List<ExpressionItem> predicateStatements,
                                                            Guideline guideline) {
-        if (predicateStatements == null) {
+        if (predicateStatements == null || predicateStatements.isEmpty()) {
             return dataInstances;
         }
         List<ExpressionItem> reorderedPredicates = new ArrayList<>();
