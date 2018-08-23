@@ -843,26 +843,41 @@ public class Interpreter {
             useTemplateLocalResult.put(assignmentExpression.getVariable().getCode(), value);
         }
         useTemplateLocalResult.putAll(result);
-        List<Variable> inputVariables = useTemplateExpression.getInputVariables();
-        if (inputVariables == null || inputVariables.size() == 0) {
+        Map<Variable, List<Variable>> inputVariableMap = useTemplateExpression.getInputVariableMap();
+        if (inputVariableMap == null || inputVariableMap.size() == 0) {
             createObjectUsingOutPutTemplate(variable, template, useTemplateLocalResult, input, result, null);
         } else {
-            for (Variable inputVariable : inputVariables) {
-                Object value = retrieveValueFromValueMap(inputVariable, input);
-                if (value == null) {
-                    continue;
+            for (int i = 0, j = inputVariableMap.entrySet().iterator().next().getValue().size(); i < j; i++) {
+                Map<String, Object> values = createInputValueMap(inputVariableMap, input, i);
+                if (!values.isEmpty()) {
+                    createObjectUsingOutPutTemplate(variable, template, useTemplateLocalResult, input, result, values);
                 }
-                createObjectUsingOutPutTemplate(variable, template, useTemplateLocalResult, input, result, value);
             }
         }
     }
 
+    private Map<String, Object> createInputValueMap(Map<Variable, List<Variable>> inputVariableMap, Map<String, List<Object>> input, int index) {
+        Map<String, Object> valueMap = new HashMap<>();
+        for (Map.Entry<Variable, List<Variable>> entry : inputVariableMap.entrySet()) {
+            Variable variable = entry.getKey();
+            List<Variable> variableList = entry.getValue();
+            if (index < variableList.size()) {
+                Variable inputVariable = variableList.get(index);
+                Object value = retrieveValueFromValueMap(inputVariable, input);
+                if (value != null) {
+                    valueMap.put(variable.getCode(), value);
+                }
+            }
+        }
+        return valueMap;
+    }
+
     private void createObjectUsingOutPutTemplate(Variable variable, Template template, Map<String, Object> useTemplateLocalResult,
                                                  Map<String, List<Object>> input, Map<String, List<Object>> result,
-                                                 Object additionalInputValue) {
+                                                 Map<String, Object> additionalInputValues) {
         Map<String, Object> localMapCopy = deepCopy(template.getObject());
         addCurrentDateTimeToGlobalVariableValues(input);
-        this.templateFiller.traverseMapAndReplaceAllVariablesWithValues(localMapCopy, useTemplateLocalResult, input, additionalInputValue);
+        this.templateFiller.traverseMapAndReplaceAllVariablesWithValues(localMapCopy, useTemplateLocalResult, input, additionalInputValues);
 
         String modelId = template.getModelId();
         try {

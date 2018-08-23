@@ -35,7 +35,7 @@
         "id": "gt0022",
         "model_id": "java.util.LinkedHashMap",
         "object": {
-          "magnitude": "{$gt2000}"
+          "value": "{$gt5000}"
         }
       }
     },
@@ -45,7 +45,7 @@
         "priority": 1,
         "when": [],
         "then": [
-          "use_template($gt0022[$gt1032.magnitude,$gt1033.magnitude])"
+          "use_template($gt0022[$gt5000|value|: $gt1032,$gt1033])"
         ]
       }
     }

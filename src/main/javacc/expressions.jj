@@ -445,6 +445,7 @@ ExpressionItem expression_node() :
   OperatorKind op = null;
   List<AssignmentExpression> assignmentExpressions = java.util.Collections.EMPTY_LIST;
   List<Variable> inputVariables = java.util.Collections.EMPTY_LIST;
+  Map<Variable, List<Variable>> inputVariableMap = java.util.Collections.EMPTY_MAP;
   Token t = null;
   String attrId = null;
   int position = 1;
@@ -481,12 +482,12 @@ ExpressionItem expression_node() :
                       [ assignmentExpressions = assignmentExpressions() ]
                       [
                         < SYM_L_BRACKET >
-                          inputVariables = variables()
+                          inputVariableMap = map_of_variable_lists_keyed_by_variable()
                         < SYM_R_BRACKET >
                       ]
                 < SYM_R_PARENTHESIS >
             {
-              return new UseTemplateExpression(variable, assignmentExpressions, inputVariables);
+              return new UseTemplateExpression(variable, assignmentExpressions, inputVariableMap);
             }
     |t = < SYM_ANY >
             [ < SYM_L_BRACKET > inputVariables = variables() < SYM_R_BRACKET > ]
@@ -597,6 +598,25 @@ ExpressionItem expression_node() :
   )
   {
     return ret;
+  }
+}
+
+Map<Variable, List<Variable>> map_of_variable_lists_keyed_by_variable() :
+{
+  Token t = null;
+  Variable key = null;
+  List<Variable> list = null;
+  Map<Variable, List<Variable>> map = new HashMap();
+}
+{
+  (
+    key = variable() < SYM_COLON > list = variables() [ < SYM_SEMICOLON > ]
+    {
+      map.put(key, list);
+    }
+  )*
+  {
+    return map;
   }
 }
 

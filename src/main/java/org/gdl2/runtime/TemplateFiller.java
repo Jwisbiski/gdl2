@@ -24,14 +24,14 @@ class TemplateFiller {
     }
 
     Object replaceVariablesWithValues(String source, Map<String, Object> localValues,
-                                      Map<String, List<Object>> globalValues, Object additionalInputValue) {
+                                      Map<String, List<Object>> globalValues, Map<String, Object> additionalInputValues) {
         if (isSingleVariable(source)) {
-            return fetchValue(source, localValues, globalValues, additionalInputValue);
+            return fetchValue(source, localValues, globalValues, additionalInputValues);
         }
         StringBuffer stringBuffer = new StringBuffer();
         Matcher matcher = VARIABLE_REGEX.matcher(source);
         while (matcher.find()) {
-            Object value = fetchValue(matcher.group(), localValues, globalValues, additionalInputValue);
+            Object value = fetchValue(matcher.group(), localValues, globalValues, additionalInputValues);
             matcher.appendReplacement(stringBuffer, value.toString());
         }
         matcher.appendTail(stringBuffer);
@@ -43,7 +43,7 @@ class TemplateFiller {
     }
 
     private Object fetchValue(String variable, Map<String, Object> localValues, Map<String, List<Object>> globalValues,
-                              Object additionalInputValue) {
+                              Map<String, Object> additionalInputValues) {
         String key = variable.substring(2, variable.length() - 1);
         Object value;
         if (key.endsWith(ALL)) {
@@ -72,12 +72,17 @@ class TemplateFiller {
             } else if (value instanceof ZonedDateTime) {
                 value = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format((ZonedDateTime) value);
             }
-        } else if (additionalInputValue != null) {
-            value = additionalInputValue;
+        } else if (additionalInputValues != null && additionalInputValues.containsKey(variableCode(variable))) {
+            String variableCode = variableCode(variable);
+            value = additionalInputValues.get(variableCode);
         } else {
             value = variable;
         }
         return value;
+    }
+
+    private String variableCode(String variable) {
+        return variable.substring(2, variable.length() - 1);
     }
 
     void traverseMapAndReplaceAllVariablesWithValues(Map<String, Object> map, Map<String, Object> localValues,
@@ -87,30 +92,30 @@ class TemplateFiller {
 
     void traverseMapAndReplaceAllVariablesWithValues(Map<String, Object> map, Map<String, Object> localValues,
                                                      Map<String, List<Object>> globalValues,
-                                                     Object additionalInputValue) {
+                                                     Map<String, Object> additionalInputValues) {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             String key = entry.getKey();
             Object object = entry.getValue();
             if (object instanceof String) {
-                Object value = replaceVariablesWithValues((String) object, localValues, globalValues, additionalInputValue);
+                Object value = replaceVariablesWithValues((String) object, localValues, globalValues, additionalInputValues);
                 map.put(key, value);
             } else if (object instanceof Map) {
-                traverseMapAndReplaceAllVariablesWithValues((Map) object, localValues, globalValues, additionalInputValue);
+                traverseMapAndReplaceAllVariablesWithValues((Map) object, localValues, globalValues, additionalInputValues);
             } else if (object instanceof List) {
                 List list = (List) object;
-                traverseListAndReplaceAllVariablesWithValues(list, localValues, globalValues, additionalInputValue);
+                traverseListAndReplaceAllVariablesWithValues(list, localValues, globalValues, additionalInputValues);
             }
         }
     }
 
     private void traverseListAndReplaceAllVariablesWithValues(List list, Map<String, Object> localValues,
                                                               Map<String, List<Object>> globalValues,
-                                                              Object additionalInputValue) {
+                                                              Map<String, Object> additionalInputValues) {
         for (ListIterator iterator = list.listIterator(); iterator.hasNext(); ) {
             Object object = iterator.next();
             if (object instanceof String) {
                 String source = (String) object;
-                Object value = replaceVariablesWithValues(source, localValues, globalValues, additionalInputValue);
+                Object value = replaceVariablesWithValues(source, localValues, globalValues, additionalInputValues);
                 if (source.endsWith(ALL_ENDING) && value instanceof List) {
                     iterator.remove();
                     List sublist = (List) value;
@@ -123,9 +128,9 @@ class TemplateFiller {
                     iterator.set(value);
                 }
             } else if (object instanceof Map) {
-                traverseMapAndReplaceAllVariablesWithValues((Map) object, localValues, globalValues, additionalInputValue);
+                traverseMapAndReplaceAllVariablesWithValues((Map) object, localValues, globalValues, additionalInputValues);
             } else if (object instanceof List) {
-                traverseListAndReplaceAllVariablesWithValues((List) object, localValues, globalValues, additionalInputValue);
+                traverseListAndReplaceAllVariablesWithValues((List) object, localValues, globalValues, additionalInputValues);
             }
         }
     }
