@@ -423,6 +423,28 @@ public class UseTemplateExpressionTest extends TestCommon {
     }
 
     @Test
+    public void can_use_template_with_multiple_input_values_two_target_variables_with_if() throws Exception {
+        guideline = loadGuideline("use_template_with_multiple_input_values_two_target_variables_with_if.v0.1.gdl2");
+        List<Guideline> guidelines = Collections.singletonList(guideline);
+        input.add(new DataInstance.Builder()
+                .modelId("a_model")
+                .addValue("/path_1", 3)
+                .addValue("/path_2", 5)
+                .addValue("/path_3", 8)
+                .addValue("/path_4", 10)
+                .addValue("/path_5", false)
+                .addValue("/path_6", true)
+                .build());
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(1));
+        assertThat(output.get(0).getRoot(), instanceOf(LinkedHashMap.class));
+        LinkedHashMap linkedHashMap = (LinkedHashMap) output.get(0).getRoot();
+        assertThat(linkedHashMap.get("value_1"), is(5.0));
+        linkedHashMap = (LinkedHashMap) output.get(0).getRoot();
+        assertThat(linkedHashMap.get("value_2"), is(10.0));
+    }
+
+    @Test
     public void can_use_template_create_with_multiple_input_variables_with_missing_value() throws Exception {
         guideline = loadGuideline("use_template_with_multiple_input_values_single_target_variable.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);

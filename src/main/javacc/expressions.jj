@@ -127,6 +127,7 @@ TOKEN : /* SYMBOLS - common */
 | < SYM_ELLIPSIS : ".." >
 | < SYM_LIST_CONTINUE : "..." >
 | < SYM_USE_TEMPLATE: "use_template">
+| < SYM_IF: "if">
 }
 
 <* >
@@ -450,6 +451,7 @@ ExpressionItem expression_node() :
   String attrId = null;
   int position = 1;
   Variable variable = null;
+  List<Variable> ifVariables = null;
 }
 {
   (
@@ -482,12 +484,15 @@ ExpressionItem expression_node() :
                       [ assignmentExpressions = assignmentExpressions() ]
                       [
                         < SYM_L_BRACKET >
+                          [
+                            < SYM_IF > < SYM_COLON > ifVariables = variables() < SYM_SEMICOLON >
+                          ]
                           inputVariableMap = map_of_variable_lists_keyed_by_variable()
                         < SYM_R_BRACKET >
                       ]
                 < SYM_R_PARENTHESIS >
             {
-              return new UseTemplateExpression(variable, assignmentExpressions, inputVariableMap);
+              return new UseTemplateExpression(variable, assignmentExpressions, ifVariables, inputVariableMap);
             }
     |t = < SYM_ANY >
             [ < SYM_L_BRACKET > inputVariables = variables() < SYM_R_BRACKET > ]

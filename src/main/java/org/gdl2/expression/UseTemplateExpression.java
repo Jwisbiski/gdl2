@@ -9,5 +9,6 @@ import java.util.Map;
 public class UseTemplateExpression extends ExpressionItem {
     private Variable variable;
     private List<AssignmentExpression> assignmentExpressions;
+    private List<Variable> ifVariables;
     private Map<Variable, List<Variable>> inputVariableMap;
 }

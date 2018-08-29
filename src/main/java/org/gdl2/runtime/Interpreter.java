@@ -847,7 +847,15 @@ public class Interpreter {
         if (inputVariableMap == null || inputVariableMap.size() == 0) {
             createObjectUsingOutPutTemplate(variable, template, useTemplateLocalResult, input, result, null);
         } else {
+            List<Variable> ifVariables = useTemplateExpression.getIfVariables();
             for (int i = 0, j = inputVariableMap.entrySet().iterator().next().getValue().size(); i < j; i++) {
+                if (ifVariables != null && ifVariables.size() > i) {
+                    Variable ifVariable = ifVariables.get(i);
+                    Object value = retrieveValueFromValueMap(ifVariable, input);
+                    if (Boolean.FALSE.equals(value)) {
+                        continue;
+                    }
+                }
                 Map<String, Object> values = createInputValueMap(inputVariableMap, input, i);
                 if (!values.isEmpty()) {
                     createObjectUsingOutPutTemplate(variable, template, useTemplateLocalResult, input, result, values);
