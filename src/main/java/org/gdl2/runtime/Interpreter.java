@@ -891,6 +891,11 @@ public class Interpreter {
         try {
             Object object = this.runtimeConfiguration.getObjectCreatorPlugin().create(modelId, localMapCopy);
             List<Object> valueList = result.computeIfAbsent(variable.getCode(), k -> new ArrayList<>());
+            if (template.getName() != null) {
+                Map<String, Object> map = new LinkedHashMap<>();
+                map.put(template.getName(), object);
+                object = map;
+            }
             valueList.add(object);
         } catch (ClassNotFoundException cnf) {
             System.out.println("failed to create object using template(" + template.getModelId() + "), class not found..");

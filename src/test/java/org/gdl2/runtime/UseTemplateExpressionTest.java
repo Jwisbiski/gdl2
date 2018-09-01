@@ -70,6 +70,15 @@ public class UseTemplateExpressionTest extends TestCommon {
     }
 
     @Test
+    public void can_use_template_with_name() throws Exception {
+        List<Guideline> guidelines = loadSingleGuideline("use_template_with_name.v0.1.gdl2");
+        output = interpreter.executeGuidelines(guidelines, input);
+        String json = gson.toJson(output.get(0).getRoot());
+        assertThat(JsonPath.read(json, "$.ordinal.value"), is("3"));
+        assertThat(JsonPath.read(json, "$.ordinal.symbol.value"), is("atorvastatin"));
+    }
+
+    @Test
     public void can_use_template_create_ordinal_with_element_bindings() throws Exception {
         List<Guideline> guidelines = loadSingleGuideline("use_template_with_ordinal_test2.v0.1.gdl2");
         output = interpreter.executeGuidelines(guidelines, input);
