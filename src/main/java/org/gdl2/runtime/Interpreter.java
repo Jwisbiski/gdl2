@@ -117,6 +117,8 @@ public class Interpreter {
                         runtimeConfiguration.getTerminologySubsumptionEvaluators() == null
                                 ? Collections.emptyMap() : runtimeConfiguration.getTerminologySubsumptionEvaluators())
                 .dateTimeFormatPattern(runtimeConfiguration.getDateTimeFormatPattern())
+                .timezoneId(runtimeConfiguration.getTimezoneId() == null
+                        ? ZoneId.systemDefault() : runtimeConfiguration.getTimezoneId())
                 .build();
     }
 
@@ -1215,7 +1217,13 @@ public class Interpreter {
     }
 
     private ZonedDateTime systemCurrentDateTime() {
-        return this.runtimeConfiguration.getCurrentDateTime() == null ? ZonedDateTime.now() : this.runtimeConfiguration.getCurrentDateTime();
+        if (this.runtimeConfiguration.getCurrentDateTime() != null) {
+            return this.runtimeConfiguration.getCurrentDateTime();
+        } else if (this.runtimeConfiguration.getTimezoneId() != null) {
+            return ZonedDateTime.now(this.runtimeConfiguration.getTimezoneId());
+        } else {
+            return ZonedDateTime.now();
+        }
     }
 
     private Object evaluateDateTimeExpression(OperatorKind operator, Object leftValue, Object rightValue) {
