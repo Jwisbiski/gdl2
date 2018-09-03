@@ -379,6 +379,7 @@ public class Interpreter {
                 .build();
         if (template.getElementBindings() != null) {
             Gson gson = new Gson();
+            object  = retrieveNamedObjectToAvoidNameInObjectPaths(object, template.getName());
             String json = gson.toJson(object);
             for (ElementBinding elementBinding : template.getElementBindings()) {
                 String path = elementBinding.getPath();
@@ -401,7 +402,13 @@ public class Interpreter {
             }
         }
         return dataInstance;
+    }
 
+    private Object retrieveNamedObjectToAvoidNameInObjectPaths(Object object, String name) {
+        if (name == null) {
+            return object;
+        }
+        return ((Map) object).get(name);
     }
 
     private List<DataInstance> createFromValueListsUsingSingleDataBinding(String bindingId,

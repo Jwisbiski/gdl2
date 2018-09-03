@@ -36,7 +36,12 @@
               "code": "C10AA05"
             }
           }
-        }
+        },
+        "element_bindings": [
+          {
+            "path": "/value"
+          }
+        ]
       }
     },
     "rules": {
