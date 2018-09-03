@@ -1222,7 +1222,7 @@ public class Interpreter {
         } else if (this.runtimeConfiguration.getTimezoneId() != null) {
             return ZonedDateTime.now(this.runtimeConfiguration.getTimezoneId());
         } else {
-            return ZonedDateTime.now();
+            return ZonedDateTime.now(ZoneId.of("UTC"));
         }
     }
 

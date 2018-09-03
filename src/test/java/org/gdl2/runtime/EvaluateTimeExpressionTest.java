@@ -55,6 +55,14 @@ public class EvaluateTimeExpressionTest extends TestCommon {
     }
 
     @Test
+    public void can_evaluate_current_datetime_using_default_zone_UTC() {
+        expressionItem = parseExpression("$currentDateTime");
+        interpreter = new Interpreter();
+        ZonedDateTime zonedDateTime = (ZonedDateTime) interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(zonedDateTime.getZone(), is(ZoneId.of("UTC")));
+    }
+
+    @Test
     public void can_evaluate_java_date_using_given_formatter_pattern() throws ParseException {
         expressionItem = parseExpression("$gt0100.string");
         SimpleDateFormat sdf = new SimpleDateFormat("yyy-MM-DD'T'HH:mm:ss");
