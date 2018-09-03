@@ -9,6 +9,7 @@ import org.testng.annotations.Test;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +40,26 @@ public class EvaluateTimeExpressionTest extends TestCommon {
                         .build());
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
         assertThat(value, is("2018-05-29 17:12"));
+    }
+
+    @Test
+    public void can_evaluate_current_datetime_using_zone_id() {
+        ZoneId zoneId = ZoneId.of("Atlantic/Bermuda");
+        expressionItem = parseExpression("$currentDateTime");
+        interpreter = new Interpreter(
+                RuntimeConfiguration.builder()
+                        .timezoneId(zoneId)
+                        .build());
+        ZonedDateTime zonedDateTime = (ZonedDateTime) interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(zonedDateTime.getZone(), is(zoneId));
+    }
+
+    @Test
+    public void can_evaluate_current_datetime_using_default_zone_UTC() {
+        expressionItem = parseExpression("$currentDateTime");
+        interpreter = new Interpreter();
+        ZonedDateTime zonedDateTime = (ZonedDateTime) interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(zonedDateTime.getZone(), is(ZoneId.of("UTC")));
     }
 
     @Test

@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Value;
 import org.gdl2.terminology.SubsumptionEvaluator;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Map;
 
@@ -11,6 +12,7 @@ import java.util.Map;
 @Builder
 public class RuntimeConfiguration {
     private String language;
+    private ZoneId timezoneId;
     private ZonedDateTime currentDateTime;
     private boolean includingInputWithPredicate;
     private ObjectCreatorPlugin objectCreatorPlugin;

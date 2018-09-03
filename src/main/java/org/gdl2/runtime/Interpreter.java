@@ -108,7 +108,7 @@ public class Interpreter {
     }
 
     private RuntimeConfiguration setDefaultRuntimeConfigurationIfMissing(RuntimeConfiguration runtimeConfiguration) {
-        return RuntimeConfiguration.builder()
+        RuntimeConfiguration.RuntimeConfigurationBuilder runtimeConfigurationBuilder = RuntimeConfiguration.builder()
                 .currentDateTime(runtimeConfiguration.getCurrentDateTime())
                 .includingInputWithPredicate(runtimeConfiguration.isIncludingInputWithPredicate())
                 .language(runtimeConfiguration.getLanguage() == null ? ENGLISH_LANGUAGE : runtimeConfiguration.getLanguage())
@@ -116,8 +116,11 @@ public class Interpreter {
                 .terminologySubsumptionEvaluators(
                         runtimeConfiguration.getTerminologySubsumptionEvaluators() == null
                                 ? Collections.emptyMap() : runtimeConfiguration.getTerminologySubsumptionEvaluators())
-                .dateTimeFormatPattern(runtimeConfiguration.getDateTimeFormatPattern())
-                .build();
+                .dateTimeFormatPattern(runtimeConfiguration.getDateTimeFormatPattern());
+        if (runtimeConfiguration.getTimezoneId() != null) {
+            runtimeConfigurationBuilder.timezoneId(runtimeConfiguration.getTimezoneId());
+        }
+        return runtimeConfigurationBuilder.build();
     }
 
     private static void assertNotNull(Object object, String message) {
@@ -1222,7 +1225,13 @@ public class Interpreter {
     }
 
     private ZonedDateTime systemCurrentDateTime() {
-        return this.runtimeConfiguration.getCurrentDateTime() == null ? ZonedDateTime.now() : this.runtimeConfiguration.getCurrentDateTime();
+        return this.runtimeConfiguration.getCurrentDateTime() == null
+                ? ZonedDateTime.now(getRuntimeTimezoneId()) : this.runtimeConfiguration.getCurrentDateTime();
+
+    }
+
+    private ZoneId getRuntimeTimezoneId() {
+        return runtimeConfiguration.getTimezoneId() == null ? ZoneId.of("UTC") : runtimeConfiguration.getTimezoneId();
     }
 
     private Object evaluateDateTimeExpression(OperatorKind operator, Object leftValue, Object rightValue) {
@@ -1373,13 +1382,13 @@ public class Interpreter {
         if (dataValue instanceof DvQuantity) { // TODO handle units
             return Double.valueOf(evaluateQuantityValue((DvQuantity) dataValue).toString());
         } else if (dataValue instanceof DvDateTime) {
-            return ((DvDateTime) dataValue).getDateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            return ((DvDateTime) dataValue).getDateTime().atZone(getRuntimeTimezoneId()).toInstant().toEpochMilli();
         } else if (dataValue instanceof ZonedDateTime) {
             return ((ZonedDateTime) dataValue).toInstant().toEpochMilli();
         } else if (dataValue instanceof LocalDateTime) {
-            return ((LocalDateTime) dataValue).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            return ((LocalDateTime) dataValue).atZone(getRuntimeTimezoneId()).toInstant().toEpochMilli();
         } else if (dataValue instanceof LocalDate) {
-            return ((LocalDate) dataValue).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            return ((LocalDate) dataValue).atStartOfDay(getRuntimeTimezoneId()).toInstant().toEpochMilli();
         } else if (dataValue.toString().startsWith("(-") && dataValue.toString().endsWith(")")) {
             int length = dataValue.toString().length();
             return Double.valueOf(dataValue.toString().substring(1, length - 1));
@@ -1477,9 +1486,9 @@ public class Interpreter {
             }
             return dataValue;
         } else if (TypeBinding.VALUE.equals(attribute) && dataValue instanceof DvDateTime) {
-            return ((DvDateTime) dataValue).getDateTime().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            return ((DvDateTime) dataValue).getDateTime().atZone(getRuntimeTimezoneId()).toInstant().toEpochMilli();
         } else if (TypeBinding.VALUE.equals(attribute) && dataValue instanceof DvDate) {
-            return ((DvDate) dataValue).getDate().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+            return ((DvDate) dataValue).getDate().atStartOfDay().atZone(getRuntimeTimezoneId()).toInstant().toEpochMilli();
         } else if (TypeBinding.YEAR.equals(attribute) && dataValue instanceof DvDateTime) {
             return ((DvDateTime) dataValue).getDateTime().getYear();
         } else if (TypeBinding.YEAR.equals(attribute) && dataValue instanceof DvDate) {
