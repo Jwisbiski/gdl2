@@ -156,7 +156,7 @@
                 <version>3.1.6</version>
                 <configuration>
                     <!-- Configures the directory in which the XML report is created -->
-                    <findbugsXmlOutputDirectory>${project.build.directory}/findbugs</findbugsXmlOutputDirectory>
+                    <spotbugsXmlOutputDirectory>${project.build.directory}/findbugs</spotbugsXmlOutputDirectory>
                     <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
                 </configuration>
 
