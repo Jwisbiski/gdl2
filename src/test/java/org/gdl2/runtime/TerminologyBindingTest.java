@@ -40,12 +40,21 @@ public class TerminologyBindingTest extends TestCommon {
     }
 
     @Test
-    public void can_check_isa_relationship_using_local_term_bindings_expected_true() throws Exception {
+    public void can_check_is_a_relationship_using_local_term_bindings_expected_true() throws Exception {
         guide = loadGuideline("CHA2DS2VASc_diagnosis_review.v1.0.1.gdl2");
         inputMap.put("gt0040", asList(new DvCodedText("Diabetes Type-1", "ICD10", "E10")));
         expression = parseExpression("$gt0040 is_a local::gt0102|Diabetes|");
         value = interpreter.evaluateExpressionItem(expression, inputMap, guide, null);
         assertThat(value, is(true));
+    }
+
+    @Test
+    public void can_check_is_not_a_relationship_using_local_term_bindings_expected_true() throws Exception {
+        guide = loadGuideline("CHA2DS2VASc_diagnosis_review.v1.0.1.gdl2");
+        inputMap.put("gt0040", asList(new DvCodedText("Diabetes Type-1", "ICD10", "E10")));
+        expression = parseExpression("$gt0040 !is_a local::gt0102|Diabetes|");
+        value = interpreter.evaluateExpressionItem(expression, inputMap, guide, null);
+        assertThat(value, is(false));
     }
 
     @Test

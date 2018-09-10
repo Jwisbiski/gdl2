@@ -382,7 +382,7 @@ public class Interpreter {
                 .build();
         if (template.getElementBindings() != null) {
             Gson gson = new Gson();
-            object  = retrieveNamedObjectToAvoidNameInObjectPaths(object, template.getName());
+            object = retrieveNamedObjectToAvoidNameInObjectPaths(object, template.getName());
             String json = gson.toJson(object);
             for (ElementBinding elementBinding : template.getElementBindings()) {
                 String path = elementBinding.getPath();
@@ -1215,8 +1215,10 @@ public class Interpreter {
             return evaluateEqualityExpression(leftValue, rightValue);
         } else if (operator == UNEQUAL) {
             return !evaluateEqualityExpression(leftValue, rightValue);
-        } else if (operator == IS_A) {     // todo IS_A_NOT
+        } else if (operator == IS_A) {
             return evaluateIsARelationship(leftValue, rightValue, guideline.getOntology());
+        } else if (operator == IS_NOT_A) {
+            return !evaluateIsARelationship(leftValue, rightValue, guideline.getOntology());
         } else if (operator == AND && leftValue != null && rightValue != null) {
             return (Boolean) leftValue && (Boolean) rightValue;
         } else {
