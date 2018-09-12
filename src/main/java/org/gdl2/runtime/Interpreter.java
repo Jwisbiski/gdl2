@@ -193,6 +193,7 @@ public class Interpreter {
 
         Map<String, DataInstance> allResults = new HashMap<>();
         List<DataInstance> input = new ArrayList<>(inputDataInstances);
+        List<DataInstance> objectsCreatedByUseTemplate = new ArrayList<>();
         List<DataInstance> totalResult = new ArrayList<>();
         Map<String, Set<String>> firedRules = new LinkedHashMap<>();
         for (Guideline guide : guidelines) {
@@ -204,11 +205,13 @@ public class Interpreter {
                     allResults.put(dataInstance.modelId(), dataInstance);
                 } else if (isOutputTemplateData(dataInstance, guide)) {
                     input.add(dataInstance);
+                    objectsCreatedByUseTemplate.add(dataInstance);
                 } else {
                     existing.merge(dataInstance);
                 }
             }
             input.addAll(allResults.values());
+            input.addAll(objectsCreatedByUseTemplate);
             totalResult.addAll(resultPerExecution.result);
             firedRules.putAll(resultPerExecution.getFiredRules());
         }

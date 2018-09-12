@@ -113,7 +113,7 @@ public class UseTemplateExpressionTest extends TestCommon {
         assertThat(output.size(), is(3));
         DataInstance dataInstance = output.get(2);
         String json = gson.toJson(dataInstance.getRoot());
-        assertThat(JsonPath.read(json, "$.list_value.length()"), is(2));
+        assertThat(JsonPath.read(json, "$.list_value.length()"), is(3));
         assertThat(JsonPath.read(json, "$.list_value[0].symbol.value"), is("atorvastatin"));
         assertThat(JsonPath.read(json, "$.list_value[1].symbol.value"), is("atorvastatin"));
     }
