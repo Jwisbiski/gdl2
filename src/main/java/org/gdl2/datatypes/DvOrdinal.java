@@ -37,6 +37,10 @@ public final class DvOrdinal {
         return this.symbol.getDefiningCode().getTerminology();
     }
 
+    public String getLabel() {
+        return this.symbol.getValue();
+    }
+
     @Override
     public String toString() {
         return value + "|" + symbol.toString();
