@@ -39,7 +39,9 @@ class TemplateFiller {
     }
 
     private boolean isSingleVariable(String source) {
-        return source.startsWith("{$") && source.endsWith("}");
+        return source.startsWith("{$")
+                && source.endsWith("}")
+                && source.indexOf("}") == source.length() - 1;
     }
 
     private Object fetchValue(String variable, Map<String, Object> localValues, Map<String, List<Object>> globalValues,

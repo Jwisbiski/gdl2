@@ -432,6 +432,27 @@ public class UseTemplateExpressionTest extends TestCommon {
     }
 
     @Test
+    public void can_use_template_with_multiple_input_values_two_target_variables_combined() throws Exception {
+        guideline = loadGuideline("use_template_with_multiple_input_values_two_target_variables_combined.v0.1.gdl2");
+        List<Guideline> guidelines = Collections.singletonList(guideline);
+        input.add(new DataInstance.Builder()
+                .modelId("a_model")
+                .addValue("/path_1", "one")
+                .addValue("/path_2", "two")
+                .addValue("/path_3", "apple")
+                .addValue("/path_4", "pear")
+                .build());
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(2));
+        assertThat(output.get(0).getRoot(), instanceOf(LinkedHashMap.class));
+        LinkedHashMap linkedHashMap = (LinkedHashMap) output.get(0).getRoot();
+        assertThat(linkedHashMap.get("value_combined"), is("one: apple"));
+
+        linkedHashMap = (LinkedHashMap) output.get(1).getRoot();
+        assertThat(linkedHashMap.get("value_combined"), is("two: pear"));
+    }
+
+    @Test
     public void can_use_template_with_multiple_input_values_two_target_variables_with_if() throws Exception {
         guideline = loadGuideline("use_template_with_multiple_input_values_two_target_variables_with_if.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
