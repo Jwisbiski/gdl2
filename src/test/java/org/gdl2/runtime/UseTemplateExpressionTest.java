@@ -453,6 +453,41 @@ public class UseTemplateExpressionTest extends TestCommon {
     }
 
     @Test
+    public void can_use_template_with_multiple_input_values_two_target_variables_combined_with_missing_2nd_value() throws Exception {
+        guideline = loadGuideline("use_template_with_multiple_input_values_two_target_variables_combined.v0.1.gdl2");
+        List<Guideline> guidelines = Collections.singletonList(guideline);
+        input.add(new DataInstance.Builder()
+                .modelId("a_model")
+                .addValue("/path_1", "one")
+                .build());
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(0));
+    }
+
+    @Test
+    public void can_use_template_with_multiple_input_values_two_target_variables_combined_with_missing_1st_value() throws Exception {
+        guideline = loadGuideline("use_template_with_multiple_input_values_two_target_variables_combined.v0.1.gdl2");
+        List<Guideline> guidelines = Collections.singletonList(guideline);
+        input.add(new DataInstance.Builder()
+                .modelId("a_model")
+                .addValue("/path_3", "apple")
+                .build());
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(0));
+    }
+
+    @Test
+    public void can_use_template_with_multiple_input_values_two_target_variables_combined_with_missing_both_values() throws Exception {
+        guideline = loadGuideline("use_template_with_multiple_input_values_two_target_variables_combined.v0.1.gdl2");
+        List<Guideline> guidelines = Collections.singletonList(guideline);
+        input.add(new DataInstance.Builder()
+                .modelId("a_model")
+                .build());
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(0));
+    }
+
+    @Test
     public void can_use_template_with_multiple_input_values_two_target_variables_with_if() throws Exception {
         guideline = loadGuideline("use_template_with_multiple_input_values_two_target_variables_with_if.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
