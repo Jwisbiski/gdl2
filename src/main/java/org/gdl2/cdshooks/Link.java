@@ -4,11 +4,15 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.annotations.SerializedName;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
 
 import java.net.URL;
 
-@Value
+/* One of the requirements of cds-service, is to
+   be able to override a link's url,
+   thus Link class uses the @Data annotation instead of @Value
+ */
+@Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Link {
