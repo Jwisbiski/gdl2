@@ -73,7 +73,7 @@ public class Interpreter {
         assertNotNull(currentDateTime, "currentDateTime can not be null");
         this.runtimeConfiguration = RuntimeConfiguration.builder()
                 .currentDateTime(currentDateTime)
-                .language(ENGLISH_LANGUAGE)
+                .language(getDefaultLanguage())
                 .objectCreatorPlugin(new DefaultObjectCreator())
                 .terminologySubsumptionEvaluators(Collections.emptyMap())
                 .build();
@@ -101,7 +101,7 @@ public class Interpreter {
 
     private RuntimeConfiguration defaultRuntimeConfiguration() {
         return RuntimeConfiguration.builder()
-                .language(ENGLISH_LANGUAGE)
+                .language(getDefaultLanguage())
                 .objectCreatorPlugin(new DefaultObjectCreator())
                 .terminologySubsumptionEvaluators(Collections.emptyMap())
                 .build();
@@ -111,7 +111,7 @@ public class Interpreter {
         RuntimeConfiguration.RuntimeConfigurationBuilder runtimeConfigurationBuilder = RuntimeConfiguration.builder()
                 .currentDateTime(runtimeConfiguration.getCurrentDateTime())
                 .includingInputWithPredicate(runtimeConfiguration.isIncludingInputWithPredicate())
-                .language(runtimeConfiguration.getLanguage() == null ? ENGLISH_LANGUAGE : runtimeConfiguration.getLanguage())
+                .language(runtimeConfiguration.getLanguage() == null ? getDefaultLanguage() : runtimeConfiguration.getLanguage())
                 .objectCreatorPlugin(runtimeConfiguration.getObjectCreatorPlugin() == null ? new DefaultObjectCreator() : runtimeConfiguration.getObjectCreatorPlugin())
                 .terminologySubsumptionEvaluators(
                         runtimeConfiguration.getTerminologySubsumptionEvaluators() == null
@@ -557,7 +557,7 @@ public class Interpreter {
     private Card processCard(Card card, Map<String, List<Object>> input, Guideline guideline) {
         TermDefinition termDefinition = guideline.getOntology().getTermDefinitions().get(this.runtimeConfiguration.getLanguage());
         if (termDefinition == null) {
-            termDefinition = guideline.getOntology().getTermDefinitions().get(ENGLISH_LANGUAGE);
+            termDefinition = guideline.getOntology().getTermDefinitions().get(getDefaultLanguage());
         }
         List<Suggestion> suggestions = new ArrayList<>();
         if (card.getSuggestions() != null) {
@@ -1625,6 +1625,10 @@ public class Interpreter {
         }
         UnaryExpression unaryExpression = (UnaryExpression) expressionItem;
         return MAX.equals(unaryExpression.getOperator()) || MIN.equals(unaryExpression.getOperator());
+    }
+
+    private String getDefaultLanguage() {
+        return ENGLISH_LANGUAGE;
     }
 
     List<DataInstance> evaluateDataInstancesWithPredicate(List<DataInstance> dataInstances,
