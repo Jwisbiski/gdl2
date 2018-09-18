@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.annotations.SerializedName;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
 
 import java.net.URL;
 
-@Value
+@Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Link {
