@@ -173,15 +173,15 @@ public class Interpreter {
         return false;
     }
 
-    // xxxxGetFiredRules methods are for gdl2-editor
+    // xxxxGetFiredRules methods are for gdl2-editor and guideline testing tools
     public ExecutionOutput executeGuidelinesAndGetFiredRules(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
         return executeGuidelinesWithCards(guidelines, inputDataInstances, new ArrayList<>());
     }
 
-    public List<Card> executeCdsHooksGuidelinesAndGetFiredRules(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
+    public ExecutionOutputCards executeCdsHooksGuidelinesAndGetFiredRules(List<Guideline> guidelines, List<DataInstance> inputDataInstances) {
         List<Card> cardList = new ArrayList<>();
-        executeGuidelinesWithCards(guidelines, inputDataInstances, cardList);
-        return cardList;
+        ExecutionOutput executionOutput = executeGuidelinesWithCards(guidelines, inputDataInstances, cardList);
+        return new ExecutionOutputCards(executionOutput.getFiredRules(), cardList);
     }
 
     // TODO sort guidelines according to dependency
@@ -1674,6 +1674,25 @@ public class Interpreter {
         }
 
         public List<DataInstance> getResult() {
+            return result;
+        }
+    }
+
+    public static class ExecutionOutputCards {
+        private Map<String, Set<String>> firedRules;
+
+        private List<Card> result;
+
+        ExecutionOutputCards(Map<String, Set<String>> firedRules, List<Card> result) {
+            this.firedRules = firedRules;
+            this.result = result;
+        }
+
+        public Map<String, Set<String>> getFiredRules() {
+            return firedRules;
+        }
+
+        public List<Card> getResult() {
             return result;
         }
     }
