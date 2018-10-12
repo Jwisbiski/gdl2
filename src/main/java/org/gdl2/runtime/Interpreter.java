@@ -870,7 +870,7 @@ public class Interpreter {
                     }
                 }
                 Map<String, Object> values = createInputValueMap(inputVariableMap, input, i);
-                if (values.size() == inputVariableMap.size()) {
+                if (!values.isEmpty()) {
                     createObjectUsingOutPutTemplate(variable, template, useTemplateLocalResult, input, result, values);
                 }
             }
