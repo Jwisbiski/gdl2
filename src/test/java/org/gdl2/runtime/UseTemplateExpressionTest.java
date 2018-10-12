@@ -453,6 +453,31 @@ public class UseTemplateExpressionTest extends TestCommon {
     }
 
     @Test
+    public void can_use_template_with_multiple_input_values_two_target_variables_with_if_with_null_value() throws Exception {
+        guideline = loadGuideline("use_template_with_multiple_input_values_two_target_variables_with_if.v0.1.gdl2");
+        List<Guideline> guidelines = Collections.singletonList(guideline);
+        input.add(new DataInstance.Builder()
+                .modelId("a_model")
+                .addValue("/path_1", "one")
+                .addValue("/path_2", "two")
+                .addValue("/path_3", null)  // 2nd node of first output
+                .addValue("/path_4", "four")
+                .addValue("/path_5", true)
+                .addValue("/path_6", true)
+                .build());
+        output = interpreter.executeGuidelines(guidelines, input);
+        assertThat(output.size(), is(2));
+
+        LinkedHashMap linkedHashMap = (LinkedHashMap) output.get(0).getRoot();
+        assertThat(linkedHashMap.get("value_1"), is("one"));
+        assertThat(linkedHashMap.containsKey("value_2"), is(false));
+
+        linkedHashMap = (LinkedHashMap) output.get(1).getRoot();
+        assertThat(linkedHashMap.get("value_1"), is("two"));
+        assertThat(linkedHashMap.get("value_2"), is("four"));
+    }
+
+    @Test
     public void can_use_template_with_multiple_input_values_two_target_variables_combined_with_missing_2nd_value() throws Exception {
         guideline = loadGuideline("use_template_with_multiple_input_values_two_target_variables_combined.v0.1.gdl2");
         List<Guideline> guidelines = Collections.singletonList(guideline);
@@ -461,7 +486,7 @@ public class UseTemplateExpressionTest extends TestCommon {
                 .addValue("/path_1", "one")
                 .build());
         output = interpreter.executeGuidelines(guidelines, input);
-        assertThat(output.size(), is(0));
+        assertThat(output.size(), is(1));
     }
 
     @Test
@@ -473,7 +498,7 @@ public class UseTemplateExpressionTest extends TestCommon {
                 .addValue("/path_3", "apple")
                 .build());
         output = interpreter.executeGuidelines(guidelines, input);
-        assertThat(output.size(), is(0));
+        assertThat(output.size(), is(1));
     }
 
     @Test

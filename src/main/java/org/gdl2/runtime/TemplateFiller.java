@@ -32,7 +32,9 @@ class TemplateFiller {
         Matcher matcher = VARIABLE_REGEX.matcher(source);
         while (matcher.find()) {
             Object value = fetchValue(matcher.group(), localValues, globalValues, additionalInputValues);
-            matcher.appendReplacement(stringBuffer, value.toString());
+            if (value != null) {
+                matcher.appendReplacement(stringBuffer, value.toString());
+            }
         }
         matcher.appendTail(stringBuffer);
         return stringBuffer.toString();
@@ -77,8 +79,6 @@ class TemplateFiller {
         } else if (additionalInputValues != null && additionalInputValues.containsKey(variableCode(variable))) {
             String variableCode = variableCode(variable);
             value = additionalInputValues.get(variableCode);
-        } else {
-            value = variable;
         }
         return value;
     }
@@ -124,7 +124,7 @@ class TemplateFiller {
                     for (Object sublistValue : sublist) {
                         iterator.add(sublistValue);
                     }
-                } else if (isValueNotInstantiated(value)) {
+                } else if (value == null) {
                     iterator.remove();
                 } else {
                     iterator.set(value);
@@ -135,12 +135,5 @@ class TemplateFiller {
                 traverseListAndReplaceAllVariablesWithValues((List) object, localValues, globalValues, additionalInputValues);
             }
         }
-    }
-
-    private boolean isValueNotInstantiated(Object value) {
-        if (!(value instanceof String)) {
-            return false;
-        }
-        return ((String) value).startsWith("{$gt");
     }
 }
