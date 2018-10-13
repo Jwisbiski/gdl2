@@ -10,6 +10,7 @@ public enum OperatorKind {
     MULTIPLICATION("multiplication", "*"),
     DIVISION("division", "/"),
     EXPONENT("exponent", "^"),
+    REMINDER("remainder", "%"),
 
     /**
      * Logical operators.

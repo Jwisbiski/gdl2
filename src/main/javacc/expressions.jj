@@ -122,7 +122,7 @@ TOKEN : /* SYMBOLS - common */
 | < SYM_CURRENT_DATE : "currentDate" >
 | < SYM_REF : "ref" >
 | < SYM_ASSIGNMENT : "=" >
-| < SYM_MODULO : "\\" >
+| < SYM_REMINDER : "%" >
 | < SYM_DIV : "//" >
 | < SYM_ELLIPSIS : ".." >
 | < SYM_LIST_CONTINUE : "..." >
@@ -454,7 +454,9 @@ ExpressionItem expression_node() :
   List<Variable> ifVariables = null;
 }
 {
-  (
+  ( LOOKAHEAD(long_expression())
+    ret = long_expression()
+  |
     (
       < SYM_FOR_ALL > item = expression_leaf()
       {
@@ -852,6 +854,79 @@ ReferenceVariable reference_variable() :
   {
     attribute = t.image;
     return new ReferenceVariable(index, attribute);
+  }
+}
+
+LongExpression long_expression() :
+{
+  OperatorKind operator;
+  ExpressionItem item;
+  List items = new ArrayList();
+}
+{
+  item = variable()
+  operator = long_expression_operator()
+  {
+    items.add(new LongExpression.OperandPair(item, operator));
+  }
+  item = variable()
+  operator = long_expression_operator()
+  {
+    items.add(new LongExpression.OperandPair(item, operator));
+  }
+  (
+    item = variable()
+    [ operator = long_expression_operator() ]
+    {
+      items.add(new LongExpression.OperandPair(item, operator));
+    }
+  )*
+  {
+    return new LongExpression(items);
+  }
+}
+
+OperatorKind long_expression_operator() :
+{
+  OperatorKind op;
+}
+{
+  (
+    < SYM_PLUS >
+    {
+      op = OperatorKind.ADDITION;
+    }
+  | < SYM_MINUS >
+    {
+      op = OperatorKind.SUBTRACTION;
+    }
+  | < SYM_STAR >
+    {
+      op = OperatorKind.MULTIPLICATION;
+    }
+  | < SYM_SLASH >
+    {
+      op = OperatorKind.DIVISION;
+    }
+  | < SYM_CARET >
+    {
+      op = OperatorKind.EXPONENT;
+    }
+  | < SYM_REMINDER >
+    {
+      op = OperatorKind.REMINDER;
+    }
+  | < SYM_AND >
+    {
+      op = OperatorKind.AND;
+    }
+  | < SYM_OR >
+    {
+      op = OperatorKind.OR;
+    }
+  )
+  {
+    return op;
   }
 }
 
