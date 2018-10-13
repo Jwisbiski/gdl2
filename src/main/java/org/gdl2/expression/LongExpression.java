@@ -56,7 +56,7 @@ public class LongExpression extends ExpressionItem {
             return operator;
         }
 
-        boolean isLast() {
+        public boolean isLast() {
             return operator == null; // null if last pair
         }
     }

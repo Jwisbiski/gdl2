@@ -873,12 +873,14 @@ LongExpression long_expression() :
   operator = long_expression_operator()
   {
     items.add(new LongExpression.OperandPair(item, operator));
+    operator = null;
   }
   (
     item = variable()
     [ operator = long_expression_operator() ]
     {
       items.add(new LongExpression.OperandPair(item, operator));
+      operator = null;
     }
   )*
   {
