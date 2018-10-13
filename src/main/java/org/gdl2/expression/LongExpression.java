@@ -35,7 +35,12 @@ public class LongExpression extends ExpressionItem {
      */
     public List<BinaryExpression> toBooleanExpressions() {
         List<BinaryExpression> list = new ArrayList<>();
-
+        for (int i = 0, j = items.size() - 1; i < j; i++) {
+            ExpressionItem left = items.get(i).expressionItem;
+            ExpressionItem right = items.get(i + 1).expressionItem;
+            OperatorKind op = items.get(i).operator;
+            list.add(new BinaryExpression(left, right, op));
+        }
         return list;
     }
 
