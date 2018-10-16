@@ -864,19 +864,37 @@ LongExpression long_expression() :
   List items = new ArrayList();
 }
 {
-  item = variable()
+  (
+    LOOKAHEAD(variable())
+    item = variable()
+  |
+    LOOKAHEAD(constant_expression())
+    item = constant_expression()
+  )
   operator = long_expression_operator()
   {
     items.add(new LongExpression.OperandPair(item, operator));
   }
-  item = variable()
+  (
+    LOOKAHEAD(variable())
+    item = variable()
+  |
+    LOOKAHEAD(constant_expression())
+    item = constant_expression()
+  )
   operator = long_expression_operator()
   {
     items.add(new LongExpression.OperandPair(item, operator));
     operator = null;
   }
   (
-    item = variable()
+    (
+      LOOKAHEAD(variable())
+      item = variable()
+    |
+      LOOKAHEAD(constant_expression())
+      item = constant_expression()
+    )
     [ operator = long_expression_operator() ]
     {
       items.add(new LongExpression.OperandPair(item, operator));

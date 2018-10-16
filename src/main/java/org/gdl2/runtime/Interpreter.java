@@ -1010,6 +1010,9 @@ public class Interpreter {
             return processAnyExpression((AnyExpression) expressionItem, input, guideline, firedRules);
         } else if (expressionItem instanceof FunctionalExpression) {
             return processFunctionalExpression((FunctionalExpression) expressionItem, input, guideline, firedRules);
+        } else if (expressionItem instanceof LongExpression) {
+            BinaryExpression binaryExpression = ((LongExpression) expressionItem).toBinaryExpression();
+            return processBinaryExpression(binaryExpression, input, guideline, firedRules);
         } else {
             throw new IllegalArgumentException("Unsupported expressionItem: " + expressionItem);
         }

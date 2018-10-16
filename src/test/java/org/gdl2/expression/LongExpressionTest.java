@@ -19,6 +19,13 @@ public class LongExpressionTest {
     }
 
     @Test
+    public void can_handle_two_additions_with_number() {
+        longExpression = parse("$gt0002 + $gt0003 + 1200");
+        binaryExpressions = longExpression.toBinaryExpression();
+        assertThat(binaryExpressions.toString(), is("($gt0002+$gt0003)+1200"));
+    }
+
+    @Test
     public void can_handle_three_additions() {
         longExpression = parse("$gt0002 + $gt0003 + $gt0004 + $gt0005");
         binaryExpressions = longExpression.toBinaryExpression();
@@ -65,6 +72,13 @@ public class LongExpressionTest {
         longExpression = parse("$gt0002 + $gt0003 - $gt0004 / $gt0005 * $gt0006 % $gt0007");
         binaryExpressions = longExpression.toBinaryExpression();
         assertThat(binaryExpressions.toString(), is("($gt0002+$gt0003)-((($gt0004/$gt0005)*$gt0006)%$gt0007)"));
+    }
+
+    @Test
+    public void can_handle_addition_subtraction_division_multiplication_reminder_with_constants() {
+        longExpression = parse("$gt0002 + 0.317 - $gt0004 / 100 * $gt0006 % 2");
+        binaryExpressions = longExpression.toBinaryExpression();
+        assertThat(binaryExpressions.toString(), is("($gt0002+0.317)-((($gt0004/100)*$gt0006)%2)"));
     }
 
     private LongExpression parse(String expression) {
