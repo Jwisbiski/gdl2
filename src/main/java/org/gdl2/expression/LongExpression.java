@@ -1,8 +1,9 @@
 package org.gdl2.expression;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import static org.gdl2.expression.OperatorKind.*;
 
 /**
  * Any expression includes more than one pair of operands without any bracket.
@@ -13,7 +14,6 @@ import java.util.List;
  * Multiplication: *
  * Division: /
  * Remainder: %
- * Exponent: ^
  * Logic and: &&
  * Logic or: ||
  */
@@ -29,19 +29,44 @@ public class LongExpression extends ExpressionItem {
     }
 
     /**
-     * Breaks down a long expression into binary expressions following operator precedence.
+     * Breaks down a long expression into chained binary expressions by operator precedence.
      *
-     * @return list binary expressions
+     * @return binary expression
      */
-    public List<BinaryExpression> toBooleanExpressions() {
-        List<BinaryExpression> list = new ArrayList<>();
-        for (int i = 0, j = items.size() - 1; i < j; i++) {
-            ExpressionItem left = items.get(i).expressionItem;
-            ExpressionItem right = items.get(i + 1).expressionItem;
-            OperatorKind op = items.get(i).operator;
-            list.add(new BinaryExpression(left, right, op));
+    public BinaryExpression toBinaryExpression() {
+        return nextBinaryExpressionByOperatorPrecedence(items);
+    }
+
+    private BinaryExpression nextBinaryExpressionByOperatorPrecedence(List<OperandPair> items) {
+        int next = nextOperandPairByPrecedence(items);
+        OperandPair operandPair = items.get(next);
+        if (operandPair.isLast()) {
+            return (BinaryExpression) operandPair.expressionItem;
         }
-        return list;
+        OperatorKind op = operandPair.operator;
+        ExpressionItem left;
+        ExpressionItem right;
+        BinaryExpression binaryExpression;
+        left = operandPair.expressionItem;
+        right = items.get(next + 1).expressionItem;
+        binaryExpression = new BinaryExpression(left, right, op);
+        OperandPair nextOperandPair = items.get(next + 1);
+        items.remove(next);
+        items.set(next, new OperandPair(binaryExpression, nextOperandPair.operator));
+        return nextBinaryExpressionByOperatorPrecedence(items);
+    }
+
+    private int nextOperandPairByPrecedence(List<OperandPair> operandPairs) {
+        for (int i = 0, j = operandPairs.size(); i < j; i++) {
+            if (isHigherPrecedence(operandPairs.get(i).operator)) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    private boolean isHigherPrecedence(OperatorKind operator) {
+        return operator == MULTIPLICATION || operator == DIVISION || operator == REMINDER;
     }
 
     public static class OperandPair {
@@ -51,6 +76,11 @@ public class LongExpression extends ExpressionItem {
         public OperandPair(ExpressionItem expressionItem, OperatorKind operator) {
             this.expressionItem = expressionItem;
             this.operator = operator;
+        }
+
+        public OperandPair(ExpressionItem expressionItem) {
+            this.expressionItem = expressionItem;
+            this.operator = null;
         }
 
         public ExpressionItem getExpressionItem() {
