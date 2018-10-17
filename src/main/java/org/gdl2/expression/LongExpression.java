@@ -7,16 +7,16 @@ import static org.gdl2.expression.OperatorKind.*;
 
 /**
  * Any expression includes more than one pair of operands without any bracket.
- * <p/>
+ * <p></p>
  * Support operators:
  * Addition: +
  * Subtraction: -
  * Multiplication: *
  * Division: /
  * Remainder: %
- * Logic and: &&
- * Exponent: ^
+ * Logic and: {@literal &&}
  * Logic or: ||
+ * Exponent: ^
  */
 public class LongExpression extends ExpressionItem {
     private List<OperandPair> items;
