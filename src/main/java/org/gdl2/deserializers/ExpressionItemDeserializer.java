@@ -22,7 +22,7 @@ public class ExpressionItemDeserializer implements JsonDeserializer<ExpressionIt
         }
     }
 
-    ExpressionItem parse(String value) throws Exception {
+    public ExpressionItem parse(String value) throws Exception {
         ExpressionParser parser = new ExpressionParser(new StringReader(value));
         return parser.parse();
     }

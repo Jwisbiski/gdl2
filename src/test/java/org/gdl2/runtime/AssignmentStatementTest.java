@@ -52,6 +52,22 @@ public class AssignmentStatementTest extends TestCommon {
     }
 
     @Test
+    public void can_assign_DvQuantity_with_complex_arithmetic_expression_without_brackets() throws Exception {
+        String expression = "$gt0013.magnitude=(($gt0005.magnitude*$gt0006.magnitude/3600)^0.5)";
+        AssignmentExpression assignmentExpression = parseAssignmentExpression(expression);
+        inputMap.put("gt0005", asList(new DvQuantity("kg", 72.0, 1)));
+        inputMap.put("gt0006", asList(new DvQuantity("cm", 180, 1)));
+        Map<String, Class> typeMap = new HashMap<>();
+        typeMap.put("gt0013", DvQuantity.class);
+        interpreter.performAssignmentStatements(assignmentExpression, inputMap, typeMap, resultMap, null);
+        assertThat(resultMap.size(), is(1));
+        Object dataValue = resultMap.get("gt0013");
+        assertThat(dataValue, Matchers.instanceOf(DvQuantity.class));
+        DvQuantity dvQuantity = (DvQuantity) dataValue;
+        assertThat(dvQuantity.getMagnitude(), closeTo(1.90, 0.1));
+    }
+
+    @Test
     public void can_assign_dv_quantity_with_string_value() throws Exception {
         Guideline guideline = loadGuideline("Set_dv_quantity_value_test.v1.gdl2");
         Map<String, List<Object>> result = interpreter.execute(guideline, new ArrayList<>()).getResult();
@@ -82,6 +98,24 @@ public class AssignmentStatementTest extends TestCommon {
     @Test
     public void can_assign_DvCount_with_additions_of_several_DvOrdinals() throws Exception {
         String expression = "$gt0016.magnitude=(((((($gt0009.value+$gt0010.value)+$gt0011.value)+$gt0015.value)+$gt0012.value)+$gt0013.value)+$gt0014.value)";
+        AssignmentExpression assignmentExpression = parseAssignmentExpression(expression);
+        inputMap.put("gt0009", asList(new DvOrdinal(0, "one", "terminology", "code")));
+        inputMap.put("gt0010", asList(new DvOrdinal(1, "one", "terminology", "code")));
+        inputMap.put("gt0011", asList(new DvOrdinal(1, "one", "terminology", "code")));
+        inputMap.put("gt0012", asList(new DvOrdinal(0, "one", "terminology", "code")));
+        inputMap.put("gt0013", asList(new DvOrdinal(0, "one", "terminology", "code")));
+        inputMap.put("gt0014", asList(new DvOrdinal(0, "one", "terminology", "code")));
+        inputMap.put("gt0015", asList(new DvOrdinal(1, "one", "terminology", "code")));
+        interpreter.performAssignmentStatements(assignmentExpression, inputMap, new HashMap<>(), resultMap);
+        assertThat(resultMap.size(), is(1));
+        Object dataValue = resultMap.get("gt0016");
+        assertThat(dataValue, Matchers.instanceOf(DvCount.class));
+        assertThat(((DvCount) dataValue).getMagnitude(), is(3));
+    }
+
+    @Test
+    public void can_assign_DvCount_with_additions_of_several_DvOrdinals_without_brackets() throws Exception {
+        String expression = "$gt0016.magnitude=($gt0009.value+$gt0010.value+$gt0011.value+$gt0015.value+$gt0012.value+$gt0013.value+$gt0014.value)";
         AssignmentExpression assignmentExpression = parseAssignmentExpression(expression);
         inputMap.put("gt0009", asList(new DvOrdinal(0, "one", "terminology", "code")));
         inputMap.put("gt0010", asList(new DvOrdinal(1, "one", "terminology", "code")));
