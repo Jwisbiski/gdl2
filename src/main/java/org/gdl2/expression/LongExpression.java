@@ -15,6 +15,7 @@ import static org.gdl2.expression.OperatorKind.*;
  * Division: /
  * Remainder: %
  * Logic and: &&
+ * Exponent: ^
  * Logic or: ||
  */
 public class LongExpression extends ExpressionItem {
@@ -58,6 +59,11 @@ public class LongExpression extends ExpressionItem {
 
     private int nextOperandPairByPrecedence(List<OperandPair> operandPairs) {
         for (int i = 0, j = operandPairs.size(); i < j; i++) {
+            if (isHighestPrecedence(operandPairs.get(i).operator)) {
+                return i;
+            }
+        }
+        for (int i = 0, j = operandPairs.size(); i < j; i++) {
             if (isHigherPrecedence(operandPairs.get(i).operator)) {
                 return i;
             }
@@ -67,6 +73,10 @@ public class LongExpression extends ExpressionItem {
 
     private boolean isHigherPrecedence(OperatorKind operator) {
         return operator == MULTIPLICATION || operator == DIVISION || operator == REMINDER;
+    }
+
+    private boolean isHighestPrecedence(OperatorKind operator) {
+        return operator == EXPONENT;
     }
 
     public static class OperandPair {

@@ -81,6 +81,20 @@ public class LongExpressionTest {
         assertThat(binaryExpressions.toString(), is("($gt0002+0.317)-((($gt0004/100)*$gt0006)%2)"));
     }
 
+    @Test
+    public void can_handle_addition_exponentiation_subtraction_division_multiplication_reminder_with_constants() {
+        longExpression = parse("$gt0002 + 0.317 ^ $gt0003 - $gt0004 / 100 * $gt0006 % 2");
+        binaryExpressions = longExpression.toBinaryExpression();
+        assertThat(binaryExpressions.toString(), is("($gt0002+(0.317^$gt0003))-((($gt0004/100)*$gt0006)%2)"));
+    }
+
+    @Test
+    public void can_handle_addition_exponentiation() {
+        longExpression = parse("$gt0002 + $gt0003 ^ 2");
+        binaryExpressions = longExpression.toBinaryExpression();
+        assertThat(binaryExpressions.toString(), is("$gt0002+($gt0003^2)"));
+    }
+
     private LongExpression parse(String expression) {
         try {
             ExpressionItem expressionItem = deserializer.parse(expression);
