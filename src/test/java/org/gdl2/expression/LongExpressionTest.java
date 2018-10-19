@@ -14,6 +14,7 @@ public class LongExpressionTest {
     @Test
     public void can_handle_two_additions() {
         longExpression = parse("$gt0002 + $gt0003 + $gt0004");
+        assertThat(longExpression.toString(), is("$gt0002+$gt0003+$gt0004"));
         binaryExpressions = longExpression.toBinaryExpression();
         assertThat(binaryExpressions.toString(), is("($gt0002+$gt0003)+$gt0004"));
     }
@@ -21,6 +22,7 @@ public class LongExpressionTest {
     @Test
     public void can_handle_two_additions_with_number() {
         longExpression = parse("$gt0002 + $gt0003 + 1200");
+        assertThat(longExpression.toString(), is("$gt0002+$gt0003+1200"));
         binaryExpressions = longExpression.toBinaryExpression();
         assertThat(binaryExpressions.toString(), is("($gt0002+$gt0003)+1200"));
     }
@@ -28,6 +30,7 @@ public class LongExpressionTest {
     @Test
     public void can_handle_three_additions() {
         longExpression = parse("$gt0002 + $gt0003 + $gt0004 + $gt0005");
+        assertThat(longExpression.toString(), is("$gt0002+$gt0003+$gt0004+$gt0005"));
         binaryExpressions = longExpression.toBinaryExpression();
         assertThat(binaryExpressions.toString(), is("(($gt0002+$gt0003)+$gt0004)+$gt0005"));
     }
@@ -35,6 +38,7 @@ public class LongExpressionTest {
     @Test
     public void can_handle_three_logical_or() {
         longExpression = parse("$gt0002 || $gt0003 || $gt0004 || $gt0005");
+        assertThat(longExpression.toString(), is("$gt0002||$gt0003||$gt0004||$gt0005"));
         binaryExpressions = longExpression.toBinaryExpression();
         assertThat(binaryExpressions.toString(), is("(($gt0002||$gt0003)||$gt0004)||$gt0005"));
     }
@@ -42,6 +46,7 @@ public class LongExpressionTest {
     @Test
     public void can_handle_three_logical_and() {
         longExpression = parse("$gt0002 && $gt0003 && $gt0004 && $gt0005");
+        assertThat(longExpression.toString(), is("$gt0002&&$gt0003&&$gt0004&&$gt0005"));
         binaryExpressions = longExpression.toBinaryExpression();
         assertThat(binaryExpressions.toString(), is("(($gt0002&&$gt0003)&&$gt0004)&&$gt0005"));
     }
@@ -49,6 +54,7 @@ public class LongExpressionTest {
     @Test
     public void can_handle_addition_multiplication() {
         longExpression = parse("$gt0002 + $gt0003 * $gt0004");
+        assertThat(longExpression.toString(), is("$gt0002+$gt0003*$gt0004"));
         binaryExpressions = longExpression.toBinaryExpression();
         assertThat(binaryExpressions.toString(), is("$gt0002+($gt0003*$gt0004)"));
     }
@@ -56,6 +62,7 @@ public class LongExpressionTest {
     @Test
     public void can_handle_addition_multiplication_division() {
         longExpression = parse("$gt0002 + $gt0003 * $gt0004 - $gt0005");
+        assertThat(longExpression.toString(), is("$gt0002+$gt0003*$gt0004-$gt0005"));
         binaryExpressions = longExpression.toBinaryExpression();
         assertThat(binaryExpressions.toString(), is("($gt0002+($gt0003*$gt0004))-$gt0005"));
     }
@@ -63,6 +70,7 @@ public class LongExpressionTest {
     @Test
     public void can_handle_multiplication_subtraction_division_addition_multiplication() {
         longExpression = parse("$gt0002 * $gt0003 - $gt0004 / $gt0005 + $gt0006 * $gt0007");
+        assertThat(longExpression.toString(), is("$gt0002*$gt0003-$gt0004/$gt0005+$gt0006*$gt0007"));
         binaryExpressions = longExpression.toBinaryExpression();
         assertThat(binaryExpressions.toString(), is("(($gt0002*$gt0003)-($gt0004/$gt0005))+($gt0006*$gt0007)"));
     }
@@ -70,6 +78,7 @@ public class LongExpressionTest {
     @Test
     public void can_handle_addition_subtraction_division_multiplication_reminder() {
         longExpression = parse("$gt0002 + $gt0003 - $gt0004 / $gt0005 * $gt0006 % $gt0007");
+        assertThat(longExpression.toString(), is("$gt0002+$gt0003-$gt0004/$gt0005*$gt0006%$gt0007"));
         binaryExpressions = longExpression.toBinaryExpression();
         assertThat(binaryExpressions.toString(), is("($gt0002+$gt0003)-((($gt0004/$gt0005)*$gt0006)%$gt0007)"));
     }
@@ -77,6 +86,7 @@ public class LongExpressionTest {
     @Test
     public void can_handle_addition_subtraction_division_multiplication_reminder_with_constants() {
         longExpression = parse("$gt0002 + 0.317 - $gt0004 / 100 * $gt0006 % 2");
+        assertThat(longExpression.toString(), is("$gt0002+0.317-$gt0004/100*$gt0006%2"));
         binaryExpressions = longExpression.toBinaryExpression();
         assertThat(binaryExpressions.toString(), is("($gt0002+0.317)-((($gt0004/100)*$gt0006)%2)"));
     }
@@ -84,6 +94,7 @@ public class LongExpressionTest {
     @Test
     public void can_handle_addition_exponentiation_subtraction_division_multiplication_reminder_with_constants() {
         longExpression = parse("$gt0002 + 0.317 ^ $gt0003 - $gt0004 / 100 * $gt0006 % 2");
+        assertThat(longExpression.toString(), is("$gt0002+0.317^$gt0003-$gt0004/100*$gt0006%2"));
         binaryExpressions = longExpression.toBinaryExpression();
         assertThat(binaryExpressions.toString(), is("($gt0002+(0.317^$gt0003))-((($gt0004/100)*$gt0006)%2)"));
     }
@@ -91,6 +102,7 @@ public class LongExpressionTest {
     @Test
     public void can_handle_addition_exponentiation() {
         longExpression = parse("$gt0002 + $gt0003 ^ 2");
+        assertThat(longExpression.toString(), is("$gt0002+$gt0003^2"));
         binaryExpressions = longExpression.toBinaryExpression();
         assertThat(binaryExpressions.toString(), is("$gt0002+($gt0003^2)"));
     }

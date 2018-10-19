@@ -25,6 +25,18 @@ public class LongExpression extends ExpressionItem {
         this.items = items;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        for (OperandPair operandPair : this.items) {
+            buf.append(operandPair.expressionItem.toString());
+            if (!operandPair.isLast()) {
+                buf.append(operandPair.operator.getSymbol());
+            }
+        }
+        return buf.toString();
+    }
+
     public List<OperandPair> getItems() {
         return Collections.unmodifiableList(items);
     }
