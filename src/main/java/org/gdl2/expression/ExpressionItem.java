@@ -21,6 +21,10 @@ public abstract class ExpressionItem {
             BinaryExpression binaryExpression = (BinaryExpression) expressionItem;
             getVariableIds(binaryExpression.getLeft(), idList);
             getVariableIds(binaryExpression.getRight(), idList);
+        } else if (expressionItem instanceof LongExpression) {
+            LongExpression longExpression = (LongExpression) expressionItem;
+            BinaryExpression binaryExpression = longExpression.toBinaryExpression();
+            getVariableIds(binaryExpression, idList);
         } else if (expressionItem instanceof UnaryExpression) {
             UnaryExpression unaryExpression = (UnaryExpression) expressionItem;
             getVariableIds(unaryExpression.getOperand(), idList);

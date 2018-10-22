@@ -12,6 +12,14 @@ public class LongExpressionTest {
     private BinaryExpression binaryExpressions;
 
     @Test
+    public void can_handle_single_addition() {
+        longExpression = parse("$gt0002 + $gt0003");
+        assertThat(longExpression.toString(), is("$gt0002+$gt0003"));
+        binaryExpressions = longExpression.toBinaryExpression();
+        assertThat(binaryExpressions.toString(), is("$gt0002+$gt0003"));
+    }
+
+    @Test
     public void can_handle_two_additions() {
         longExpression = parse("$gt0002 + $gt0003 + $gt0004");
         assertThat(longExpression.toString(), is("$gt0002+$gt0003+$gt0004"));
@@ -105,6 +113,56 @@ public class LongExpressionTest {
         assertThat(longExpression.toString(), is("$gt0002+$gt0003^2"));
         binaryExpressions = longExpression.toBinaryExpression();
         assertThat(binaryExpressions.toString(), is("$gt0002+($gt0003^2)"));
+    }
+
+    @Test
+    public void can_handle_function() {
+        longExpression = parse("2.56-0.926*log($gt0008)+1.6");
+        assertThat(longExpression.toString(), is("2.56-0.926*log($gt0008)+1.6"));
+        binaryExpressions = longExpression.toBinaryExpression();
+        assertThat(binaryExpressions.toString(), is("(2.56-(0.926*log($gt0008)))+1.6"));
+    }
+
+    @Test
+    public void can_handle_binary_expression() {
+        longExpression = parse("2.56-0.926*($gt0008.magnitude/180)+1.6");
+        assertThat(longExpression.toString(), is("2.56-0.926*($gt0008.magnitude/180)+1.6"));
+        binaryExpressions = longExpression.toBinaryExpression();
+        assertThat(binaryExpressions.toString(), is("(2.56-(0.926*$gt0008.magnitude/180))+1.6"));
+    }
+
+    @Test
+    public void can_handle_both_function_and_binary_expression() {
+        longExpression = parse("2.56-0.926*log($gt0008/180)+1.6");
+        assertThat(longExpression.toString(), is("2.56-0.926*log($gt0008/180)+1.6"));
+        binaryExpressions = longExpression.toBinaryExpression();
+        assertThat(binaryExpressions.toString(), is("(2.56-(0.926*log($gt0008/180)))+1.6"));
+    }
+
+    @Test
+    public void can_check_equality_based_on_value() {
+        longExpression = parse("2.56-0.926*log($gt0008)+1.6");
+        LongExpression longExpression2 = parse("2.56-0.926*log($gt0008)+1.6");
+        assertThat(longExpression.equals(longExpression2), is(true));
+        assertThat(longExpression2.equals(longExpression), is(true));
+    }
+
+    @Test
+    public void can_handle_body_surface_area() {
+        longExpression = parse("(($gt0005.magnitude*$gt0006.magnitude)/3600)^0.5");
+        assertThat(longExpression.toString(), is("(($gt0005.magnitude*$gt0006.magnitude)/3600)^0.5"));
+    }
+
+    @Test
+    public void can_handle_Revised_Lund_Malmo_Study_equation() {
+        longExpression = parse("e^(2.56-0.926*log($gt0008.magnitude/180)) - 0.0158*$gt0005.magnitude + 0.438*log($gt0005.magnitude)");
+        assertThat(longExpression.toString(), is("e^(2.56-0.926*log($gt0008.magnitude/180))-0.0158*$gt0005.magnitude+0.438*log($gt0005.magnitude)"));
+    }
+
+    @Test // TODO need to fix parenthesis around negative number
+    public void can_handle_CKD_EPI_Study_equation() {
+        longExpression = parse("144*($gt0003.magnitude/62)^(-0.329)*0.993^($currentDateTime.year-$gt0008.year)");
+        assertThat(longExpression.toString(), is("144*($gt0003.magnitude/62)^-0.329*0.993^($currentDateTime.year-$gt0008.year)"));
     }
 
     private LongExpression parse(String expression) {

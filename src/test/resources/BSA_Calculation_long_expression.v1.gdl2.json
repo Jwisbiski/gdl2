@@ -1,6 +1,6 @@
 {
   "gdl_version": "2.0",
-  "id": "BSA_Calculation.v1",
+  "id": "BSA_Calculation_long_expression.v1",
   "concept": "gt0015",
   "language": {
     "original_language": "ISO_639-1::en"
@@ -128,7 +128,7 @@
           "$gt0006.unit=='cm'"
         ],
         "then": [
-          "$gt0013.magnitude=(($gt0005.magnitude*$gt0006.magnitude)/3600)^0.5",
+          "$gt0013.magnitude=($gt0005.magnitude*$gt0006.magnitude/3600)^0.5",
           "$gt0013.precision=2",
           "$gt0013.unit='m2'"
         ],

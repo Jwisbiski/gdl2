@@ -454,7 +454,7 @@ ExpressionItem expression_node() :
   List<Variable> ifVariables = null;
 }
 {
-  ( LOOKAHEAD(long_expression())
+  ( LOOKAHEAD( long_expression() )
     ret = long_expression()
   |
     (
@@ -578,16 +578,25 @@ ExpressionItem expression_node() :
         {
           op = OperatorKind.IS_NOT_A;
         }
-      | LOOKAHEAD(4)
+      |
+        LOOKAHEAD(4)
         < SYM_ASSIGNMENT >
         {
           op = OperatorKind.ASSIGNMENT;
         }
-        item2 = expression_leaf()
+        (
+          LOOKAHEAD(long_expression())
+          item2 = long_expression()
+        |
+          LOOKAHEAD(expression_item())
+          item2 = expression_item()
+        )
         {
           return new AssignmentExpression((Variable) item, item2);
         }
-      | assignmentExpressions = assignmentExpressions()
+      |
+        LOOKAHEAD(4)
+        assignmentExpressions = assignmentExpressions()
         {
           return new CreateInstanceExpression((Variable) item, assignmentExpressions);
         }
@@ -864,37 +873,15 @@ LongExpression long_expression() :
   List items = new ArrayList();
 }
 {
-  (
-    LOOKAHEAD(variable())
-    item = variable()
-  |
-    LOOKAHEAD(constant_expression())
-    item = constant_expression()
-  )
-  operator = long_expression_operator()
-  {
-    items.add(new LongExpression.OperandPair(item, operator));
-  }
-  (
-    LOOKAHEAD(variable())
-    item = variable()
-  |
-    LOOKAHEAD(constant_expression())
-    item = constant_expression()
-  )
+  item = long_expression_operand()
   operator = long_expression_operator()
   {
     items.add(new LongExpression.OperandPair(item, operator));
     operator = null;
   }
   (
-    (
-      LOOKAHEAD(variable())
-      item = variable()
-    |
-      LOOKAHEAD(constant_expression())
-      item = constant_expression()
-    )
+    LOOKAHEAD(2)
+    item = long_expression_operand()
     [ operator = long_expression_operator() ]
     {
       items.add(new LongExpression.OperandPair(item, operator));
@@ -903,6 +890,60 @@ LongExpression long_expression() :
   )*
   {
     return new LongExpression(items);
+  }
+}
+
+ExpressionItem long_expression_operand() :
+{
+  ExpressionItem item;
+}
+{
+  (
+     < SYM_L_PARENTHESIS >
+      (
+        LOOKAHEAD(expression_node())
+        item = expression_node()
+      | LOOKAHEAD(variable())
+        item = variable()
+      | LOOKAHEAD(constant_expression())
+        item = constant_expression()
+      )
+     < SYM_R_PARENTHESIS >
+  |
+    LOOKAHEAD( variable() )
+    item = variable()
+  |
+    LOOKAHEAD( constant_expression() )
+    item = constant_expression()
+  |
+    item = functional_expression()
+  )
+  {
+    return item;
+  }
+}
+
+FunctionalExpression functional_expression() :
+{
+  Token t;
+  ExpressionItem item;
+}
+{
+  t = < SYM_MATH_FUNCTION >
+  < SYM_L_PARENTHESIS >
+    (
+      LOOKAHEAD(expression_node())
+      item = expression_node()
+    |
+      LOOKAHEAD(variable())
+      item = variable()
+    |
+      LOOKAHEAD(constant_expression())
+      item = constant_expression()
+    )
+  < SYM_R_PARENTHESIS >
+  {
+    return FunctionalExpression.create(new Function(t.image), item);
   }
 }
 
