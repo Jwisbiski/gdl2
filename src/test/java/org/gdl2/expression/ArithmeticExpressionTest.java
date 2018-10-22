@@ -8,7 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class ArithmeticExpressionTest {
 
     @Test
-    public void testPrintNestedExpressions() throws Exception {
+    public void testPrintNestedExpressions() {
         BinaryExpression exp1 = new BinaryExpression(new Variable("gt0007"),
                 new ConstantExpression("70"), OperatorKind.DIVISION);
         BinaryExpression exp2 = new BinaryExpression(exp1,
@@ -23,7 +23,7 @@ public class ArithmeticExpressionTest {
     }
 
     @Test
-    public void testPrintNestedExpressionsWithVariableName() throws Exception {
+    public void testPrintNestedExpressionsWithVariableName() {
         BinaryExpression exp1 = new BinaryExpression(new Variable("gt0007", "weight"),
                 new ConstantExpression("70"), OperatorKind.DIVISION);
         BinaryExpression exp2 = new BinaryExpression(exp1,

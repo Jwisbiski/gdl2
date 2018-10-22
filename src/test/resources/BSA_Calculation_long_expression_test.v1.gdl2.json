@@ -67,13 +67,6 @@
     }
   },
   "definition": {
-    "default_actions": [
-      "$gt0004.unit='kg/m2'"
-    ],
-    "pre_conditions": [
-      "$gt0005.unit=='kg'",
-      "$gt0006.unit=='cm'"
-    ],
     "data_bindings": {
       "gt0019": {
         "id": "gt0019",
@@ -93,7 +86,6 @@
       "gt0016": {
         "id": "gt0016",
         "model_id": "openEHR-EHR-OBSERVATION.body_weight.v1",
-        "template_id": "body_weight_template.v1",
         "type": "INPUT",
         "elements": {
           "gt0005": {
@@ -111,7 +103,7 @@
         "type": "INPUT",
         "elements": {
           "gt0006": {
-            "id": "height",
+            "id": "gt0006",
             "path": "/data[at0001]/events[at0002]/data[at0003]/items[at0004]"
           }
         },
@@ -128,7 +120,7 @@
           "$gt0006.unit=='cm'"
         ],
         "then": [
-          "$gt0013.magnitude=(($gt0005.magnitude*$gt0006.magnitude)/3600)^0.5",
+          "$gt0013.magnitude=($gt0005.magnitude*$gt0006.magnitude/3600)^0.5",
           "$gt0013.precision=2",
           "$gt0013.unit='m2'"
         ],

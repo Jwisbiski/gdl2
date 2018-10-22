@@ -1,5 +1,8 @@
 package org.gdl2.expression;
 
+import lombok.EqualsAndHashCode;
+import lombok.Value;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -18,6 +21,8 @@ import static org.gdl2.expression.OperatorKind.*;
  * Logic or: ||
  * Exponent: ^
  */
+@Value
+@EqualsAndHashCode(callSuper = false)
 public class LongExpression extends ExpressionItem {
     private List<OperandPair> items;
 
@@ -29,7 +34,14 @@ public class LongExpression extends ExpressionItem {
     public String toString() {
         StringBuilder buf = new StringBuilder();
         for (OperandPair operandPair : this.items) {
-            buf.append(operandPair.expressionItem.toString());
+            ExpressionItem expressionItem = operandPair.expressionItem;
+            if (expressionItem instanceof LongExpression) {
+                buf.append("(");
+                buf.append(expressionItem.toString());
+                buf.append(")");
+            } else {
+                buf.append(expressionItem.toString());
+            }
             if (!operandPair.isLast()) {
                 buf.append(operandPair.operator.getSymbol());
             }
@@ -91,6 +103,7 @@ public class LongExpression extends ExpressionItem {
         return operator == EXPONENT;
     }
 
+    @Value
     public static class OperandPair {
         private ExpressionItem expressionItem;
         private OperatorKind operator;
