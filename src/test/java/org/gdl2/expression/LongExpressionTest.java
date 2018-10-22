@@ -124,7 +124,7 @@ public class LongExpressionTest {
     }
 
     @Test
-    public void can_handle_binary_expression() {
+    public void can_handle_parentheses_within_expression() {
         longExpression = parse("2.56-0.926*($gt0008.magnitude/180)+1.6");
         assertThat(longExpression.toString(), is("2.56-0.926*($gt0008.magnitude/180)+1.6"));
         binaryExpressions = longExpression.toBinaryExpression();
@@ -132,7 +132,7 @@ public class LongExpressionTest {
     }
 
     @Test
-    public void can_handle_both_function_and_binary_expression() {
+    public void can_handle_both_function_and_parentheses() {
         longExpression = parse("2.56-0.926*log($gt0008/180)+1.6");
         assertThat(longExpression.toString(), is("2.56-0.926*log($gt0008/180)+1.6"));
         binaryExpressions = longExpression.toBinaryExpression();
@@ -149,8 +149,8 @@ public class LongExpressionTest {
 
     @Test
     public void can_handle_body_surface_area() {
-        longExpression = parse("(($gt0005.magnitude*$gt0006.magnitude)/3600)^0.5");
-        assertThat(longExpression.toString(), is("(($gt0005.magnitude*$gt0006.magnitude)/3600)^0.5"));
+        longExpression = parse("($gt0005.magnitude*$gt0006.magnitude/3600)^0.5");
+        assertThat(longExpression.toString(), is("($gt0005.magnitude*$gt0006.magnitude/3600)^0.5"));
     }
 
     @Test
