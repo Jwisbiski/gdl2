@@ -24,7 +24,6 @@ public class ExpressionEvaluationTest extends TestCommon {
     private HashMap<String, List<Object>> inputMap;
     private Object value;
 
-
     @BeforeMethod
     public void setUp() {
         interpreter = new Interpreter();
@@ -85,6 +84,56 @@ public class ExpressionEvaluationTest extends TestCommon {
         inputMap.put("gt0025", asList(new DvQuantity("d", 30, 0)));
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
         assertThat(value, is(true));
+    }
+
+    @Test
+    public void can_return_false_evaluate_equality_of_two_dv_quantity_with_different_units() {
+        expressionItem = parseExpression("$gt0025==30,d");
+        inputMap.put("gt0025", asList(new DvQuantity("a", 30, 0)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(false));
+    }
+
+    @Test(expectedExceptions = ExecutionException.class)
+    public void should_throw_exception_when_evaluate_equality_of_two_dv_quantity_with_mg_and_kg() {
+        expressionItem = parseExpression("$gt0025==40,kg");
+        inputMap.put("gt0025", asList(new DvQuantity("mg", 30, 0)));
+        interpreter.evaluateExpressionItem(expressionItem, inputMap);
+    }
+
+    @Test(expectedExceptions = ExecutionException.class)
+    public void should_throw_exception_when_evaluate_inequality_of_two_dv_quantity_with_mg_and_kg() {
+        expressionItem = parseExpression("$gt0025!=40,kg");
+        inputMap.put("gt0025", asList(new DvQuantity("mg", 30, 0)));
+        interpreter.evaluateExpressionItem(expressionItem, inputMap);
+    }
+
+    @Test(expectedExceptions = ExecutionException.class)
+    public void should_throw_exception_when_evaluate_greater_than_of_two_dv_quantity_with_mg_and_kg() {
+        expressionItem = parseExpression("$gt0025>40,kg");
+        inputMap.put("gt0025", asList(new DvQuantity("mg", 30, 0)));
+        interpreter.evaluateExpressionItem(expressionItem, inputMap);
+    }
+
+    @Test(expectedExceptions = ExecutionException.class)
+    public void should_throw_exception_when_evaluate_greater_than_or_equal_of_two_dv_quantity_with_mg_and_kg() {
+        expressionItem = parseExpression("$gt0025>=40,kg");
+        inputMap.put("gt0025", asList(new DvQuantity("mg", 30, 0)));
+        interpreter.evaluateExpressionItem(expressionItem, inputMap);
+    }
+
+    @Test(expectedExceptions = ExecutionException.class)
+    public void should_throw_exception_when_evaluate_less_than_of_two_dv_quantity_with_mg_and_kg() {
+        expressionItem = parseExpression("$gt0025<40,kg");
+        inputMap.put("gt0025", asList(new DvQuantity("mg", 30, 0)));
+        interpreter.evaluateExpressionItem(expressionItem, inputMap);
+    }
+
+    @Test(expectedExceptions = ExecutionException.class)
+    public void should_throw_exception_when_evaluate_less_than_or_equal_of_two_dv_quantity_with_mg_and_kg() {
+        expressionItem = parseExpression("$gt0025<=40,kg");
+        inputMap.put("gt0025", asList(new DvQuantity("mg", 30, 0)));
+        interpreter.evaluateExpressionItem(expressionItem, inputMap);
     }
 
     @Test
@@ -429,10 +478,9 @@ public class ExpressionEvaluationTest extends TestCommon {
         assertThat(value, is(true));
     }
 
-    @Test
+    @Test(expectedExceptions = ExecutionException.class)
     public void can_evaluate_logic_operator_with_null_value() {
         expressionItem = parseExpression("$gt0001.value>1");
-        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
-        assertThat(value, is(false));
+        interpreter.evaluateExpressionItem(expressionItem, inputMap);
     }
 }

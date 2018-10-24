@@ -1067,7 +1067,7 @@ public class Interpreter {
         if (isTimePeriodUnits(dvQuantity.getUnit())) {
             return convertTimeQuantityToPeriodOrMilliSeconds(dvQuantity);
         }
-        return dvQuantity.getMagnitude();
+        return dvQuantity;
     }
 
     private boolean isTimePeriodUnits(String unit) {
@@ -1213,10 +1213,13 @@ public class Interpreter {
         }
         Object leftValue = leftExpression == null ? null : evaluateExpressionItem(leftExpression, input, guideline, firedRules);
         Object rightValue = rightExpression == null ? null : evaluateExpressionItem(rightExpression, input, guideline, firedRules);
+
         if (leftValue instanceof TemporalAmount || rightValue instanceof TemporalAmount) {
             return evaluateDateTimeExpression(operator, leftValue, rightValue);
         } else if (isArithmeticOperator(operator)) {
             return evaluateArithmeticExpression(operator, leftValue, rightValue, expressionItem);
+        } else if (isRelationalOperator(operator)) {
+            return evaluateRelationalExpression(operator, leftValue, rightValue, expressionItem);
         } else if (operator == EQUALITY) {
             return evaluateEqualityExpression(leftValue, rightValue);
         } else if (operator == UNEQUAL) {
@@ -1229,6 +1232,16 @@ public class Interpreter {
             return (Boolean) leftValue && (Boolean) rightValue;
         } else {
             throw new IllegalArgumentException("Unsupported operator in expressionItem: " + expressionItem + ", leftValue: " + leftValue + ", rightValue: " + rightValue);
+        }
+    }
+
+    private void checkDvQuantityUnits(Object leftValue, Object rightValue) {
+        if (leftValue instanceof DvQuantity && rightValue instanceof DvQuantity) {
+            DvQuantity leftQuantity = (DvQuantity) leftValue;
+            DvQuantity rightQuantity = (DvQuantity) rightValue;
+            if (!leftQuantity.getUnit().equals(rightQuantity.getUnit())) {
+                throw new ExecutionException("Different units in DvQuantity equality check");
+            }
         }
     }
 
@@ -1296,6 +1309,7 @@ public class Interpreter {
     }
 
     private boolean evaluateEqualityExpression(Object leftValue, Object rightValue) {
+        checkDvQuantityUnits(leftValue, rightValue);
         if (leftValue == null && rightValue == null) {
             return true;
         } else if (leftValue != null) {
@@ -1315,7 +1329,8 @@ public class Interpreter {
                 boolean leftValueBoolean = Boolean.valueOf(leftValue.toString());
                 return rightValue.equals(leftValueBoolean);
             } else if (leftValue instanceof DvQuantity) {
-                leftValue = evaluateQuantityValue((DvQuantity) leftValue);
+                DvQuantity leftDvQuantity = (DvQuantity) leftValue;
+                leftValue = evaluateQuantityValue(leftDvQuantity);
             } else if (rightValue instanceof Double) {
                 Double leftValueDouble = Double.valueOf(leftValue.toString());
                 return leftValueDouble.equals(rightValue);
@@ -1328,10 +1343,10 @@ public class Interpreter {
 
     private Object evaluateArithmeticExpression(OperatorKind operator, Object leftValue, Object rightValue, ExpressionItem expressionItem) {
         if ((leftValue == null || rightValue == null)) {
-            if (isLogicalOperator(operator)) {
+            if (isRelationalOperator(operator)) {
                 return false;
             } else {
-                throw new IllegalArgumentException("Null value in expression item: " + expressionItem + ", leftValue: " + leftValue + ", rightValue: " + rightValue);
+                throw new ExecutionException("Null value in expression item: " + expressionItem + ", leftValue: " + leftValue + ", rightValue: " + rightValue);
             }
         }
         if (ADDITION.equals(operator) && leftValue instanceof String && rightValue instanceof String) {
@@ -1351,6 +1366,23 @@ public class Interpreter {
                     return left / right;
                 case EXPONENT:
                     return Math.pow(left, right);
+                default:
+                    throw new IllegalArgumentException("Unexpected operator type in expressionItem: " + operator);
+            }
+        } catch (NumberFormatException nfe) {
+            throw new IllegalArgumentException("Unexpected double value in expressionItem: " + expressionItem + ". leftValue: " + leftValue + ", rightValue: " + rightValue);
+        }
+    }
+
+    private Object evaluateRelationalExpression(OperatorKind operator, Object leftValue, Object rightValue, ExpressionItem expressionItem) {
+        checkDvQuantityUnits(leftValue, rightValue);
+        if ((leftValue == null || rightValue == null)) {
+            throw new ExecutionException("Null value in expression item: " + expressionItem + ", leftValue: " + leftValue + ", rightValue: " + rightValue);
+        }
+        try {
+            double left = convertObjectValueToDouble(leftValue);
+            double right = convertObjectValueToDouble(rightValue);
+            switch (operator) {
                 case GREATER_THAN:
                     return left > right;
                 case GREATER_THAN_OR_EQUAL:
@@ -1372,23 +1404,19 @@ public class Interpreter {
                 || operator == SUBTRACTION
                 || operator == MULTIPLICATION
                 || operator == DIVISION
-                || operator == EXPONENT
-                || operator == GREATER_THAN
+                || operator == EXPONENT;
+    }
+
+    private boolean isRelationalOperator(OperatorKind operator) {
+        return operator == GREATER_THAN
                 || operator == GREATER_THAN_OR_EQUAL
                 || operator == LESS_THAN
                 || operator == LESS_THAN_OR_EQUAL;
     }
 
-    private boolean isLogicalOperator(OperatorKind operatorKind) {
-        return operatorKind == GREATER_THAN
-                || operatorKind == GREATER_THAN_OR_EQUAL
-                || operatorKind == LESS_THAN
-                || operatorKind == LESS_THAN_OR_EQUAL;
-    }
-
     private double convertObjectValueToDouble(Object dataValue) {
-        if (dataValue instanceof DvQuantity) { // TODO handle units
-            return Double.valueOf(evaluateQuantityValue((DvQuantity) dataValue).toString());
+        if (dataValue instanceof DvQuantity) {
+            return ((DvQuantity) dataValue).getMagnitude();
         } else if (dataValue instanceof DvDateTime) {
             return ((DvDateTime) dataValue).getDateTime().atZone(getRuntimeTimezoneId()).toInstant().toEpochMilli();
         } else if (dataValue instanceof ZonedDateTime) {
