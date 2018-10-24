@@ -193,7 +193,7 @@ public class EvaluateTimeExpressionTest extends TestCommon {
     @Test
     public void can_compare_datetime_and_months_expect_false() {
         expressionItem = parseExpression("$gt0113<=($currentDateTime-3,mo)");
-        inputMap.put("gt0013", asList(ZonedDateTime.parse("2017-01-10T00:00:00Z")));
+        inputMap.put("gt0113", asList(ZonedDateTime.parse("2017-01-10T00:00:00Z")));
         interpreter = new Interpreter(ZonedDateTime.parse("2017-04-09T23:59:59Z"));
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
         assertThat(value, is(false));
@@ -343,5 +343,61 @@ public class EvaluateTimeExpressionTest extends TestCommon {
         interpreter = new Interpreter(RuntimeConfiguration.builder().dateTimeFormatPattern("yyyy-MM-dd HH:mm").build());
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
         assertThat(value, is("2016-04-10 01:00"));
+    }
+
+    @Test
+    public void can_evaluate_greater_than_with_two_dv_quantity_with_days_years_expect_true() {
+        expressionItem = parseExpression("$gt0025>30,d");
+        inputMap.put("gt0025", asList(new DvQuantity("a", 30, 0)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
+    }
+
+    @Test
+    public void can_evaluate_less_than_with_two_dv_quantity_with_days_years_expect_false() {
+        expressionItem = parseExpression("$gt0025<30,d");
+        inputMap.put("gt0025", asList(new DvQuantity("a", 30, 0)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(false));
+    }
+
+    @Test
+    public void can_evaluate_greater_than_with_two_dv_quantity_with_months_years_expect_true() {
+        expressionItem = parseExpression("$gt0025>30,mo");
+        inputMap.put("gt0025", asList(new DvQuantity("a", 30, 0)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
+    }
+
+    @Test
+    public void can_evaluate_less_than_with_two_dv_quantity_with_months_years_expect_false() {
+        expressionItem = parseExpression("$gt0025<30,mo");
+        inputMap.put("gt0025", asList(new DvQuantity("a", 30, 0)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(false));
+    }
+
+    @Test
+    public void can_evaluate_greater_than_with_two_dv_quantity_with_months_days_expect_false() {
+        expressionItem = parseExpression("$gt0025>30,mo");
+        inputMap.put("gt0025", asList(new DvQuantity("d", 30, 0)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(false));
+    }
+
+    @Test
+    public void can_evaluate_less_than_with_two_dv_quantity_with_months_days_expect_true() {
+        expressionItem = parseExpression("$gt0025<30,mo");
+        inputMap.put("gt0025", asList(new DvQuantity("d", 30, 0)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
+    }
+
+    @Test
+    public void can_evaluate_less_than_with_27_days_and_1_month() {
+        expressionItem = parseExpression("$gt0025<1,mo");
+        inputMap.put("gt0025", asList(new DvQuantity("d", 27, 0)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
     }
 }
