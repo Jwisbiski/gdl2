@@ -25,4 +25,12 @@ public class DvQuantityTest {
         DvQuantity dvQuantity = DvQuantity.builder().unit("%").precision(1).magnitude(9.7402).build();
         assertThat(dvQuantity.toString(), is("9.7,%"));
     }
+
+    @Test
+    public void can_perform_equality_check() {
+        DvQuantity dvQuantity = DvQuantity.valueOf("100.8,kg");
+        DvQuantity dvQuantity2 = DvQuantity.valueOf("100.8,mg");
+        assertThat(dvQuantity.equals(dvQuantity2), is(false));
+        assertThat(dvQuantity2.equals(dvQuantity), is(false));
+    }
 }
