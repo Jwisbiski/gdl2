@@ -14,8 +14,18 @@ cache:
   paths:
     - .m2/repository
 
-build:
+.build:
   image: cdsregistry.azurecr.io/tools/docker-builder-jdk-10
+  stage: build
+  script:
+    - mvn package deploy --update-snapshots -P nexus,nexus-deploy
+  artifacts:
+    paths:
+      - target/*.jar
+    expire_in: 1 week
+
+build-jdk8:
+  image: cdsregistry.azurecr.io/tools/docker-builder
   stage: build
   script:
     - mvn package deploy --update-snapshots -P nexus,nexus-deploy
