@@ -53,6 +53,9 @@ public class Interpreter {
     private static final String LOG1P = "log1p";
     private static final String ROUND = "round";
     private static final String SQRT = "sqrt";
+    private static final String SIN = "sin";
+    private static final String COS = "cos";
+    private static final String TAN = "tan";
     private static final String ROOT = "/";
     private static final String CURRENT_INDEX = "current-index";
 
@@ -1116,6 +1119,12 @@ public class Interpreter {
             return Math.round(value);
         } else if (SQRT.equalsIgnoreCase(function)) {
             return Math.sqrt(value);
+        } else if (SIN.equalsIgnoreCase(function)) {
+            return Math.sin(value);
+        } else if (COS.equalsIgnoreCase(function)) {
+            return Math.cos(value);
+        } else if (TAN.equalsIgnoreCase(function)) {
+            return Math.tan(value);
         } else {
             throw new UnsupportedOperationException("Unsupported function: " + function);
         }

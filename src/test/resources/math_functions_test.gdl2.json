@@ -142,6 +142,36 @@
           "$gt0008.precision=2"
         ],
         "priority": 4
+      },
+      "gt0030": {
+        "id": "gt0030",
+        "when": [],
+        "then": [
+          "$gt0100.unit='1'",
+          "$gt0100.magnitude=sin(0.5)",
+          "$gt0100.precision=4"
+        ],
+        "priority": 100
+      },
+      "gt0031": {
+        "id": "gt0031",
+        "when": [],
+        "then": [
+          "$gt0101.unit='1'",
+          "$gt0101.magnitude=cos(0.5)",
+          "$gt0101.precision=4"
+        ],
+        "priority": 101
+      },
+      "gt0032": {
+        "id": "gt0032",
+        "when": [],
+        "then": [
+          "$gt0102.unit='1'",
+          "$gt0102.magnitude=tan(0.5)",
+          "$gt0102.precision=4"
+        ],
+        "priority": 102
       }
     }
   },
