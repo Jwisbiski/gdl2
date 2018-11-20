@@ -1,5 +1,6 @@
 package org.gdl2.expression;
 
+import org.gdl2.deserializers.ExpressionItemDeserializer;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -9,6 +10,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class FunctionalExpressionTest {
+    private ExpressionItemDeserializer deserializer = new ExpressionItemDeserializer();
+    private FunctionalExpression functionalExpression;
 
     @Test
     public void testCreateSimpleFunctionalExpression() {
@@ -35,5 +38,33 @@ public class FunctionalExpressionTest {
         FunctionalExpression fe = FunctionalExpression.create(new Function("max"),
                 items);
         assertThat(fe.toString(), is("max(180,($gt0001*2))"));
+    }
+
+    @Test
+    public void testCanParseTrigonometricFunctionSin() {
+        functionalExpression = parse("sin($gt0001)");
+        assertThat(functionalExpression.toString(), is("sin($gt0001)"));
+    }
+
+    @Test
+    public void testCanParseTrigonometricFunctionCos() {
+        functionalExpression = parse("cos(0.7853)");
+        assertThat(functionalExpression.toString(), is("cos(0.7853)"));
+    }
+
+    @Test
+    public void testCanParseTrigonometricFunctionTan() {
+        functionalExpression = parse("tan(0.7853)");
+        assertThat(functionalExpression.toString(), is("tan(0.7853)"));
+    }
+
+    private FunctionalExpression parse(String expression) {
+        try {
+            ExpressionItem expressionItem = deserializer.parse(expression);
+            return (FunctionalExpression) expressionItem;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
     }
 }

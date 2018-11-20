@@ -114,7 +114,7 @@ TOKEN : /* SYMBOLS - common */
 | < SYM_ANY : "any" >
 | < SYM_MAX : "max" >
 | < SYM_MIN : "min" >
-| < SYM_MATH_FUNCTION : "abs" | "ceil" | "exp" | "floor" | "log" | "log10" |  "log1p" | "round" | "sqrt">
+| < SYM_MATH_FUNCTION : "abs" | "ceil" | "exp" | "floor" | "log" | "log10" |  "log1p" | "round" | "sqrt" | "sin" | "cos"| "tan">
 | < SYM_E : "e" >
 | < SYM_FIRED : "fired" >
 | < SYM_NOT_FIRED : "!fired" >
