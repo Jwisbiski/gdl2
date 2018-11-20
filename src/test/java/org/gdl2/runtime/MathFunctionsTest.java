@@ -9,21 +9,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
 
 public class MathFunctionsTest extends TestCommon {
     private final static String MATH_FUNCTIONS_TEST_GUIDE = "math_functions_test.gdl2";
-
     private Map<String, List<Object>> result;
     private List<Object> list;
+    private DvQuantity dvQuantity;
 
     @BeforeMethod
     public void setUp() throws Exception {
         Interpreter interpreter = new Interpreter();
         Guideline guideline = loadGuideline(MATH_FUNCTIONS_TEST_GUIDE);
         ArrayList<DataInstance> dataInstances = new ArrayList<>();
+        dataInstances.add(new DataInstance.Builder().modelId("openEHR-EHR-EVALUATION.test_input.v1")
+                .addValue("/path", DvQuantity.valueOf("0.5,1"))
+                .build());
         result = interpreter.execute(guideline, dataInstances).getResult();
+    }
+
+    private DvQuantity getDvQuantity(String code) {
+        list = result.get(code);
+        Object dataValue = list.get(list.size() - 1);
+        return (DvQuantity) dataValue;
     }
 
     @Test
@@ -96,5 +106,23 @@ public class MathFunctionsTest extends TestCommon {
         Object dataValue = list.get(list.size() - 1);
         DvQuantity dvQuantity = (DvQuantity) dataValue;
         assertThat(dvQuantity.getMagnitude(), closeTo(4.0, 0));
+    }
+
+    @Test
+    public void can_perform_trigonometric_function_sin() {
+        dvQuantity = getDvQuantity("gt0100");
+        assertThat(dvQuantity.toString(), is("0.4794,1"));
+    }
+
+    @Test
+    public void can_perform_trigonometric_function_cos() {
+        dvQuantity = getDvQuantity("gt0101");
+        assertThat(dvQuantity.toString(), is("0.8776,1"));
+    }
+
+    @Test
+    public void can_perform_trigonometric_function_tan() {
+        dvQuantity = getDvQuantity("gt0102");
+        assertThat(dvQuantity.toString(), is("0.5463,1"));
     }
 }

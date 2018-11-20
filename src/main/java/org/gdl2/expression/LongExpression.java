@@ -72,8 +72,17 @@ public class LongExpression extends ExpressionItem {
         ExpressionItem left;
         ExpressionItem right;
         BinaryExpression binaryExpression;
-        left = operandPair.expressionItem;
-        right = items.get(next + 1).expressionItem;
+        if (operandPair.expressionItem instanceof LongExpression) {
+            left = ((LongExpression) operandPair.expressionItem).toBinaryExpression();
+        } else {
+            left = operandPair.expressionItem;
+        }
+        if (items.get(next + 1).expressionItem instanceof LongExpression) {
+            right = ((LongExpression) items.get(next + 1).expressionItem).toBinaryExpression();
+
+        } else {
+            right = items.get(next + 1).expressionItem;
+        }
         binaryExpression = new BinaryExpression(left, right, op);
         OperandPair nextOperandPair = items.get(next + 1);
         items.remove(next);

@@ -30,11 +30,11 @@ public class ArithmeticExpressionTest {
                 new ConstantExpression("0.7"), OperatorKind.EXPONENT);
         BinaryExpression exp3 = new BinaryExpression(new ConstantExpression("42.5"),
                 new Variable("gt0020", "height"), OperatorKind.MULTIPLICATION);
-        BinaryExpression exp4 = new BinaryExpression(exp3, new Variable("gt0009", "creatine"),
+        BinaryExpression exp4 = new BinaryExpression(exp3, new Variable("gt0009", "creatinine"),
                 OperatorKind.DIVISION);
         BinaryExpression expression = new BinaryExpression(exp4, exp2, OperatorKind.DIVISION);
 
-        String expected = "((42.5*$gt0020|height|)/$gt0009|creatine|)/(($gt0007|weight|/70)^0.7)";
+        String expected = "((42.5*$gt0020|height|)/$gt0009|creatinine|)/(($gt0007|weight|/70)^0.7)";
         assertThat(expression.toString(), is(expected));
     }
 }
