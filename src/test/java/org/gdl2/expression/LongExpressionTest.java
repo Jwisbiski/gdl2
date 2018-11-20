@@ -128,7 +128,7 @@ public class LongExpressionTest {
         longExpression = parse("2.56-0.926*($gt0008.magnitude/180)+1.6");
         assertThat(longExpression.toString(), is("2.56-0.926*($gt0008.magnitude/180)+1.6"));
         binaryExpressions = longExpression.toBinaryExpression();
-        assertThat(binaryExpressions.toString(), is("(2.56-(0.926*$gt0008.magnitude/180))+1.6"));
+        assertThat(binaryExpressions.toString(), is("(2.56-(0.926*($gt0008.magnitude/180)))+1.6"));
     }
 
     @Test
