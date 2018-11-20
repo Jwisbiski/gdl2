@@ -42,8 +42,8 @@ public class FunctionalExpressionTest {
 
     @Test
     public void testCanParseTrigonometricFunctionSin() {
-        functionalExpression = parse("sin(0.7853)");
-        assertThat(functionalExpression.toString(), is("sin(0.7853)"));
+        functionalExpression = parse("sin($gt0001)");
+        assertThat(functionalExpression.toString(), is("sin($gt0001)"));
     }
 
     @Test

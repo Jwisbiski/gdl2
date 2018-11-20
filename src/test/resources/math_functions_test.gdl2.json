@@ -17,6 +17,7 @@
       "gt0002": {
         "id": "gt0002",
         "model_id": "openEHR-EHR-EVALUATION.nine_math_functions.v1",
+        "type": "INPUT",
         "elements": {
           "gt0010": {
             "id": "gt0010",
@@ -53,6 +54,17 @@
           "gt0006": {
             "id": "gt0006",
             "path": "/data[at0000]/items[at0004]"
+          }
+        }
+      },
+      "gt9002": {
+        "id": "gt9002",
+        "model_id": "openEHR-EHR-EVALUATION.test_input.v1",
+        "type": "INPUT",
+        "elements": {
+          "gt9004": {
+            "id": "gt9004",
+            "path": "/path"
           }
         }
       }
@@ -148,7 +160,7 @@
         "when": [],
         "then": [
           "$gt0100.unit='1'",
-          "$gt0100.magnitude=sin(0.5)",
+          "$gt0100.magnitude=sin($gt9004.magnitude)",
           "$gt0100.precision=4"
         ],
         "priority": 100

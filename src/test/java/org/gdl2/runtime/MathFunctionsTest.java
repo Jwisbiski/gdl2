@@ -24,6 +24,9 @@ public class MathFunctionsTest extends TestCommon {
         Interpreter interpreter = new Interpreter();
         Guideline guideline = loadGuideline(MATH_FUNCTIONS_TEST_GUIDE);
         ArrayList<DataInstance> dataInstances = new ArrayList<>();
+        dataInstances.add(new DataInstance.Builder().modelId("openEHR-EHR-EVALUATION.test_input.v1")
+                .addValue("/path", DvQuantity.valueOf("0.5,1"))
+                .build());
         result = interpreter.execute(guideline, dataInstances).getResult();
     }
 
