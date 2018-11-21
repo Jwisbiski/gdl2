@@ -58,6 +58,12 @@ public class Interpreter {
     private static final String TAN = "tan";
     private static final String ROOT = "/";
     private static final String CURRENT_INDEX = "current-index";
+    private static final String YEAR = "a";
+    private static final String MONTH = "mo";
+    private static final String WEEK = "wk";
+    private static final String DAY = "d";
+    private static final String HOUR = "h";
+    private static List TIME_PERIOD_UNITS_LIST = Arrays.asList(YEAR, MONTH, WEEK, DAY, HOUR);
 
     private RuntimeConfiguration runtimeConfiguration;
     private static final TemplateFiller templateFiller = new TemplateFiller();
@@ -1074,18 +1080,20 @@ public class Interpreter {
     }
 
     private boolean isTimePeriodUnits(String unit) {
-        return "a".equals(unit) || "mo".equals(unit) || "d".equals(unit) || "h".equals(unit);
+        return TIME_PERIOD_UNITS_LIST.contains(unit);
     }
 
     private Object convertTimeQuantityToPeriodOrMilliSeconds(DvQuantity dvQuantity) {
         int magnitude = Double.valueOf(dvQuantity.getMagnitude()).intValue();
-        if ("a".equals(dvQuantity.getUnit())) {
+        if (YEAR.equals(dvQuantity.getUnit())) {
             return Period.ofYears(magnitude);
-        } else if ("mo".equals(dvQuantity.getUnit())) {
+        } else if (MONTH.equals(dvQuantity.getUnit())) {
             return Period.ofMonths(magnitude);
-        } else if ("d".equals(dvQuantity.getUnit())) {
+        } else if (DAY.equals(dvQuantity.getUnit())) {
             return Period.ofDays(magnitude);
-        } else if ("h".equals(dvQuantity.getUnit())) {
+        } else if (WEEK.equals(dvQuantity.getUnit())) {
+            return Period.ofWeeks(magnitude);
+        } else if (HOUR.equals(dvQuantity.getUnit())) {
             return Duration.ofHours((long) dvQuantity.getMagnitude());
         }
         throw new UnsupportedOperationException("Unsupported time period unit: " + dvQuantity.getUnit());
