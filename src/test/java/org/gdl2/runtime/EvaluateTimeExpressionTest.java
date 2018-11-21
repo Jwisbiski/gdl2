@@ -400,4 +400,28 @@ public class EvaluateTimeExpressionTest extends TestCommon {
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
         assertThat(value, is(true));
     }
+
+    @Test
+    public void can_evaluate_6_days_less_than_1_week_expect_true() {
+        expressionItem = parseExpression("$gt0025<1,wk");
+        inputMap.put("gt0025", asList(new DvQuantity("d", 6, 0)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
+    }
+
+    @Test
+    public void can_evaluate_6_days_greater_than_1_week_expect_false() {
+        expressionItem = parseExpression("$gt0025>1,wk");
+        inputMap.put("gt0025", asList(new DvQuantity("d", 6, 0)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(false));
+    }
+
+    @Test
+    public void can_evaluate_7_days_equal_to_1_week_expect_true() {
+        expressionItem = parseExpression("$gt0025==1,wk");
+        inputMap.put("gt0025", asList(new DvQuantity("d", 7, 0)));
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
+    }
 }
