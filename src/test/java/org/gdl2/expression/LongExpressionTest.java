@@ -5,6 +5,8 @@ import org.testng.annotations.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 public class LongExpressionTest {
     private ExpressionItemDeserializer deserializer = new ExpressionItemDeserializer();
@@ -169,6 +171,27 @@ public class LongExpressionTest {
         try {
             ExpressionItem expressionItem = deserializer.parse(expression);
             return (LongExpression) expressionItem;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
+    }
+
+    @Test
+    public void can_handle_mixed_logicAnd_logicOr_comparison() {
+        ExpressionItem expressionItem = justParse("($gt0003|typeIIDiabetesDiagnosis|!=null&&$gt0006|hypertensionDiagnosis|==null)||$gt0009|heartFailureDiagnosis|!=null");
+        assertEquals(expressionItem.toString(), "($gt0003|typeIIDiabetesDiagnosis|!=null&&$gt0006|hypertensionDiagnosis|==null)||$gt0009|heartFailureDiagnosis|!=null");
+    }
+
+    @Test
+    public void can_handle_datetime_with_addition_of_days() {
+        ExpressionItem expressionItem = justParse("$gt0003>$currentDateTime+4,d");
+        assertEquals(expressionItem.toString(), "$gt0003>$currentDateTime+4,d");
+    }
+
+    private ExpressionItem justParse(String expression) {
+        try {
+            return deserializer.parse(expression);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException();

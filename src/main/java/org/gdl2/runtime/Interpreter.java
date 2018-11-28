@@ -1682,6 +1682,7 @@ public class Interpreter {
     List<DataInstance> evaluateDataInstancesWithPredicate(List<DataInstance> dataInstances,
                                                           ExpressionItem predicateStatement,
                                                           Guideline guideline) {
+
         if (predicateStatement instanceof UnaryExpression) {
             UnaryExpression unaryExpression = (UnaryExpression) predicateStatement;
             if (OperatorKind.MAX == unaryExpression.getOperator()) {
@@ -1691,20 +1692,29 @@ public class Interpreter {
             }
         } else if (predicateStatement instanceof BinaryExpression) {
             BinaryExpression binaryExpression = (BinaryExpression) predicateStatement;
-            String path = ((Variable) binaryExpression.getLeft()).getPath();
-            if (IS_A == binaryExpression.getOperator()) {
-                return dataInstances.stream()
-                        .filter(dataInstance -> evaluateIsARelationship(
-                                dataInstance.get(path),
-                                evaluateExpressionItem(binaryExpression.getRight(), dataInstance.valueListMap(), guideline, null), guideline.getOntology()))
-                        .collect(Collectors.toList());
-            } else {
-                return dataInstances.stream()
-                        .filter(s -> evaluateBooleanExpression(binaryExpression, s.valueListMap(), guideline, null))
-                        .collect(Collectors.toList());
-            }
+            return evaluateDataInstancesWithPredicateBinaryExpressions(dataInstances, binaryExpression, guideline);
+        } else if (predicateStatement instanceof LongExpression) {
+            BinaryExpression binaryExpression = ((LongExpression) predicateStatement).toBinaryExpression();
+            return evaluateDataInstancesWithPredicateBinaryExpressions(dataInstances, binaryExpression, guideline);
         }
         throw new IllegalArgumentException("Unsupported operator in predicateStatement: " + predicateStatement);
+    }
+
+    private List<DataInstance> evaluateDataInstancesWithPredicateBinaryExpressions(List<DataInstance> dataInstances,
+                                                                                   BinaryExpression binaryExpression,
+                                                                                   Guideline guideline) {
+        String path = ((Variable) binaryExpression.getLeft()).getPath();
+        if (IS_A == binaryExpression.getOperator()) {
+            return dataInstances.stream()
+                    .filter(dataInstance -> evaluateIsARelationship(
+                            dataInstance.get(path),
+                            evaluateExpressionItem(binaryExpression.getRight(), dataInstance.valueListMap(), guideline, null), guideline.getOntology()))
+                    .collect(Collectors.toList());
+        } else {
+            return dataInstances.stream()
+                    .filter(s -> evaluateBooleanExpression(binaryExpression, s.valueListMap(), guideline, null))
+                    .collect(Collectors.toList());
+        }
     }
 
     public static class ExecutionOutput {
