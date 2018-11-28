@@ -23,10 +23,10 @@ import static org.gdl2.expression.OperatorKind.*;
  * Exponent: ^
  * Equal: ==
  * Not equal: !=
- * Greater than: >
- * Less than: <
- * Greater than or equal: >=
- * Less than or equal: <=
+ * Greater than: &lt;
+ * Less than: &lt;
+ * Greater than or equal: &gt;=
+ * Less than or equal: &lt;=
  * <p></p>
  * The precedence levels of operators are as https://en.wikipedia.org/wiki/Order_of_operations#Programming_languages
  */
