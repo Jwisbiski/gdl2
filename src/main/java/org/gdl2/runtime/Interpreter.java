@@ -1234,6 +1234,10 @@ public class Interpreter {
             if (Boolean.FALSE.equals(leftValue)) {
                 return Boolean.FALSE;
             }
+        } else if (operator == OR) {
+            if (Boolean.TRUE.equals(leftValue)) {
+                return Boolean.TRUE;
+            }
         }
 
         Object rightValue = rightExpression == null ? null : evaluateExpressionItem(rightExpression, input, guideline, firedRules);
