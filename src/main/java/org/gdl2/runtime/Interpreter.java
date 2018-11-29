@@ -1229,6 +1229,17 @@ public class Interpreter {
                     || evaluateBooleanExpression(rightExpression, input, guideline, firedRules);
         }
         Object leftValue = leftExpression == null ? null : evaluateExpressionItem(leftExpression, input, guideline, firedRules);
+
+        if (operator == AND) {
+            if (Boolean.FALSE.equals(leftValue)) {
+                return Boolean.FALSE;
+            }
+        } else if (operator == OR) {
+            if (Boolean.TRUE.equals(leftValue)) {
+                return Boolean.TRUE;
+            }
+        }
+
         Object rightValue = rightExpression == null ? null : evaluateExpressionItem(rightExpression, input, guideline, firedRules);
 
         if (leftValue instanceof TemporalAmount || rightValue instanceof TemporalAmount) {
