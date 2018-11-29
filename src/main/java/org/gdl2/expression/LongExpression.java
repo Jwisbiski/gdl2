@@ -3,6 +3,7 @@ package org.gdl2.expression;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,10 +21,28 @@ import static org.gdl2.expression.OperatorKind.*;
  * Logic and: {@literal &&}
  * Logic or: ||
  * Exponent: ^
+ * Equal: ==
+ * Not equal: !=
+ * Greater than: &lt;
+ * Less than: &lt;
+ * Greater than or equal: &gt;=
+ * Less than or equal: &lt;=
+ * <p></p>
+ * The precedence levels of operators are as https://en.wikipedia.org/wiki/Order_of_operations#Programming_languages
  */
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class LongExpression extends ExpressionItem {
+    private static final OperatorKind[][] OPERATORS_PRECEDENCE_LEVELS = {
+            {EXPONENT},
+            {MULTIPLICATION, DIVISION, REMINDER},
+            {ADDITION, SUBTRACTION},
+            {LESS_THAN, LESS_THAN_OR_EQUAL, GREATER_THAN, GREATER_THAN_OR_EQUAL},
+            {EQUALITY, UNEQUAL},
+            {AND},
+            {OR}
+    };
+
     private List<OperandPair> items;
 
     public LongExpression(List<OperandPair> items) {
@@ -91,25 +110,15 @@ public class LongExpression extends ExpressionItem {
     }
 
     private int nextOperandPairByPrecedence(List<OperandPair> operandPairs) {
-        for (int i = 0, j = operandPairs.size(); i < j; i++) {
-            if (isHighestPrecedence(operandPairs.get(i).operator)) {
-                return i;
-            }
-        }
-        for (int i = 0, j = operandPairs.size(); i < j; i++) {
-            if (isHigherPrecedence(operandPairs.get(i).operator)) {
-                return i;
+        for (OperatorKind[] operatorKinds : OPERATORS_PRECEDENCE_LEVELS) {
+            for (int i = 0, j = operandPairs.size(); i < j; i++) {
+                OperatorKind operatorKind = operandPairs.get(i).operator;
+                if (operatorKind != null && Arrays.stream(operatorKinds).anyMatch(operandPairs.get(i).operator::equals)) {
+                    return i;
+                }
             }
         }
         return 0;
-    }
-
-    private boolean isHigherPrecedence(OperatorKind operator) {
-        return operator == MULTIPLICATION || operator == DIVISION || operator == REMINDER;
-    }
-
-    private boolean isHighestPrecedence(OperatorKind operator) {
-        return operator == EXPONENT;
     }
 
     @Value
