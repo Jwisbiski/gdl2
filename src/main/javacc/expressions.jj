@@ -664,6 +664,83 @@ ExpressionItem expression_leaf() :
   }
 }
 
+BinaryExpression binary_expression() :
+{
+  ExpressionItem item;
+  ExpressionItem item2;
+  OperatorKind op;
+}
+{
+    item = expression_leaf()
+    (
+      < SYM_EQ >
+      {
+        op = OperatorKind.EQUALITY;
+      }
+    | < SYM_NE >
+      {
+        op = OperatorKind.UNEQUAL;
+      }
+    | < SYM_LT >
+      {
+        op = OperatorKind.LESS_THAN;
+      }
+    | < SYM_GT >
+      {
+        op = OperatorKind.GREATER_THAN;
+      }
+    | < SYM_LE >
+      {
+        op = OperatorKind.LESS_THAN_OR_EQUAL;
+      }
+    | < SYM_GE >
+      {
+        op = OperatorKind.GREATER_THAN_OR_EQUAL;
+      }
+    | < SYM_PLUS >
+      {
+        op = OperatorKind.ADDITION;
+      }
+    | < SYM_MINUS >
+      {
+        op = OperatorKind.SUBTRACTION;
+      }
+    | < SYM_STAR >
+      {
+        op = OperatorKind.MULTIPLICATION;
+      }
+    | < SYM_SLASH >
+      {
+        op = OperatorKind.DIVISION;
+      }
+    | < SYM_CARET >
+      {
+        op = OperatorKind.EXPONENT;
+      }
+    | < SYM_AND >
+      {
+        op = OperatorKind.AND;
+      }
+    | < SYM_OR >
+      {
+        op = OperatorKind.OR;
+      }
+    | < SYM_IS_A >
+      {
+        op = OperatorKind.IS_A;
+      }
+    | < SYM_IS_NOT_A >
+      {
+        op = OperatorKind.IS_NOT_A;
+      }
+    )
+    item2 = expression_leaf()
+
+    {
+      return new BinaryExpression(item, item2, op);
+    }
+}
+
 AssignmentExpression assignmentExpression() :
 {
     ExpressionItem item = null;
@@ -903,9 +980,11 @@ ExpressionItem long_expression_operand() :
       (
         LOOKAHEAD(expression_node())
         item = expression_node()
-      | LOOKAHEAD(variable())
+      |
+        LOOKAHEAD(variable())
         item = variable()
-      | LOOKAHEAD(constant_expression())
+      |
+        LOOKAHEAD(constant_expression())
         item = constant_expression()
       )
      < SYM_R_PARENTHESIS >
@@ -984,6 +1063,30 @@ OperatorKind long_expression_operator() :
   | < SYM_OR >
     {
       op = OperatorKind.OR;
+    }
+  | < SYM_EQ >
+    {
+      op = OperatorKind.EQUALITY;
+    }
+  | < SYM_NE >
+    {
+      op = OperatorKind.UNEQUAL;
+    }
+  | < SYM_GT >
+    {
+      op = OperatorKind.GREATER_THAN;
+    }
+  | < SYM_LT >
+    {
+      op = OperatorKind.LESS_THAN;
+    }
+  | < SYM_GE >
+    {
+      op = OperatorKind.GREATER_THAN_OR_EQUAL;
+    }
+  | < SYM_LE >
+    {
+      op = OperatorKind.LESS_THAN_OR_EQUAL;
     }
   )
   {

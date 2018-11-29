@@ -5,6 +5,7 @@ import org.testng.annotations.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.testng.Assert.assertEquals;
 
 public class LongExpressionTest {
     private ExpressionItemDeserializer deserializer = new ExpressionItemDeserializer();
@@ -116,6 +117,30 @@ public class LongExpressionTest {
     }
 
     @Test
+    public void can_sort_logicAnd_logicOr() {
+        longExpression = parse("$gt0001 || $gt0002 && $gt0003");
+        assertThat(longExpression.toString(), is("$gt0001||$gt0002&&$gt0003"));
+        binaryExpressions = longExpression.toBinaryExpression();
+        assertThat(binaryExpressions.toString(), is("$gt0001||($gt0002&&$gt0003)"));
+    }
+
+    @Test
+    public void can_sort_less_than_addition() {
+        longExpression = parse("$gt0001 < $gt0002 + $gt0003");
+        assertThat(longExpression.toString(), is("$gt0001<$gt0002+$gt0003"));
+        binaryExpressions = longExpression.toBinaryExpression();
+        assertThat(binaryExpressions.toString(), is("$gt0001<($gt0002+$gt0003)"));
+    }
+
+    @Test
+    public void can_sort_operators_from_all_precedence_levels() {
+        longExpression = parse("$gt0001 || $gt0002 && $gt0003 == $gt0004 <= $gt0005 + $gt0006 * $gt0007^2");
+        assertThat(longExpression.toString(), is("$gt0001||$gt0002&&$gt0003==$gt0004<=$gt0005+$gt0006*$gt0007^2"));
+        binaryExpressions = longExpression.toBinaryExpression();
+        assertThat(binaryExpressions.toString(), is("$gt0001||($gt0002&&($gt0003==($gt0004<=($gt0005+($gt0006*($gt0007^2))))))"));
+    }
+
+    @Test
     public void can_handle_function() {
         longExpression = parse("2.56-0.926*log($gt0008)+1.6");
         assertThat(longExpression.toString(), is("2.56-0.926*log($gt0008)+1.6"));
@@ -169,6 +194,27 @@ public class LongExpressionTest {
         try {
             ExpressionItem expressionItem = deserializer.parse(expression);
             return (LongExpression) expressionItem;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
+    }
+
+    @Test
+    public void can_handle_mixed_logicAnd_logicOr_comparison() {
+        ExpressionItem expressionItem = justParse("($gt0003|typeIIDiabetesDiagnosis|!=null&&$gt0006|hypertensionDiagnosis|==null)||$gt0009|heartFailureDiagnosis|!=null");
+        assertEquals(expressionItem.toString(), "($gt0003|typeIIDiabetesDiagnosis|!=null&&$gt0006|hypertensionDiagnosis|==null)||$gt0009|heartFailureDiagnosis|!=null");
+    }
+
+    @Test
+    public void can_handle_datetime_with_addition_of_days() {
+        ExpressionItem expressionItem = justParse("$gt0003>$currentDateTime+4,d");
+        assertEquals(expressionItem.toString(), "$gt0003>$currentDateTime+4,d");
+    }
+
+    private ExpressionItem justParse(String expression) {
+        try {
+            return deserializer.parse(expression);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException();
