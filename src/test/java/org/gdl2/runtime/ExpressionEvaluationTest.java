@@ -270,6 +270,13 @@ public class ExpressionEvaluationTest extends TestCommon {
     }
 
     @Test
+    public void can_evaluate_and_operator_with_null_value_within_right_operand() {
+        expressionItem = parseExpression("($gt0039!=null)&&($gt0039>160)");
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(false));
+    }
+
+    @Test
     public void can_evaluate_binary_expression_with_negative_number() {
         expressionItem = parseExpression("$gt0001>(-0.329)");
         inputMap.put("gt0001", asList(new DvCount(0)));
