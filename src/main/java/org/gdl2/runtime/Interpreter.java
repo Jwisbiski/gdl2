@@ -278,6 +278,14 @@ public class Interpreter {
         return codesFromAssignments;
     }
 
+    private Set<String> getCodesForWhenConditions(List<ExpressionItem> expressionItemList) {
+        Set<String> codes = new HashSet<>();
+        for (ExpressionItem expressionItem : expressionItemList) {
+            codes.addAll(expressionItem.getVariableIdsExcludingNullValueChecks());
+        }
+        return codes;
+    }
+
     /*Only used in testing*/
     InternalOutput execute(Guideline guideline, List<DataInstance> dataInstances) {
         return execute(guideline, dataInstances, null);
@@ -499,10 +507,25 @@ public class Interpreter {
         return rules.stream().sorted(new RuleComparator()).collect(Collectors.toList());
     }
 
+    private boolean hasNullValuesInWhenConditions(List<ExpressionItem> whenConditions, Map<String, List<Object>> input) {
+        Set<String> variableIds = getCodesForWhenConditions(whenConditions);
+        for (String code : variableIds) {
+            if (!input.containsKey(code)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Map<String, List<Object>> evaluateRule(Rule rule, Map<String, List<Object>> input, Guideline guideline,
                                                    Set<String> firedRules, List<Card> cards) {
         Map<String, List<Object>> result = new HashMap<>();
         Map<String, Object> singleResult = new HashMap<>();
+
+        if (rule.getWhen() != null && hasNullValuesInWhenConditions(rule.getWhen(), input)) {
+            return result;
+        }
+
         boolean allWhenStatementsAreTrue = rule.getWhen() == null || rule.getWhen().stream()
                 .allMatch(whenStatement -> evaluateBooleanExpression(whenStatement, input, guideline, firedRules));
         if (!allWhenStatementsAreTrue) {
