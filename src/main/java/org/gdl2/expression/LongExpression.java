@@ -3,6 +3,7 @@ package org.gdl2.expression;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -43,10 +44,10 @@ public class LongExpression extends ExpressionItem {
             {OR}
     };
 
-    private List<OperandPair> items;
+    private final List<OperandPair> items;
 
     public LongExpression(List<OperandPair> items) {
-        this.items = items;
+        this.items = Collections.unmodifiableList(items);
     }
 
     @Override
@@ -78,7 +79,8 @@ public class LongExpression extends ExpressionItem {
      * @return binary expression
      */
     public BinaryExpression toBinaryExpression() {
-        return nextBinaryExpressionByOperatorPrecedence(items);
+        List<OperandPair> operandPairs = new ArrayList<>(items);
+        return nextBinaryExpressionByOperatorPrecedence(operandPairs);
     }
 
     private BinaryExpression nextBinaryExpressionByOperatorPrecedence(List<OperandPair> items) {

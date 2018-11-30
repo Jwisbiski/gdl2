@@ -213,11 +213,11 @@ public class LongExpressionTest {
     }
 
     @Test
-    public void should_not_modify_instance_when_calling_to_binary_expression_method() {
-        longExpression = parse("$gt0113<=$currentDateTime-65,a");
-        String longExpressionString = longExpression.toString();
+    public void should_not_modify_long_expression_when_creating_binary_expression() {
+        String expressionString = "$gt0113<=$currentDateTime-65,a";
+        longExpression = parse(expressionString);
         longExpression.toBinaryExpression();
-        assertEquals(longExpression.toString(), longExpressionString);
+        assertEquals(longExpression.toString(), expressionString);
     }
 
     private ExpressionItem justParse(String expression) {
