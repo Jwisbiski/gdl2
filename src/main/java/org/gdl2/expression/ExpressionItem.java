@@ -16,12 +16,6 @@ public abstract class ExpressionItem {
         return variables;
     }
 
-    public Set<String> getVariableIdsExcludingNullValueChecks() {
-        Set<String> ids = new LinkedHashSet<>();
-        getVariableIds(this, ids, true);
-        return ids;
-    }
-
     private void getVariableIds(ExpressionItem expressionItem, Set<String> idList, boolean excludingNullValueChecks) {
         if (expressionItem instanceof BinaryExpression) {
             BinaryExpression binaryExpression = (BinaryExpression) expressionItem;

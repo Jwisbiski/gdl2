@@ -278,14 +278,6 @@ public class Interpreter {
         return codesFromAssignments;
     }
 
-    private Set<String> getCodesForWhenConditions(List<ExpressionItem> expressionItemList) {
-        Set<String> codes = new HashSet<>();
-        for (ExpressionItem expressionItem : expressionItemList) {
-            codes.addAll(expressionItem.getVariableIdsExcludingNullValueChecks());
-        }
-        return codes;
-    }
-
     /*Only used in testing*/
     InternalOutput execute(Guideline guideline, List<DataInstance> dataInstances) {
         return execute(guideline, dataInstances, null);
