@@ -1,6 +1,6 @@
 {
   "gdl_version": "2.0",
-  "id": "Skip_rule_with_null_value_in_when",
+  "id": "handle_unknown_values_test_3",
   "concept": "gt0015",
   "language": {
     "original_language": "ISO_639-1::en"

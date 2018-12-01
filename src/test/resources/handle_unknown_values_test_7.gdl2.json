@@ -1,6 +1,6 @@
 {
   "gdl_version": "2.0",
-  "id": "handle_unknown_values_test_2",
+  "id": "handle_unknown_values_test_7",
   "concept": "gt0015",
   "language": {
     "original_language": "ISO_639-1::en"
@@ -75,11 +75,10 @@
       "gt0009": {
         "id": "gt0009",
         "when": [
-          "$gt0005|weight|>60,kg",
-          "$gt0006|height|>160,cm"
+          "$gt0005|weight|>10,kg || ($gt0005|weight|>20,kg || ($gt0005|weight|>30,kg || ($gt0005|weight|>40,kg || ($gt0005|weight|>50,kg || $gt0006|height|>160,cm)))))"
         ],
         "then": [
-          "$gt0013.magnitude=((($gt0005.magnitude*$gt0006.magnitude)/3600)^0.5)",
+          "$gt0013.magnitude=200",
           "$gt0013.precision=2",
           "$gt0013.unit='m2'"
         ],
