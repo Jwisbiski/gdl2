@@ -13,7 +13,7 @@ import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.is;
 import static org.testng.AssertJUnit.fail;
 
-public class SkipRuleExecutionWithNullValuesInWhenTest extends TestCommon {
+public class HandleUnknownValuesTest extends TestCommon {
     private Interpreter interpreter;
     private Guideline guideline;
     private ArrayList<DataInstance> dataInstances;
@@ -26,7 +26,7 @@ public class SkipRuleExecutionWithNullValuesInWhenTest extends TestCommon {
 
     @Test
     public void can_skip_rule_with_null_with_one_condition() throws Exception {
-        guideline = loadGuideline("Skip_rule_with_null_value_in_when.gdl2");
+        guideline = loadGuideline("handle_unknown_values_test_1.gdl2");
         dataInstances = new ArrayList<>(); // no input data
         try {
             interpreter.executeSingleGuideline(guideline, dataInstances);
@@ -37,7 +37,7 @@ public class SkipRuleExecutionWithNullValuesInWhenTest extends TestCommon {
 
     @Test
     public void can_skip_rule_with_null_with_two_conditions() throws Exception {
-        guideline = loadGuideline("Skip_rule_with_null_value_in_when2.gdl2");
+        guideline = loadGuideline("handle_unknown_values_test_2.gdl2");
         dataInstances = new ArrayList<>();
         dataInstances.add(toWeight("72.0,kg"));
         try {
@@ -49,7 +49,7 @@ public class SkipRuleExecutionWithNullValuesInWhenTest extends TestCommon {
 
     @Test
     public void can_skip_rule_with_null_with_one_condition_and_null_check() throws Exception {
-        guideline = loadGuideline("Skip_rule_with_null_value_in_when_with_null_check.gdl2");
+        guideline = loadGuideline("handle_unknown_values_test_3.gdl2");
         dataInstances = new ArrayList<>();
         dataInstances.add(toWeight("72.0,kg"));
         try {
@@ -61,8 +61,22 @@ public class SkipRuleExecutionWithNullValuesInWhenTest extends TestCommon {
     }
 
     @Test
+    public void can_skip_rule_with_null_logicAnd_one_met_condition() throws Exception {
+        guideline = loadGuideline("handle_unknown_values_test_3.gdl2");
+        dataInstances = new ArrayList<>();
+        dataInstances.add(toWeight("72.0,kg"));
+        try {
+            result = interpreter.executeSingleGuideline(guideline, dataInstances);
+            assertThat(result.size(), is(1));
+        } catch (Exception e) {
+            fail("Should not throw exception due to null values in rule conditions");
+        }
+    }
+
+
+    @Test
     public void can_execute_rule_with_no_null_values_two_conditions() throws Exception {
-        guideline = loadGuideline("Skip_rule_with_null_value_in_when2.gdl2");
+        guideline = loadGuideline("handle_unknown_values_test_2.gdl2");
         dataInstances = new ArrayList<>();
         dataInstances.add(toWeight("72.0,kg"));
         dataInstances.add(toHeight("180.0,cm"));
