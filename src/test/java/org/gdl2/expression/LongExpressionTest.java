@@ -212,6 +212,14 @@ public class LongExpressionTest {
         assertEquals(expressionItem.toString(), "$gt0003>$currentDateTime+4,d");
     }
 
+    @Test
+    public void should_not_modify_long_expression_when_creating_binary_expression() {
+        String expressionString = "$gt0113<=$currentDateTime-65,a";
+        longExpression = parse(expressionString);
+        longExpression.toBinaryExpression();
+        assertEquals(longExpression.toString(), expressionString);
+    }
+
     private ExpressionItem justParse(String expression) {
         try {
             return deserializer.parse(expression);
