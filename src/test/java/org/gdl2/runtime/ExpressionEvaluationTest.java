@@ -484,10 +484,4 @@ public class ExpressionEvaluationTest extends TestCommon {
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
         assertThat(value, is(true));
     }
-
-    @Test(expectedExceptions = ExecutionException.class)
-    public void can_evaluate_logic_operator_with_null_value() {
-        expressionItem = parseExpression("$gt0001.value>1");
-        interpreter.evaluateExpressionItem(expressionItem, inputMap);
-    }
 }

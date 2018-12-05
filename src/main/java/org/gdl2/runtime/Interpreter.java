@@ -503,6 +503,7 @@ public class Interpreter {
                                                    Set<String> firedRules, List<Card> cards) {
         Map<String, List<Object>> result = new HashMap<>();
         Map<String, Object> singleResult = new HashMap<>();
+
         boolean allWhenStatementsAreTrue = rule.getWhen() == null || rule.getWhen().stream()
                 .allMatch(whenStatement -> evaluateBooleanExpression(whenStatement, input, guideline, firedRules));
         if (!allWhenStatementsAreTrue) {
@@ -1221,15 +1222,10 @@ public class Interpreter {
         OperatorKind operator = binaryExpression.getOperator();
         ExpressionItem leftExpression = binaryExpression.getLeft();
         ExpressionItem rightExpression = binaryExpression.getRight();
-        if (operator == OR) {
-            if (leftExpression == null) {
-                throw new IllegalArgumentException("Null value in left expression item with OR operator: " + expressionItem);
-            }
-            return evaluateBooleanExpression(leftExpression, input, guideline, firedRules)
-                    || evaluateBooleanExpression(rightExpression, input, guideline, firedRules);
-        }
+        BooleanEvaluator booleanEvaluator = BooleanEvaluator.getInstance();
         Object leftValue = leftExpression == null ? null : evaluateExpressionItem(leftExpression, input, guideline, firedRules);
 
+        // short hand execution
         if (operator == AND) {
             if (Boolean.FALSE.equals(leftValue)) {
                 return Boolean.FALSE;
@@ -1256,8 +1252,10 @@ public class Interpreter {
             return evaluateIsARelationship(leftValue, rightValue, guideline.getOntology());
         } else if (operator == IS_NOT_A) {
             return !evaluateIsARelationship(leftValue, rightValue, guideline.getOntology());
-        } else if (operator == AND && leftValue != null && rightValue != null) {
-            return (Boolean) leftValue && (Boolean) rightValue;
+        } else if (operator == AND) {
+            return booleanEvaluator.logicAnd((Boolean) leftValue, (Boolean) rightValue);
+        } else if (operator == OR) {
+            return booleanEvaluator.logicOr((Boolean) leftValue, (Boolean) rightValue);
         } else {
             throw new IllegalArgumentException("Unsupported operator in expressionItem: " + expressionItem + ", leftValue: " + leftValue + ", rightValue: " + rightValue);
         }
@@ -1405,7 +1403,7 @@ public class Interpreter {
     private Object evaluateRelationalExpression(OperatorKind operator, Object leftValue, Object rightValue, ExpressionItem expressionItem) {
         checkDvQuantityUnits(leftValue, rightValue);
         if ((leftValue == null || rightValue == null)) {
-            throw new ExecutionException("Null value in expression item: " + expressionItem + ", leftValue: " + leftValue + ", rightValue: " + rightValue);
+            return null;
         }
         try {
             double left = convertObjectValueToDouble(leftValue);

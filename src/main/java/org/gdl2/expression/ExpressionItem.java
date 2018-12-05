@@ -19,6 +19,10 @@ public abstract class ExpressionItem {
     private void getVariableIds(ExpressionItem expressionItem, Set<String> idList) {
         if (expressionItem instanceof BinaryExpression) {
             BinaryExpression binaryExpression = (BinaryExpression) expressionItem;
+            if (binaryExpression.getOperator().equals(OperatorKind.EQUALITY)
+                    && binaryExpression.getRight().toString().equalsIgnoreCase("null")) {
+                return;
+            }
             getVariableIds(binaryExpression.getLeft(), idList);
             getVariableIds(binaryExpression.getRight(), idList);
         } else if (expressionItem instanceof LongExpression) {
@@ -27,6 +31,10 @@ public abstract class ExpressionItem {
             getVariableIds(binaryExpression, idList);
         } else if (expressionItem instanceof UnaryExpression) {
             UnaryExpression unaryExpression = (UnaryExpression) expressionItem;
+            if (unaryExpression.getOperator().equals(OperatorKind.FIRED)
+                    || unaryExpression.getOperator().equals(OperatorKind.NOT_FIRED)) {
+                return; // skip e.g. "fired($gt0009)"
+            }
             getVariableIds(unaryExpression.getOperand(), idList);
         } else if (expressionItem instanceof Variable) {
             String id = ((Variable) expressionItem).getCode();
