@@ -63,6 +63,7 @@ public class Interpreter {
     private static final String WEEK = "wk";
     private static final String DAY = "d";
     private static final String HOUR = "h";
+    private static final String TEXT = "text";
     private static List TIME_PERIOD_UNITS_LIST = Arrays.asList(YEAR, MONTH, WEEK, DAY, HOUR);
 
     private RuntimeConfiguration runtimeConfiguration;
@@ -1011,7 +1012,15 @@ public class Interpreter {
             return retrieveReferenceVariableValueFromValueMap(referenceVariable, guideline.getDescription());
         } else if (expressionItem instanceof Variable) {
             Variable variable = (Variable) expressionItem;
-            return retrieveValueFromValueMap(variable, input);
+            if (TEXT.equals(variable.getAttribute())) {
+                String term = guideline.getTermText(this.runtimeConfiguration.getLanguage(), variable.getCode());
+                if (term == null) {
+                    throw new IllegalArgumentException("Unknown term: " + expressionItem + " in language: " + this.runtimeConfiguration.getLanguage());
+                }
+                return term;
+            } else {
+                return retrieveValueFromValueMap(variable, input);
+            }
         } else if (expressionItem instanceof BinaryExpression) {
             return processBinaryExpression(expressionItem, input, guideline, firedRules);
         } else if (expressionItem instanceof UnaryExpression) {
@@ -1026,6 +1035,11 @@ public class Interpreter {
         } else {
             throw new IllegalArgumentException("Unsupported expressionItem: " + expressionItem);
         }
+    }
+
+    private String retrieveTermText(Guideline guideline, String language, String id) {
+        TermDefinition termDefinition = guideline.getOntology().getTermDefinitions().get(language);
+        return termDefinition == null ? null : termDefinition.getTermText(id);
     }
 
     private String retrieveReferenceVariableValueFromValueMap(ReferenceVariable referenceVariable, ResourceDescription resourceDescription) {
