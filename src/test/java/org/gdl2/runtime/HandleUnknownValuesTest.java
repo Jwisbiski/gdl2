@@ -37,14 +37,14 @@ public class HandleUnknownValuesTest extends TestCommon {
     }
 
     @Test
-    public void can_skip_rule_with_null_with_one_condition_and_null_check() throws Exception {
+    public void can_execute_rule_with_null_with_one_condition_met_and_null_check() throws Exception {
         guideline = loadGuideline("handle_unknown_values_test_3.gdl2");
         dataInstances.add(toWeight("72.0,kg"));
         assert_rule_executed_without_exception();
     }
 
     @Test
-    public void can_skip_rule_with_null_logicAnd_one_met_condition() throws Exception {
+    public void can_executed_rule_with_null_logicAnd_one_met_condition() throws Exception {
         guideline = loadGuideline("handle_unknown_values_test_3.gdl2");
         dataInstances.add(toWeight("72.0,kg"));
         assert_rule_executed_without_exception();
