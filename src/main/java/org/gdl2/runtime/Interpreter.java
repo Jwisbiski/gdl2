@@ -1011,7 +1011,15 @@ public class Interpreter {
             return retrieveReferenceVariableValueFromValueMap(referenceVariable, guideline.getDescription());
         } else if (expressionItem instanceof Variable) {
             Variable variable = (Variable) expressionItem;
-            return retrieveValueFromValueMap(variable, input);
+            if (TERM.equals(variable.getAttribute())) {
+                String term = guideline.getTermText(this.runtimeConfiguration.getLanguage(), variable.getCode());
+                if (term == null) {
+                    throw new IllegalArgumentException("Unknown term: " + expressionItem + " in language: " + this.runtimeConfiguration.getLanguage());
+                }
+                return term;
+            } else {
+                return retrieveValueFromValueMap(variable, input);
+            }
         } else if (expressionItem instanceof BinaryExpression) {
             return processBinaryExpression(expressionItem, input, guideline, firedRules);
         } else if (expressionItem instanceof UnaryExpression) {

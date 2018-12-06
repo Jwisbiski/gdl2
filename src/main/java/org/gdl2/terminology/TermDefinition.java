@@ -10,6 +10,7 @@ public final class TermDefinition {
     private Map<String, Term> terms;
 
     public String getTermText(String key) {
-        return terms.get(key).getText();
+        Term term = terms.get(key);
+        return term == null ? null : terms.get(key).getText();
     }
 }

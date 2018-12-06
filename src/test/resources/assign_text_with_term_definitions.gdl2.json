@@ -1,0 +1,75 @@
+{
+  "gdl_version": "2.0",
+  "id": "assign_text_with_term_definitions",
+  "concept": "gt0015",
+  "language": {
+    "original_language": "ISO_639-1::en"
+  },
+  "description": {
+    "original_author": {
+      "date": "2013-03-11",
+      "name": "Author",
+      "organisation": "CDS",
+      "email": "author@cambio.se"
+    },
+    "lifecycle_state": "Author draft"
+  },
+  "definition": {
+    "data_bindings": {
+      "gt0019": {
+        "id": "gt0019",
+        "model_id": "openEHR-EHR-OBSERVATION.test.v1",
+        "type": "OUTPUT",
+        "elements": {
+          "gt0013": {
+            "id": "gt0013",
+            "path": "/data[at0001]"
+          }
+        }
+      }
+    },
+    "rules": {
+      "gt0009": {
+        "id": "gt0009",
+        "then": [
+          "$gt0013=$gt1000.term"
+        ],
+        "priority": 1
+      }
+    }
+  },
+  "ontology": {
+    "term_definitions": {
+      "en": {
+        "id": "en",
+        "terms": {
+          "gt0011": {
+            "id": "gt0001",
+            "text": "Test",
+            "description": "description"
+          },
+          "gt1000": {
+            "id": "gt1000",
+            "text": "english",
+            "description": "description"
+          }
+        }
+      },
+      "sv": {
+        "id": "sv",
+        "terms": {
+          "gt0011": {
+            "id": "gt0001",
+            "text": "Test",
+            "description": "description"
+          },
+          "gt1000": {
+            "id": "gt1000",
+            "text": "svensk",
+            "description": "description"
+          }
+        }
+      }
+    }
+  }
+}

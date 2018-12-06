@@ -4,7 +4,6 @@ import org.gdl2.cdshooks.Action;
 import org.gdl2.cdshooks.Card;
 import org.gdl2.cdshooks.Link;
 import org.gdl2.datatypes.DvCodedText;
-import org.gdl2.datatypes.DvDateTime;
 import org.gdl2.model.Guideline;
 import org.hamcrest.Matchers;
 import org.hl7.fhir.dstu3.model.Appointment;
@@ -53,6 +52,36 @@ public class CreateCdsHooksCardsTest extends TestCommon {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         assertThat(appointment.getRequestedPeriod().get(0).getStart(), Matchers.is(dateFormat.parse("2013-04-20")));
         assertThat(appointment.getRequestedPeriod().get(0).getEnd(), Matchers.is(dateFormat.parse("2013-04-25")));
+    }
+
+    @Test
+    public void can_create_cdshooks_card_with_english_term_text() throws Exception {
+        guidelines = loadSingleGuideline("cdshooks_card_single_suggestion_term_text.gdl2");
+        List<Card> cardList = interpreter.executeCdsHooksGuidelines(guidelines, input);
+        assertThat(cardList.size(), is(1));
+        Card card = cardList.get(0);
+        Object object = card.getSuggestions().get(0).getActions().get(0).getResource();
+        assertThat("Appointment expected", object instanceof Appointment);
+        Appointment appointment = (Appointment) object;
+        assertThat(appointment.getDescription(), is("english text"));
+    }
+
+    @Test
+    public void can_create_cdshooks_card_with_swedish_term_text() throws Exception {
+        guidelines = loadSingleGuideline("cdshooks_card_single_suggestion_term_text.gdl2");
+        interpreter = new Interpreter(
+                RuntimeConfiguration.builder()
+                        .currentDateTime(ZonedDateTime.now())
+                        .language("sv")
+                        .objectCreatorPlugin(new FhirDstu3ResourceCreator())
+                        .build());
+        List<Card> cardList = interpreter.executeCdsHooksGuidelines(guidelines, input);
+        assertThat(cardList.size(), is(1));
+        Card card = cardList.get(0);
+        Object object = card.getSuggestions().get(0).getActions().get(0).getResource();
+        assertThat("Appointment expected", object instanceof Appointment);
+        Appointment appointment = (Appointment) object;
+        assertThat(appointment.getDescription(), is("svensk text"));
     }
 
     @Test
