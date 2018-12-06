@@ -113,7 +113,7 @@
                     "resource_template": {
                       "template_id": "gt1002",
                       "assignments": [
-                        "$gt2002=$gt0012.text"
+                        "$gt2002=$gt0012.term"
                       ]
                     }
                   }

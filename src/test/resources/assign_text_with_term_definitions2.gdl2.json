@@ -32,7 +32,7 @@
       "gt0009": {
         "id": "gt0009",
         "then": [
-          "$gt0013=$gt2000.text"
+          "$gt0013=$gt2000.term"
         ],
         "priority": 1
       }
