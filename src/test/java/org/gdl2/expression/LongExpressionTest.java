@@ -220,6 +220,13 @@ public class LongExpressionTest {
         assertEquals(longExpression.toString(), expressionString);
     }
 
+    @Test
+    public void should_not_remove_parenthesis_from_expression() {
+        String expression = "($gt0085|currentSmokingStatus| is_a local::gt0082|Occasional smoker|)||(($gt0085|currentSmokingStatus| is_a local::gt0083|Moderate smoker|)||($gt0085|currentSmokingStatus| is_a local::gt0084|Heavy smoker|))";
+        LongExpression longExpression = parse(expression);
+        assertEquals(longExpression.toString(), expression);
+    }
+
     private ExpressionItem justParse(String expression) {
         try {
             return deserializer.parse(expression);

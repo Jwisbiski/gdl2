@@ -55,7 +55,7 @@ public class LongExpression extends ExpressionItem {
         StringBuilder buf = new StringBuilder();
         for (OperandPair operandPair : this.items) {
             ExpressionItem expressionItem = operandPair.expressionItem;
-            if (expressionItem instanceof LongExpression) {
+            if (expressionItem instanceof LongExpression || expressionItem instanceof BinaryExpression) {
                 buf.append("(");
                 buf.append(expressionItem.toString());
                 buf.append(")");
