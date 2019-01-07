@@ -3,6 +3,9 @@ package org.gdl2.runtime;
 import com.google.gson.Gson;
 import com.jayway.jsonpath.JsonPath;
 import org.gdl2.datatypes.*;
+import org.gdl2.deserializers.ExpressionItemDeserializer;
+import org.gdl2.expression.ExpressionItem;
+import org.gdl2.expression.UseTemplateExpression;
 import org.gdl2.model.Guideline;
 import org.hl7.fhir.dstu3.model.Appointment;
 import org.hl7.fhir.dstu3.model.Goal;
@@ -21,6 +24,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 public class UseTemplateExpressionTest extends TestCommon {
@@ -30,6 +34,7 @@ public class UseTemplateExpressionTest extends TestCommon {
     private List<DataInstance> output;
     private Gson gson = new Gson();
     private String json;
+    private ExpressionItemDeserializer deserializer = new ExpressionItemDeserializer();
 
     @BeforeMethod
     public void setUp() {
@@ -698,6 +703,33 @@ public class UseTemplateExpressionTest extends TestCommon {
         assertZonedDateTime("$.requestedPeriod[0].end", "2013-07-20T14:00:00+02:00");
     }
 
+    @Test
+    public void should_produce_correct_string_for_an_expression_without_assignments() {
+        String expectedString = "use_template($gt2022)";
+        UseTemplateExpression useTemplateExpression = parse(expectedString);
+        String actualString = useTemplateExpression.toString();
+
+        assertEquals(actualString, expectedString);
+    }
+
+    @Test
+    public void should_produce_correct_string_for_an_expression_with_one_assignment() {
+        String expectedString = "use_template($gt2022($gt0003='Hello World'))";
+        UseTemplateExpression useTemplateExpression = parse(expectedString);
+        String actualString = useTemplateExpression.toString();
+
+        assertEquals(actualString, expectedString);
+    }
+
+    @Test
+    public void should_produce_correct_string_for_an_expression_with_multiple_assignments() {
+        String expectedString = "use_template($gt2022($gt2003=floor(($currentDateTime-$gt0004)/7,d);$gt2004=$gt0004.string))";
+        UseTemplateExpression useTemplateExpression = parse(expectedString);
+        String actualString = useTemplateExpression.toString();
+
+        assertEquals(actualString, expectedString);
+    }
+
     private Interpreter buildInterpreterWithFhirPluginAndCurrentDateTime(String datetime) {
         return new Interpreter(RuntimeConfiguration.builder()
                 .currentDateTime(datetime == null ? ZonedDateTime.now() : ZonedDateTime.parse(datetime))
@@ -712,5 +744,15 @@ public class UseTemplateExpressionTest extends TestCommon {
 
     private Interpreter buildInterpreterWithFhirPluginAndCurrentDateTime() {
         return buildInterpreterWithFhirPluginAndCurrentDateTime(null);
+    }
+
+    private UseTemplateExpression parse(String expression) {
+        try {
+            ExpressionItem expressionItem = deserializer.parse(expression);
+            return (UseTemplateExpression) expressionItem;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
     }
 }
