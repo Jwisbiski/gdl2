@@ -89,4 +89,34 @@ public class ParseExpressionItemTest {
         assertThat(assignmentExpression.getVariable().getCode(), is("gt0004"));
         assertThat(assignmentExpression.getAssignment(), instanceOf(StringConstant.class));
     }
+
+    @Test
+    public void can_parse_assignment_with_long_expression() throws Exception {
+        expressionItem = deserializer.parse("$gt0004=$gt0002 + $gt0003 + $gt0004 + $gt0005");
+        assertThat(expressionItem, instanceOf(AssignmentExpression.class));
+        AssignmentExpression assignmentExpression = (AssignmentExpression) expressionItem;
+        assertThat(assignmentExpression.getVariable().getCode(), is("gt0004"));
+        assertThat(assignmentExpression.getAssignment(), instanceOf(LongExpression.class));
+        assertThat(assignmentExpression.getAssignment().toString(), is("$gt0002+$gt0003+$gt0004+$gt0005"));
+    }
+
+    @Test
+    public void can_parse_assignment_with_functional_expression() throws Exception {
+        expressionItem = deserializer.parse("$gt2003=floor(($currentDateTime-$gt0004)/7,d)");
+        assertThat(expressionItem, instanceOf(AssignmentExpression.class));
+        AssignmentExpression assignmentExpression = (AssignmentExpression) expressionItem;
+        assertThat(assignmentExpression.getVariable().getCode(), is("gt2003"));
+        assertThat(assignmentExpression.getAssignment(), instanceOf(FunctionalExpression.class));
+        assertThat(assignmentExpression.getAssignment().toString(), is("floor(($currentDateTime-$gt0004)/7,d)"));
+    }
+
+    @Test
+    public void can_parse_assignment_with_long_expression_and_brackets() throws Exception {
+        expressionItem = deserializer.parse("$gt0004=($gt0002 + $gt0003 + $gt0004 + $gt0005)");
+        assertThat(expressionItem, instanceOf(AssignmentExpression.class));
+        AssignmentExpression assignmentExpression = (AssignmentExpression) expressionItem;
+        assertThat(assignmentExpression.getVariable().getCode(), is("gt0004"));
+        assertThat(assignmentExpression.getAssignment(), instanceOf(LongExpression.class));
+        assertThat(assignmentExpression.getAssignment().toString(), is("$gt0002+$gt0003+$gt0004+$gt0005"));
+    }
 }

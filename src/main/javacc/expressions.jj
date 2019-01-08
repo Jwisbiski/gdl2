@@ -478,7 +478,7 @@ ExpressionItem expression_node() :
       {
         op = OperatorKind.FIRED;
       }
-    | t = < SYM_MATH_FUNCTION > < SYM_L_PARENTHESIS > item = expression_leaf() < SYM_R_PARENTHESIS >
+    | t = < SYM_MATH_FUNCTION > < SYM_L_PARENTHESIS > item = expression_item() < SYM_R_PARENTHESIS >
       {
         return FunctionalExpression.create(new Function(t.image), item);
       }
@@ -517,6 +517,7 @@ ExpressionItem expression_node() :
     (
       item = expression_leaf()
     [
+      LOOKAHEAD(2)
       (
         < SYM_EQ >
         {
@@ -622,7 +623,7 @@ Map<Variable, List<Variable>> map_of_variable_lists_keyed_by_variable() :
   Token t = null;
   Variable key = null;
   List<Variable> list = null;
-  Map<Variable, List<Variable>> map = new HashMap();
+  Map<Variable, List<Variable>> map = new LinkedHashMap();
 }
 {
   (
@@ -750,7 +751,7 @@ AssignmentExpression assignmentExpression() :
     (
      item = expression_leaf()
      < SYM_ASSIGNMENT >
-     item2 = expression_leaf()
+     item2 = expression_item()
     )
     {
         return new AssignmentExpression((Variable) item, item2);
@@ -767,13 +768,13 @@ List < AssignmentExpression > assignmentExpressions() :
      < SYM_L_PARENTHESIS >
      item = assignmentExpression()
      {
-     items.add(item);
+        items.add(item);
      }
      (
       LOOKAHEAD(2)
       < SYM_SEMICOLON > item = assignmentExpression()
       {
-      items.add(item);
+        items.add(item);
       }
      )*
      < SYM_R_PARENTHESIS >
