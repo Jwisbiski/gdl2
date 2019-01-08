@@ -5,12 +5,14 @@ import org.testng.annotations.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.testng.Assert.assertEquals;
 
 public class LongExpressionTest {
     private ExpressionItemDeserializer deserializer = new ExpressionItemDeserializer();
     private LongExpression longExpression;
     private BinaryExpression binaryExpressions;
+    private String expression;
 
     @Test
     public void can_handle_single_addition() {
@@ -225,6 +227,14 @@ public class LongExpressionTest {
         String expression = "($gt0085|currentSmokingStatus| is_a local::gt0082|Occasional smoker|)||(($gt0085|currentSmokingStatus| is_a local::gt0083|Moderate smoker|)||($gt0085|currentSmokingStatus| is_a local::gt0084|Heavy smoker|))";
         LongExpression longExpression = parse(expression);
         assertEquals(longExpression.toString(), expression);
+    }
+
+    @Test
+    public void can_parse_greater_than_expression_and_convert_to_binary_expressions() {
+        expression = "$gt4109|eGFReffectiveDateTime-latest|>=($gt4110+14,d)";
+        longExpression = parse(expression);
+        String value = longExpression.toBinaryExpression().toString();
+        assertEquals(value, expression);
     }
 
     private ExpressionItem justParse(String expression) {
