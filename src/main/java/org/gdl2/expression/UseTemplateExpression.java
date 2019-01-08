@@ -46,10 +46,11 @@ public class UseTemplateExpression extends ExpressionItem {
                 buf.append("; ");
             }
             if (inputVariableMap != null) {
-                Iterator<Variable> inputKeyIterator = inputVariableMap.keySet().iterator();
+                Iterator<Map.Entry<Variable, List<Variable>>> inputKeyIterator = inputVariableMap.entrySet().iterator();
                 while (inputKeyIterator.hasNext()) {
-                    Variable variable = inputKeyIterator.next();
-                    Iterator<Variable> inputIterator = inputVariableMap.get(variable).iterator();
+                    Map.Entry<Variable, List<Variable>> entry = inputKeyIterator.next();
+                    Variable variable = entry.getKey();
+                    Iterator<Variable> inputIterator = entry.getValue().iterator();
                     buf.append(variable.toString());
                     buf.append(": ");
                     while (inputIterator.hasNext()) {

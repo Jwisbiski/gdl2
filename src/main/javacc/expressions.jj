@@ -517,6 +517,7 @@ ExpressionItem expression_node() :
     (
       item = expression_leaf()
     [
+      LOOKAHEAD(2)
       (
         < SYM_EQ >
         {
@@ -750,7 +751,7 @@ AssignmentExpression assignmentExpression() :
     (
      item = expression_leaf()
      < SYM_ASSIGNMENT >
-     item2 = expression_leaf()
+     item2 = expression_item()
     )
     {
         return new AssignmentExpression((Variable) item, item2);
@@ -764,27 +765,21 @@ List < AssignmentExpression > assignmentExpressions() :
 }
 {
     (
-        item = assignmentExpression()
-        {
-            items.add(item);
-        }
-    |
-        (
-             < SYM_L_PARENTHESIS >
-             item = assignmentExpression()
-             {
-             items.add(item);
-             }
-             (
-              LOOKAHEAD(2)
-              < SYM_SEMICOLON > item = assignmentExpression()
-              {
-              items.add(item);
-              }
-         )*
-         < SYM_R_PARENTHESIS >
-        )
+     < SYM_L_PARENTHESIS >
+     item = assignmentExpression()
+     {
+        items.add(item);
+     }
+     (
+      LOOKAHEAD(2)
+      < SYM_SEMICOLON > item = assignmentExpression()
+      {
+        items.add(item);
+      }
+     )*
+     < SYM_R_PARENTHESIS >
     )
+
     {
         return items;
     }
