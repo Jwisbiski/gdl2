@@ -622,7 +622,7 @@ Map<Variable, List<Variable>> map_of_variable_lists_keyed_by_variable() :
   Token t = null;
   Variable key = null;
   List<Variable> list = null;
-  Map<Variable, List<Variable>> map = new HashMap();
+  Map<Variable, List<Variable>> map = new LinkedHashMap();
 }
 {
   (
@@ -764,21 +764,27 @@ List < AssignmentExpression > assignmentExpressions() :
 }
 {
     (
-     < SYM_L_PARENTHESIS >
-     item = assignmentExpression()
-     {
-     items.add(item);
-     }
-     (
-      LOOKAHEAD(2)
-      < SYM_SEMICOLON > item = assignmentExpression()
-      {
-      items.add(item);
-      }
-     )*
-     < SYM_R_PARENTHESIS >
+        item = assignmentExpression()
+        {
+            items.add(item);
+        }
+    |
+        (
+             < SYM_L_PARENTHESIS >
+             item = assignmentExpression()
+             {
+             items.add(item);
+             }
+             (
+              LOOKAHEAD(2)
+              < SYM_SEMICOLON > item = assignmentExpression()
+              {
+              items.add(item);
+              }
+         )*
+         < SYM_R_PARENTHESIS >
+        )
     )
-
     {
         return items;
     }

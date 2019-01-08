@@ -19,19 +19,59 @@ public class UseTemplateExpression extends ExpressionItem {
         buf.append(variable.toString());
 
         if (assignmentExpressions.size() > 0) {
-            buf.append('(');
+            buf.append("(");
             Iterator<AssignmentExpression> iterator = assignmentExpressions.iterator();
             while (iterator.hasNext()) {
                 AssignmentExpression assignmentExpression = iterator.next();
                 buf.append(assignmentExpression.toString());
                 if (iterator.hasNext()) {
-                    buf.append(';');
+                    buf.append(";");
                 }
             }
             buf.append(")");
         }
 
+        if (hasConditionalInputVariables()) {
+            buf.append("[");
+            if (ifVariables != null && ifVariables.size() > 0) {
+                buf.append("if: ");
+                Iterator<Variable> variableIterator = ifVariables.iterator();
+                while (variableIterator.hasNext()) {
+                    Variable variable = variableIterator.next();
+                    buf.append(variable.toString());
+                    if (variableIterator.hasNext()) {
+                        buf.append(",");
+                    }
+                }
+                buf.append("; ");
+            }
+            if (inputVariableMap != null) {
+                Iterator<Variable> inputKeyIterator = inputVariableMap.keySet().iterator();
+                while (inputKeyIterator.hasNext()) {
+                    Variable variable = inputKeyIterator.next();
+                    Iterator<Variable> inputIterator = inputVariableMap.get(variable).iterator();
+                    buf.append(variable.toString());
+                    buf.append(": ");
+                    while (inputIterator.hasNext()) {
+                        Variable input = inputIterator.next();
+                        buf.append(input.toString());
+                        if (inputIterator.hasNext()) {
+                            buf.append(",");
+                        } else if (inputKeyIterator.hasNext()) {
+                            buf.append("; ");
+                        }
+                    }
+                }
+            }
+            buf.append("]");
+        }
+
         buf.append(')');
         return buf.toString();
+    }
+
+    private boolean hasConditionalInputVariables() {
+        return (ifVariables != null && ifVariables.size() > 0)
+                || (inputVariableMap != null && inputVariableMap.size() > 0);
     }
 }

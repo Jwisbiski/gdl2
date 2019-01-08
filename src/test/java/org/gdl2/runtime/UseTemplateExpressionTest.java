@@ -722,8 +722,27 @@ public class UseTemplateExpressionTest extends TestCommon {
     }
 
     @Test
+    public void should_produce_correct_string_for_an_expression_with_conditional_assignments() {
+        String expectedString = "use_template($gt2020|goal|[if: $gt0102,$gt0105; $gt3020|category|: $gt0101,$gt0104; $gt3030|text|: $gt0103,$gt0106])";
+        UseTemplateExpression useTemplateExpression = parse(expectedString);
+        String actualString = useTemplateExpression.toString();
+
+        assertEquals(actualString, expectedString);
+    }
+
+
+    @Test
+    public void should_produce_correct_string_for_an_expression_with_single_assignment_with_expression() {
+        String expectedString = "use_template($gt1002($gt2001=($currentDateTime+3,mo)))";
+        UseTemplateExpression useTemplateExpression = parse(expectedString);
+        String actualString = useTemplateExpression.toString();
+
+        assertEquals(actualString, expectedString);
+    }
+
+    @Test
     public void should_produce_correct_string_for_an_expression_with_multiple_assignments() {
-        String expectedString = "use_template($gt2022($gt2003=floor(($currentDateTime-$gt0004)/7,d);$gt2004=$gt0004.string))";
+        String expectedString = "use_template($gt1002($gt2000=$currentDateTime;$gt2001=($currentDateTime+3,mo)))";
         UseTemplateExpression useTemplateExpression = parse(expectedString);
         String actualString = useTemplateExpression.toString();
 
