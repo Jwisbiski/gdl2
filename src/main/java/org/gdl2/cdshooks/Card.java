@@ -28,8 +28,8 @@ public class Card {
         @SerializedName("warning")
         WARNING,
 
-        @JsonProperty("hard-stop")
-        @SerializedName("hard-stop")
-        HARD_STOP
+        @JsonProperty("critical")
+        @SerializedName("critical")
+        CRITICAL
     }
 }
