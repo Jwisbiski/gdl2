@@ -303,7 +303,7 @@ public class ExpressionEvaluationTest extends TestCommon {
     @Test
     public void can_evaluate_value_expression_with_not_operator_expected_false() {
         expressionItem = parseExpression("not($gt0001)");
-        inputMap.put("gt0001", asList(DvBoolean.TRUE));
+        inputMap.put("gt0001", asList(true));
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
         assertThat(value, is(false));
     }
@@ -311,7 +311,7 @@ public class ExpressionEvaluationTest extends TestCommon {
     @Test
     public void can_evaluate_value_expression_with_not_operator_expected_true() {
         expressionItem = parseExpression("not($gt0001)");
-        inputMap.put("gt0001", asList(DvBoolean.FALSE));
+        inputMap.put("gt0001", asList(false));
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
         assertThat(value, is(true));
     }
