@@ -484,4 +484,11 @@ public class ExpressionEvaluationTest extends TestCommon {
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
         assertThat(value, is(true));
     }
+
+    @Test
+    public void can_evaluate_negation_of_null_value() {
+        expressionItem = parseExpression("!(($gt8001|corrected ldl-c|>=5.0,mmol/L)&&($gt8001|corrected ldl-c|<6.0,mmol/L))");
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(nullValue()));
+    }
 }
