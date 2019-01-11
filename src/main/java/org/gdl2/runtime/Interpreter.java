@@ -1154,7 +1154,7 @@ public class Interpreter {
         } else if (OperatorKind.NOT_FIRED.equals(unaryExpression.getOperator())) {
             return !firedRules.contains(((Variable) unaryExpression.getOperand()).getCode());
         } else if (OperatorKind.NOT.equals(unaryExpression.getOperator())) {
-            return !Boolean.valueOf(evaluateExpressionItem(unaryExpression.getOperand(), input, guideline, firedRules).toString());
+            return BooleanEvaluator.getInstance().logicNot((Boolean) evaluateExpressionItem(unaryExpression.getOperand(), input, guideline, firedRules));
         } else {
             throw new UnsupportedOperationException("Unsupported unary operation: " + unaryExpression);
         }
