@@ -1255,11 +1255,12 @@ public class Interpreter {
         } else if (operator == EQUALITY) {
             return evaluateEqualityExpression(leftValue, rightValue);
         } else if (operator == UNEQUAL) {
-            return !evaluateEqualityExpression(leftValue, rightValue);
+            return booleanEvaluator.logicNot(evaluateEqualityExpression(leftValue, rightValue));
         } else if (operator == IS_A) {
             return evaluateIsARelationship(leftValue, rightValue, guideline.getOntology());
         } else if (operator == IS_NOT_A) {
-            return !evaluateIsARelationship(leftValue, rightValue, guideline.getOntology());
+            return booleanEvaluator.logicNot(
+                    evaluateIsARelationship(leftValue, rightValue, guideline.getOntology()));
         } else if (operator == AND) {
             return booleanEvaluator.logicAnd((Boolean) leftValue, (Boolean) rightValue);
         } else if (operator == OR) {
@@ -1342,11 +1343,14 @@ public class Interpreter {
                 + leftValue + ", right: " + rightValue + ", operator: " + operator);
     }
 
-    private boolean evaluateEqualityExpression(Object leftValue, Object rightValue) {
+    private Boolean evaluateEqualityExpression(Object leftValue, Object rightValue) {
         checkDvQuantityUnits(leftValue, rightValue);
         if (leftValue == null && rightValue == null) {
-            return true;
+            return null;
         } else if (leftValue != null) {
+            if(rightValue == null) {
+                return null;
+            }
             if (leftValue instanceof DvCount) {
                 if (rightValue instanceof String) {
                     return ((DvCount) leftValue).getMagnitude() == Integer.parseInt((String) rightValue);
@@ -1365,13 +1369,16 @@ public class Interpreter {
             } else if (leftValue instanceof DvQuantity) {
                 DvQuantity leftDvQuantity = (DvQuantity) leftValue;
                 leftValue = evaluateQuantityValue(leftDvQuantity);
+                if (leftValue instanceof DvQuantity) {
+                    return ((DvQuantity) leftValue).equalityCheckWithMagnitudeUnit(rightValue);
+                }
             } else if (rightValue instanceof Double) {
                 Double leftValueDouble = Double.valueOf(leftValue.toString());
                 return leftValueDouble.equals(rightValue);
             }
             return leftValue.equals(rightValue);
         } else {
-            return false;
+            return null;
         }
     }
 
