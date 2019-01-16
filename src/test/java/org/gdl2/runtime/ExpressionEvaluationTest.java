@@ -214,7 +214,7 @@ public class ExpressionEvaluationTest extends TestCommon {
     }
 
     @Test
-    public void can_evaluate_two_nulls_equality_check_expected_null() {
+    public void can_evaluate_two_nulls_equality_check_expected_true() {
         Variable variable = new Variable("gt0099");
         BinaryExpression binaryExpression = new BinaryExpression(variable, ConstantExpression.create("null"),
                 OperatorKind.EQUALITY);
@@ -223,7 +223,7 @@ public class ExpressionEvaluationTest extends TestCommon {
     }
 
     @Test
-    public void can_evaluate_null_equality_check_expected_null() {
+    public void can_evaluate_null_equality_check_expected_false() {
         Variable variable = new Variable("gt0011");
         BinaryExpression binaryExpression = new BinaryExpression(variable, ConstantExpression.create("null"),
                 OperatorKind.EQUALITY);
@@ -233,7 +233,7 @@ public class ExpressionEvaluationTest extends TestCommon {
     }
 
     @Test
-    public void can_evaluate_two_null_inequality_check_expected_null() {
+    public void can_evaluate_two_null_inequality_check_expected_false() {
         Variable variable = new Variable("gt0020");
         BinaryExpression binaryExpression = new BinaryExpression(variable, ConstantExpression.create("null"),
                 OperatorKind.UNEQUAL);
@@ -242,7 +242,7 @@ public class ExpressionEvaluationTest extends TestCommon {
     }
 
     @Test
-    public void can_evaluate_null_with_value_inequality_check_expected_null() {
+    public void can_evaluate_null_with_value_inequality_check_expected_true() {
         Variable variable = new Variable("gt0011");
         BinaryExpression binaryExpression = new BinaryExpression(variable, ConstantExpression.create("null"),
                 OperatorKind.UNEQUAL);
