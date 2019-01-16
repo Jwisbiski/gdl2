@@ -95,22 +95,6 @@ public class ExpressionEvaluationTest extends TestCommon {
     }
 
     @Test
-    public void should_return_null_on_equality_check_of_dv_quantity_with_null() {
-        expressionItem = BinaryExpression.create(new QuantityConstant(DvQuantity.valueOf("10,mg")),
-                Variable.createByCode("gt0025"), OperatorKind.EQUALITY);
-        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
-        assertThat(value, is(nullValue()));
-    }
-
-    @Test
-    public void should_return_null_on_equality_check_of_null_with_dv_quantity_with_null() {
-        expressionItem = BinaryExpression.create(Variable.createByCode("gt0025"),
-                new QuantityConstant(DvQuantity.valueOf("10,mg")), OperatorKind.EQUALITY);
-        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
-        assertThat(value, is(nullValue()));
-    }
-
-    @Test
     public void can_return_false_evaluate_equality_of_two_dv_quantity_with_different_units() {
         expressionItem = parseExpression("$gt0025==30,d");
         inputMap.put("gt0025", asList(new DvQuantity("a", 30, 0)));
@@ -235,7 +219,7 @@ public class ExpressionEvaluationTest extends TestCommon {
         BinaryExpression binaryExpression = new BinaryExpression(variable, ConstantExpression.create("null"),
                 OperatorKind.EQUALITY);
         value = interpreter.evaluateExpressionItem(binaryExpression, inputMap);
-        assertThat(value, is(nullValue()));
+        assertThat(value, is(true));
     }
 
     @Test
@@ -245,7 +229,7 @@ public class ExpressionEvaluationTest extends TestCommon {
                 OperatorKind.EQUALITY);
         inputMap.put(variable.getCode(), asList(new DvCount(1)));
         value = interpreter.evaluateExpressionItem(binaryExpression, inputMap);
-        assertThat(value, is(nullValue()));
+        assertThat(value, is(false));
     }
 
     @Test
@@ -254,7 +238,7 @@ public class ExpressionEvaluationTest extends TestCommon {
         BinaryExpression binaryExpression = new BinaryExpression(variable, ConstantExpression.create("null"),
                 OperatorKind.UNEQUAL);
         value = interpreter.evaluateExpressionItem(binaryExpression, inputMap);
-        assertThat(value, is(nullValue()));
+        assertThat(value, is(false));
     }
 
     @Test
@@ -264,7 +248,7 @@ public class ExpressionEvaluationTest extends TestCommon {
                 OperatorKind.UNEQUAL);
         inputMap.put(variable.getCode(), asList(new DvCount(1)));
         value = interpreter.evaluateExpressionItem(binaryExpression, inputMap);
-        assertThat(value, is(nullValue()));
+        assertThat(value, is(true));
     }
 
     @Test
@@ -297,7 +281,7 @@ public class ExpressionEvaluationTest extends TestCommon {
     public void can_evaluate_and_operator_with_null_value_within_right_operand() {
         expressionItem = parseExpression("($gt0039!=null)&&($gt0039>160)");
         value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
-        assertThat(value, is(nullValue()));
+        assertThat(value, is(false));
     }
 
     @Test

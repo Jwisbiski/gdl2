@@ -1255,12 +1255,11 @@ public class Interpreter {
         } else if (operator == EQUALITY) {
             return evaluateEqualityExpression(leftValue, rightValue);
         } else if (operator == UNEQUAL) {
-            return booleanEvaluator.logicNot(evaluateEqualityExpression(leftValue, rightValue));
+            return !evaluateEqualityExpression(leftValue, rightValue);
         } else if (operator == IS_A) {
             return evaluateIsARelationship(leftValue, rightValue, guideline.getOntology());
         } else if (operator == IS_NOT_A) {
-            return booleanEvaluator.logicNot(
-                    evaluateIsARelationship(leftValue, rightValue, guideline.getOntology()));
+            return !evaluateIsARelationship(leftValue, rightValue, guideline.getOntology());
         } else if (operator == AND) {
             return booleanEvaluator.logicAnd((Boolean) leftValue, (Boolean) rightValue);
         } else if (operator == OR) {
@@ -1343,14 +1342,11 @@ public class Interpreter {
                 + leftValue + ", right: " + rightValue + ", operator: " + operator);
     }
 
-    private Boolean evaluateEqualityExpression(Object leftValue, Object rightValue) {
+    private boolean evaluateEqualityExpression(Object leftValue, Object rightValue) {
         checkDvQuantityUnits(leftValue, rightValue);
         if (leftValue == null && rightValue == null) {
-            return null;
+            return true;
         } else if (leftValue != null) {
-            if(rightValue == null) {
-                return null;
-            }
             if (leftValue instanceof DvCount) {
                 if (rightValue instanceof String) {
                     return ((DvCount) leftValue).getMagnitude() == Integer.parseInt((String) rightValue);
@@ -1378,7 +1374,7 @@ public class Interpreter {
             }
             return leftValue.equals(rightValue);
         } else {
-            return null;
+            return false;
         }
     }
 

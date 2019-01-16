@@ -61,9 +61,6 @@ public final class DvQuantity {
     }
 
     public Boolean equalityCheckWithMagnitudeUnit(Object object) {
-        if (object == null) {
-            return null;
-        }
         if (!(object instanceof DvQuantity)) {
             return false;
         }
