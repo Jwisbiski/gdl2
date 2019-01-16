@@ -59,4 +59,18 @@ public final class DvQuantity {
         format.setGroupingUsed(false);
         return format.format(magnitude) + ((unit == null || unit.isEmpty()) ? "" : "," + getUnit());
     }
+
+    public Boolean equalityCheckWithMagnitudeUnit(Object object) {
+        if (!(object instanceof DvQuantity)) {
+            return false;
+        }
+        DvQuantity dvQuantity = (DvQuantity) object;
+        if (dvQuantity.magnitude != this.magnitude) {
+            return false;
+        }
+        if (dvQuantity.unit != null) {
+            return dvQuantity.unit.equals(this.unit);
+        }
+        return this.unit == null;
+    }
 }

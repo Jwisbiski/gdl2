@@ -1365,6 +1365,9 @@ public class Interpreter {
             } else if (leftValue instanceof DvQuantity) {
                 DvQuantity leftDvQuantity = (DvQuantity) leftValue;
                 leftValue = evaluateQuantityValue(leftDvQuantity);
+                if (leftValue instanceof DvQuantity) {
+                    return ((DvQuantity) leftValue).equalityCheckWithMagnitudeUnit(rightValue);
+                }
             } else if (rightValue instanceof Double) {
                 Double leftValueDouble = Double.valueOf(leftValue.toString());
                 return leftValueDouble.equals(rightValue);

@@ -87,6 +87,14 @@ public class ExpressionEvaluationTest extends TestCommon {
     }
 
     @Test
+    public void should_return_true_on_equality_check_of_dv_quantity_values_with_diff_precision() {
+        expressionItem = BinaryExpression.create(new QuantityConstant(DvQuantity.valueOf("10,mg")),
+                new QuantityConstant(DvQuantity.valueOf("10.00,mg")), OperatorKind.EQUALITY);
+        value = interpreter.evaluateExpressionItem(expressionItem, inputMap);
+        assertThat(value, is(true));
+    }
+
+    @Test
     public void can_return_false_evaluate_equality_of_two_dv_quantity_with_different_units() {
         expressionItem = parseExpression("$gt0025==30,d");
         inputMap.put("gt0025", asList(new DvQuantity("a", 30, 0)));
@@ -206,7 +214,7 @@ public class ExpressionEvaluationTest extends TestCommon {
     }
 
     @Test
-    public void can_evaluate_null_equality_check_expected_true() {
+    public void can_evaluate_two_nulls_equality_check_expected_true() {
         Variable variable = new Variable("gt0099");
         BinaryExpression binaryExpression = new BinaryExpression(variable, ConstantExpression.create("null"),
                 OperatorKind.EQUALITY);
@@ -225,7 +233,7 @@ public class ExpressionEvaluationTest extends TestCommon {
     }
 
     @Test
-    public void can_evaluate_null_negated_equality_check_expected_false() {
+    public void can_evaluate_two_null_inequality_check_expected_false() {
         Variable variable = new Variable("gt0020");
         BinaryExpression binaryExpression = new BinaryExpression(variable, ConstantExpression.create("null"),
                 OperatorKind.UNEQUAL);
@@ -234,7 +242,7 @@ public class ExpressionEvaluationTest extends TestCommon {
     }
 
     @Test
-    public void can_evaluate_null_negated_equality_check_expected_true() {
+    public void can_evaluate_null_with_value_inequality_check_expected_true() {
         Variable variable = new Variable("gt0011");
         BinaryExpression binaryExpression = new BinaryExpression(variable, ConstantExpression.create("null"),
                 OperatorKind.UNEQUAL);
